@@ -1,0 +1,409 @@
+/* ============================================
+   IMPORTS
+   ============================================ */
+
+/* Importeer Tailwind CSS framework - dit geeft je toegang tot alle Tailwind utility classes */
+@import "tailwindcss";
+
+/* Definieer een custom dark mode variant - dit zorgt ervoor dat .dark class werkt */
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   @theme inline - MAPPING TUSSEN CSS VARIABELEN EN TAILWIND CLASSES
+   ============================================
+   
+   Dit blok maakt de verbinding tussen:
+   - CSS variabelen (--primary, --card, etc.) die je hieronder definieert
+   - Tailwind utility classes (bg-primary, bg-card, etc.) die je in je componenten gebruikt
+   
+   Voorbeeld:
+   - Je definieert hier: --color-primary: var(--primary);
+   - Dit maakt bg-primary beschikbaar in Tailwind
+   - Wanneer je bg-primary gebruikt, wordt het: var(--primary)
+   - De waarde van --primary staat in :root hieronder
+   
+   Dus: bg-primary → var(--primary) → oklch(0.205 0 0) (de echte kleurwaarde)
+*/
+
+@theme inline {
+  /* Basis kleuren - achtergrond en tekst */
+  --color-background: var(--background);        /* bg-background */
+  --color-foreground: var(--foreground);        /* text-foreground */
+  
+  /* Navbar kleuren */
+  --color-navbar: var(--navbar);                /* bg-navbar */
+  --color-navbar-border: var(--navbar-border);  /* border-navbar-border */
+  
+  /* Fonts */
+  --font-sans: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;  /* font-sans */
+  
+  /* Sidebar kleuren - specifiek voor sidebar component */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  
+  /* Chart kleuren - voor grafieken */
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  
+  /* Algemene UI kleuren */
+  --color-ring: var(--ring);                   /* ring (focus ring) */
+  --color-input: var(--input);                 /* bg-input (input velden) */
+  --color-border: var(--border);               /* border (randen) */
+  --color-destructive: var(--destructive);     /* bg-destructive (foutmeldingen) */
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);               /* bg-accent (hover states) */
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);                 /* bg-muted (gedempte achtergrond) */
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);         /* bg-secondary */
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);             /* bg-primary (hoofdkleur, gebruikt door Button) */
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);             /* bg-popover */
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);                   /* bg-card (gebruikt door Card component) */
+  
+  /* Circular Menu kleuren */
+  --color-circular-menu-chapter-fill: var(--circular-menu-chapter-fill); /* fill-circular-menu-chapter-fill */
+  --color-circular-menu-chapter-hover: var(--circular-menu-chapter-hover); /* fill-circular-menu-chapter-hover */
+  --color-circular-menu-chapter-stroke: var(--circular-menu-chapter-stroke); /* stroke-circular-menu-chapter-stroke */
+  --color-circular-menu-chapter-text: var(--circular-menu-chapter-text); /* fill-circular-menu-chapter-text */
+  --color-circular-menu-center-fill: var(--circular-menu-center-fill); /* fill-circular-menu-center-fill */
+  --color-circular-menu-center-fill-expanded: var(--circular-menu-center-fill-expanded); /* fill-circular-menu-center-fill-expanded */
+  --color-circular-menu-center-stroke: var(--circular-menu-center-stroke); /* stroke-circular-menu-center-stroke */
+  --color-circular-menu-center-text: var(--circular-menu-center-text); /* fill-circular-menu-center-text */
+  
+  /* Regenboog chapter kleuren - 10 chapters (0-9) */
+  --color-circular-menu-chapter-0: var(--circular-menu-chapter-0); /* fill-circular-menu-chapter-0 */
+  --color-circular-menu-chapter-1: var(--circular-menu-chapter-1); /* fill-circular-menu-chapter-1 */
+  --color-circular-menu-chapter-2: var(--circular-menu-chapter-2); /* fill-circular-menu-chapter-2 */
+  --color-circular-menu-chapter-3: var(--circular-menu-chapter-3); /* fill-circular-menu-chapter-3 */
+  --color-circular-menu-chapter-4: var(--circular-menu-chapter-4); /* fill-circular-menu-chapter-4 */
+  --color-circular-menu-chapter-5: var(--circular-menu-chapter-5); /* fill-circular-menu-chapter-5 */
+  --color-circular-menu-chapter-6: var(--circular-menu-chapter-6); /* fill-circular-menu-chapter-6 */
+  --color-circular-menu-chapter-7: var(--circular-menu-chapter-7); /* fill-circular-menu-chapter-7 */
+  --color-circular-menu-chapter-8: var(--circular-menu-chapter-8); /* fill-circular-menu-chapter-8 */
+  --color-circular-menu-chapter-9: var(--circular-menu-chapter-9); /* fill-circular-menu-chapter-9 */
+  
+  /* Border radius variaties */
+  --radius-sm: calc(var(--radius) - 4px);      /* rounded-sm */
+  --radius-md: calc(var(--radius) - 2px);      /* rounded-md */
+  --radius-lg: var(--radius);                  /* rounded-lg */
+  --radius-xl: calc(var(--radius) + 4px);      /* rounded-xl */
+  
+  /* Positive/Success kleuren */
+  --color-positive-bg: var(--positive-bg);
+  --color-positive-border: var(--positive-border);
+  --color-positive-icon-bg: var(--positive-icon-bg);
+  --color-positive-text: var(--positive-text);
+  
+  /* Negative/Destructive kleuren */
+  --color-negative-bg: var(--negative-bg);
+  --color-negative-border: var(--negative-border);
+  --color-negative-icon-bg: var(--negative-icon-bg);
+  --color-negative-text: var(--negative-text);
+  
+  /* Warning kleuren */
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
+  --color-warning-text: var(--warning-text);
+  
+  /* Error kleuren */
+  --color-error-text: var(--error-text);
+  
+  /* Loading spinner */
+  --color-loading-spinner: var(--loading-spinner);
+  
+  /* Container spacing */
+  --spacing-container-padding: var(--container-padding);
+  --spacing-container-gap: var(--container-gap);
+  --spacing-container-max-width: var(--container-max-width);
+}
+
+/* ============================================
+   :root - DAADWERKELIJKE KLEURWAARDEN (LIGHT MODE)
+   ============================================
+   
+   Hier staan de ECHTE kleurwaarden in OKLCH formaat.
+   OKLCH is een modern kleurformaat dat beter is voor consistentie.
+   
+   Formaat: oklch(lightness chroma hue)
+   - lightness: 0-1 (0 = zwart, 1 = wit)
+   - chroma: 0-0.4 (0 = grijs, hoger = meer verzadigd)
+   - hue: 0-360 (kleurtoon in graden)
+   
+   Deze waarden worden gebruikt wanneer je bg-primary, bg-card, etc. gebruikt.
+*/
+
+:root {
+  /* Font family */
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Basis border radius */
+  --radius: 0.625rem;                          /* 10px - standaard border radius */
+  
+  /* Basis kleuren - achtergrond en tekst */
+  --background: oklch(1 0 0);                  /* Wit (#FFFFFF) - pagina achtergrond */
+  --foreground: oklch(0.145 0 0);              /* Bijna zwart (#252525) - standaard tekst */
+  
+  /* Navbar kleuren - transparante achtergrond */
+  --navbar: transparent;                        /* Transparant - navbar achtergrond */
+  --navbar-border: oklch(0.922 0 0 / 30%);     /* 30% transparant lichtgrijs - navbar border */
+  
+  /* Achtergrond afbeelding - standaard */
+  --background-image: none;  /* Geen achtergrondafbeelding voor universal theme */
+  
+  /* Card kleuren - gebruikt door Card component */
+  --card: oklch(1 0 0);                        /* Wit - card achtergrond */
+  --card-foreground: oklch(0.145 0 0);         /* Bijna zwart - tekst op card */
+  
+  /* Circular Menu kleuren - gebruikt door CircularMenu component */
+  --circular-menu-chapter-fill: oklch(1 0 0);   /* Wit - chapter achtergrond (fallback) */
+  --circular-menu-chapter-hover: oklch(0.97 0 0); /* Lichtgrijs - chapter hover */
+  --circular-menu-chapter-stroke: oklch(0.145 0 0); /* Bijna zwart - chapter rand */
+  --circular-menu-chapter-text: oklch(0.145 0 0); /* Bijna zwart - chapter tekst */
+  --circular-menu-center-fill: oklch(0.97 0 0);  /* Lichtgrijs - center circle achtergrond */
+  --circular-menu-center-fill-expanded: oklch(0.94 0 0); /* Donkergrijs - center circle expanded */
+  --circular-menu-center-stroke: oklch(1 0 0);  /* Wit - center circle rand */
+  --circular-menu-center-text: oklch(0.3 0 0);  /* Donkergrijs - center circle tekst */
+  
+  /* Regenboog chapter kleuren - 10 chapters (0-9) */
+  --circular-menu-chapter-0: oklch(0.65 0.1 0);    /* Zachter rood */
+  --circular-menu-chapter-1: oklch(0.68 0.1 30);   /* Zachter oranje */
+  --circular-menu-chapter-2: oklch(0.72 0.1 60);   /* Zachter geel */
+  --circular-menu-chapter-3: oklch(0.68 0.1 90);   /* Zachter geelgroen */
+  --circular-menu-chapter-4: oklch(0.65 0.1 120);  /* Zachter groen */
+  --circular-menu-chapter-5: oklch(0.6 0.1 150);   /* Zachter groenblauw */
+  --circular-menu-chapter-6: oklch(0.55 0.1 180);  /* Zachter cyaan */
+  --circular-menu-chapter-7: oklch(0.6 0.1 210);   /* Zachter blauw */
+  --circular-menu-chapter-8: oklch(0.65 0.1 240);  /* Zachter blauw */
+  --circular-menu-chapter-9: oklch(0.68 0.1 270);  /* Zachter paars */
+  
+  /* Popover kleuren - voor popover/dropdown componenten */
+  --popover: oklch(1 0 0);                     /* Wit - popover achtergrond */
+  --popover-foreground: oklch(0.145 0 0);      /* Bijna zwart - tekst op popover */
+  
+  /* Primary kleuren - HOOFDKLEUR, gebruikt door Button default variant */
+  --primary: oklch(0.205 0 0);                 /* Donkergrijs (bijna zwart) - button achtergrond */
+  --primary-foreground: oklch(0.985 0 0);      /* Bijna wit - tekst op button */
+  
+  /* Secondary kleuren - secundaire acties */
+  --secondary: oklch(0.97 0 0);                /* Lichtgrijs - secondary achtergrond */
+  --secondary-foreground: oklch(0.205 0 0);   /* Donkergrijs - tekst op secondary */
+  
+  /* Muted kleuren - gedempte/teruggetrokken elementen */
+  --muted: oklch(0.97 0 0);                    /* Lichtgrijs - muted achtergrond */
+  --muted-foreground: oklch(0.556 0 0);        /* Middengrijs - muted tekst */
+  
+  /* Accent kleuren - hover states, highlights */
+  --accent: oklch(0.97 0 0);                   /* Lichtgrijs - accent achtergrond */
+  --accent-foreground: oklch(0.205 0 0);       /* Donkergrijs - accent tekst */
+  
+  /* Destructive kleuren - foutmeldingen, verwijder acties */
+  --destructive: oklch(0.577 0.245 27.325);    /* Roodachtig - foutmeldingen */
+  
+  /* Border en input kleuren - randen, input velden */
+  --border: oklch(0.922 0 0);                  /* Lichtgrijs - randen */
+  --input: oklch(0.922 0 0);                   /* Lichtgrijs - input achtergrond */
+  --ring: oklch(0.708 0 0);                    /* Middengrijs - focus ring */
+  
+  /* Chart kleuren - voor grafieken (5 verschillende kleuren) */
+  --chart-1: oklch(0.646 0.222 41.116);        /* Oranjeachtig */
+  --chart-2: oklch(0.6 0.118 184.704);          /* Blauwachtig */
+  --chart-3: oklch(0.398 0.07 227.392);        /* Paarsachtig */
+  --chart-4: oklch(0.828 0.189 84.429);        /* Geelachtig */
+  --chart-5: oklch(0.769 0.188 70.08);          /* Groenachtig */
+  
+  /* Sidebar kleuren - specifiek voor sidebar component */
+  --sidebar: oklch(0.985 0 0);                 /* Bijna wit - sidebar achtergrond */
+  --sidebar-foreground: oklch(0.145 0 0);      /* Bijna zwart - sidebar tekst */
+  --sidebar-primary: oklch(0.205 0 0);         /* Donkergrijs - sidebar primary */
+  --sidebar-primary-foreground: oklch(0.985 0 0); /* Bijna wit - sidebar primary tekst */
+  --sidebar-accent: oklch(0.97 0 0);           /* Lichtgrijs - sidebar accent */
+  --sidebar-accent-foreground: oklch(0.205 0 0); /* Donkergrijs - sidebar accent tekst */
+  --sidebar-border: oklch(0.922 0 0);          /* Lichtgrijs - sidebar randen */
+  --sidebar-ring: oklch(0.708 0 0);             /* Middengrijs - sidebar focus ring */
+  
+  /* Positive/Success kleuren - voor positive path, success states */
+  --positive-bg: oklch(0.98 0.05 60);              /* Zeer licht geel - positive achtergrond */
+  --positive-border: oklch(0.6 0.2 60);            /* Geel/oranje - positive border */
+  --positive-icon-bg: oklch(0.7 0.2 60);           /* Geel - positive icon achtergrond */
+  --positive-text: oklch(0.3 0.15 60);             /* Donker oranje - positive tekst */
+  
+  /* Negative/Destructive kleuren - voor negative path */
+  --negative-bg: oklch(0.97 0 0);                  /* Lichtgrijs - negative achtergrond */
+  --negative-border: oklch(0.6 0 0);              /* Middengrijs - negative border */
+  --negative-icon-bg: oklch(0.6 0 0);             /* Middengrijs - negative icon achtergrond */
+  --negative-text: oklch(0.4 0 0);                /* Donkergrijs - negative tekst */
+  
+  /* Warning kleuren - voor waarschuwingen */
+  --warning-bg: oklch(0.99 0.02 60);              /* Zeer licht geel - warning achtergrond */
+  --warning-border: oklch(0.9 0.05 60);           /* Licht geel - warning border */
+  --warning-text: oklch(0.5 0.15 60);             /* Middel oranje - warning tekst */
+  
+  /* Error kleuren - voor foutmeldingen */
+  --error-text: oklch(0.577 0.245 27.325);        /* Rood - error tekst (gebruikt destructive) */
+  
+  /* Loading spinner kleur */
+  --loading-spinner: oklch(0.4 0.12 240);         /* Blauw - loading spinner */
+  
+  /* Container standaard waarden - spacing en border */
+  --container-padding: 1.5rem;                    /* Standaard padding: 24px */
+  --container-gap: 1.5rem;                        /* Standaard gap: 24px */
+  --container-max-width: 48rem;                    /* Standaard max-width: 768px (max-w-3xl) */
+  --container-border-width: 0px;                   /* Geen border */
+  --container-border-style: solid;                 /* Standaard border style */
+  --container-border-color: transparent;            /* Transparante border color */
+}
+
+/* ============================================
+   .dark - DARK MODE KLEURWAARDEN
+   ============================================
+   
+   Wanneer een element (of de hele pagina) de class .dark heeft,
+   worden deze kleurwaarden gebruikt in plaats van de :root waarden.
+   
+   Dit zorgt voor een donkere kleurenschema.
+   Let op: de kleuren zijn omgedraaid (donker wordt licht, licht wordt donker).
+*/
+
+.dark {
+  /* Basis kleuren - omgedraaid voor dark mode */
+  --background: oklch(0.145 0 0);              /* Donkergrijs - pagina achtergrond (was wit) */
+  --foreground: oklch(0.985 0 0);              /* Bijna wit - standaard tekst (was donker) */
+  
+  /* Navbar kleuren - transparante achtergrond voor dark mode */
+  --navbar: transparent;                        /* Transparant - navbar achtergrond */
+  --navbar-border: oklch(1 0 0 / 10%);         /* 10% transparant wit - navbar border */
+  
+  /* Card kleuren - donkere achtergrond, lichte tekst */
+  --card: oklch(0.205 0 0);                    /* Donkergrijs - card achtergrond */
+  --card-foreground: oklch(0.985 0 0);         /* Bijna wit - tekst op card */
+  
+  /* Popover kleuren */
+  --popover: oklch(0.205 0 0);                 /* Donkergrijs - popover achtergrond */
+  --popover-foreground: oklch(0.985 0 0);      /* Bijna wit - tekst op popover */
+  
+  /* Primary kleuren - lichte button op donkere achtergrond */
+  --primary: oklch(0.922 0 0);                 /* Lichtgrijs - button achtergrond (was donker) */
+  --primary-foreground: oklch(0.205 0 0);      /* Donkergrijs - tekst op button (was licht) */
+  
+  /* Secondary kleuren */
+  --secondary: oklch(0.269 0 0);                /* Donkergrijs - secondary achtergrond */
+  --secondary-foreground: oklch(0.985 0 0);    /* Bijna wit - tekst op secondary */
+  
+  /* Muted kleuren */
+  --muted: oklch(0.269 0 0);                   /* Donkergrijs - muted achtergrond */
+  --muted-foreground: oklch(0.708 0 0);        /* Middengrijs - muted tekst */
+  
+  /* Accent kleuren */
+  --accent: oklch(0.269 0 0);                  /* Donkergrijs - accent achtergrond */
+  --accent-foreground: oklch(0.985 0 0);       /* Bijna wit - accent tekst */
+  
+  /* Destructive kleuren - iets lichtere rood voor dark mode */
+  --destructive: oklch(0.704 0.191 22.216);    /* Lichtere rood - foutmeldingen */
+  
+  /* Border en input kleuren - transparant wit voor dark mode */
+  --border: oklch(1 0 0 / 10%);                /* 10% transparant wit - randen */
+  --input: oklch(1 0 0 / 15%);                 /* 15% transparant wit - input achtergrond */
+  --ring: oklch(0.556 0 0);                    /* Middengrijs - focus ring */
+  
+  /* Chart kleuren - aangepast voor dark mode */
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  
+  /* Sidebar kleuren - aangepast voor dark mode */
+  --sidebar: oklch(0.205 0 0);                 /* Donkergrijs - sidebar achtergrond */
+  --sidebar-foreground: oklch(0.985 0 0);      /* Bijna wit - sidebar tekst */
+  --sidebar-primary: oklch(0.488 0.243 264.376); /* Paarsachtig - sidebar primary */
+  --sidebar-primary-foreground: oklch(0.985 0 0); /* Bijna wit - sidebar primary tekst */
+  --sidebar-accent: oklch(0.269 0 0);          /* Donkergrijs - sidebar accent */
+  --sidebar-accent-foreground: oklch(0.985 0 0); /* Bijna wit - sidebar accent tekst */
+  --sidebar-border: oklch(1 0 0 / 10%);        /* 10% transparant wit - sidebar randen */
+  --sidebar-ring: oklch(0.556 0 0);            /* Middengrijs - sidebar focus ring */
+}
+
+/* ============================================
+   @layer base - GLOBALE BASISSTIJLEN
+   ============================================
+   
+   Deze stijlen worden automatisch toegepast op alle elementen.
+   Dit zijn de "default" stijlen voor de hele applicatie.
+*/
+
+@layer base {
+  /* Alle elementen krijgen deze standaard stijlen */
+  * {
+    /* border-border: gebruik --border voor alle randen */
+    /* outline-ring/50: gebruik --ring met 50% opacity voor focus outlines */
+    @apply border-border outline-ring/50;
+  }
+  
+  /* Body element krijgt de basis achtergrond en tekst kleur */
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    /* bg-background: gebruik --background voor body achtergrond */
+    /* text-foreground: gebruik --foreground voor body tekst */
+    @apply bg-background text-foreground;
+    background-image: var(--background-image);  /* Gebruik CSS variabele die per theme verschilt */
+    background-size: 100% 100%;  /* Vult het hele scherm en past zich aan aan schermgrootte */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
+
+/* ============================================
+   @layer components - COMPONENT STYLES
+   ============================================
+   
+   Deze stijlen zijn voor specifieke componenten.
+   Container component styling.
+*/
+
+@layer components {
+  .container {
+    width: 100%;
+    max-width: var(--container-max-width);
+    padding: var(--container-padding);
+    border-width: var(--container-border-width);
+    border-style: var(--container-border-style);
+    border-color: var(--container-border-color);
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--container-gap);
+  }
+  
+  .container-section {
+    /* Optioneel: specifieke styling voor sections */
+  }
+  
+  /* Navbar styling - transparante achtergrond */
+  .navbar {
+    background-color: var(--navbar);
+    border-bottom-color: var(--navbar-border);
+  }
+}
+

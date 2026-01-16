@@ -1,0 +1,325 @@
+/* ============================================
+   THEME SYSTEM - CSS CUSTOM PROPERTIES PER GEBRUIKERSGROEP
+   ============================================
+   
+   Dit bestand bevat CSS Custom Properties per gebruikersgroep.
+   Wanneer een element (of de hele pagina) het data-user-group attribute heeft,
+   worden deze kleurwaarden gebruikt in plaats van de :root waarden in globals.css.
+   
+   Gebruik:
+   - Universal/default: geen data-user-group attribute
+   - Adult Woman: <html data-user-group="adult-woman">
+   - Adult Man: <html data-user-group="adult-man">
+   - Young Adult Male: <html data-user-group="young-adult-male">
+   - Young Adult Female: <html data-user-group="young-adult-female">
+   
+   De ThemeContext zet automatisch het data-user-group attribute op <html>.
+*/
+
+/* ============================================
+   ADULT WOMAN THEME - Zachte roze/paarse kleuren
+   ============================================ */
+
+[data-user-group="adult-woman"] {
+  /* Primary kleuren - zachte roze/paars */
+  --primary: oklch(0.5 0.15 330);                 /* Zachte roze/paars - button achtergrond */
+  --primary-foreground: oklch(0.98 0.01 330);    /* Bijna wit - tekst op button */
+  
+  /* Secondary kleuren */
+  --secondary: oklch(0.95 0.05 330);             /* Zeer licht roze - secondary achtergrond */
+  --secondary-foreground: oklch(0.3 0.1 330);    /* Donker roze - tekst op secondary */
+  
+  /* Accent kleuren - voor hover states */
+  --accent: oklch(0.92 0.08 330);                /* Licht roze - accent achtergrond */
+  --accent-foreground: oklch(0.3 0.1 330);       /* Donker roze - accent tekst */
+  
+  /* Muted kleuren */
+  --muted: oklch(0.94 0.03 330);                 /* Zeer licht roze - muted achtergrond */
+  --muted-foreground: oklch(0.5 0.08 330);       /* Middel roze - muted tekst */
+  
+  /* Positive kleuren - zachte roze tinten */
+  --positive-bg: oklch(0.98 0.02 330);
+  --positive-border: oklch(0.5 0.15 330);
+  --positive-icon-bg: oklch(0.6 0.12 330);
+  --positive-text: oklch(0.3 0.1 330);
+  
+  /* Negative kleuren - grijze tinten met roze nuance */
+  --negative-bg: oklch(0.95 0.02 330);
+  --negative-border: oklch(0.6 0.05 330);
+  --negative-icon-bg: oklch(0.6 0.05 330);
+  --negative-text: oklch(0.4 0.05 330);
+  
+  /* Warning kleuren - zachte roze tinten */
+  --warning-bg: oklch(0.99 0.01 330);
+  --warning-border: oklch(0.9 0.05 330);
+  --warning-text: oklch(0.4 0.1 330);
+  
+  /* Error kleuren */
+  --error-text: oklch(0.577 0.245 27.325);
+  
+  /* Loading spinner */
+  --loading-spinner: oklch(0.5 0.15 330);
+  
+  /* Card kleuren - zachte paarse tinten */
+  --card: oklch(0.98 0.02 330);                      /* Zeer licht paars - card achtergrond */
+  --card-foreground: oklch(0.3 0.1 330);             /* Donker paars - tekst op card */
+  
+  /* Border kleuren - zachte paarse tinten */
+  --border: oklch(0.92 0.05 330);                    /* Licht paars - card borders */
+  
+  /* Circular Menu kleuren - zachte roze tinten */
+  --circular-menu-chapter-fill: oklch(0.98 0.02 330); /* Zeer licht roze - chapter achtergrond */
+  --circular-menu-chapter-hover: oklch(0.95 0.05 330); /* Licht roze - chapter hover */
+  --circular-menu-chapter-stroke: oklch(0.3 0.1 330); /* Donker roze - chapter rand */
+  --circular-menu-chapter-text: oklch(0.3 0.1 330); /* Donker roze - chapter tekst */
+  --circular-menu-center-fill: oklch(0.95 0.05 330); /* Licht roze - center circle achtergrond */
+  --circular-menu-center-fill-expanded: oklch(0.92 0.08 330); /* Donkerder roze - center circle expanded */
+  --circular-menu-center-stroke: oklch(0.98 0.02 330); /* Zeer licht roze - center circle rand */
+  --circular-menu-center-text: oklch(0.3 0.1 330); /* Donker roze - center circle tekst */
+  
+  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
+  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  
+  /* Achtergrond afbeelding */
+  --background-image: url('/BackgroundPictures/BackgroundAdultWoman.png');  /* Achtergrond voor volwassen vrouwen */
+  
+  /* Navbar kleuren - transparante achtergrond */
+  --navbar: transparent;                        /* Transparant - navbar achtergrond */
+  --navbar-border: oklch(0.92 0.05 330 / 30%); /* 30% transparant licht paars - navbar border */
+  
+  /* Container border color - transparant */
+  --container-border-color: transparent;
+}
+
+/* ============================================
+   ADULT MAN THEME - Blauw/groene kleuren
+   ============================================ */
+
+[data-user-group="adult-man"] {
+  /* Primary kleuren - blauw/groen */
+  --primary: oklch(0.4 0.12 240);                 /* Blauw/groen - button achtergrond */
+  --primary-foreground: oklch(0.98 0.01 240);     /* Bijna wit - tekst op button */
+  
+  /* Secondary kleuren */
+  --secondary: oklch(0.94 0.04 240);             /* Zeer licht blauw - secondary achtergrond */
+  --secondary-foreground: oklch(0.3 0.1 240);    /* Donker blauw - tekst op secondary */
+  
+  /* Accent kleuren - voor hover states */
+  --accent: oklch(0.91 0.06 240);                /* Licht blauw - accent achtergrond */
+  --accent-foreground: oklch(0.3 0.1 240);       /* Donker blauw - accent tekst */
+  
+  /* Muted kleuren */
+  --muted: oklch(0.93 0.03 240);                 /* Zeer licht blauw - muted achtergrond */
+  --muted-foreground: oklch(0.5 0.08 240);       /* Middel blauw - muted tekst */
+  
+  /* Positive kleuren - blauwe tinten */
+  --positive-bg: oklch(0.98 0.02 240);
+  --positive-border: oklch(0.4 0.12 240);
+  --positive-icon-bg: oklch(0.5 0.1 240);
+  --positive-text: oklch(0.3 0.1 240);
+  
+  /* Negative kleuren - grijze tinten met blauwe nuance */
+  --negative-bg: oklch(0.95 0.02 240);
+  --negative-border: oklch(0.6 0.05 240);
+  --negative-icon-bg: oklch(0.6 0.05 240);
+  --negative-text: oklch(0.4 0.05 240);
+  
+  /* Warning kleuren - blauwe tinten */
+  --warning-bg: oklch(0.99 0.01 240);
+  --warning-border: oklch(0.9 0.05 240);
+  --warning-text: oklch(0.4 0.1 240);
+  
+  /* Error kleuren */
+  --error-text: oklch(0.577 0.245 27.325);
+  
+  /* Loading spinner */
+  --loading-spinner: oklch(0.4 0.12 240);
+  
+  /* Card kleuren - zachte blauwe tinten */
+  --card: oklch(0.98 0.02 240);                      /* Zeer licht blauw - card achtergrond */
+  --card-foreground: oklch(0.3 0.1 240);             /* Donker blauw - tekst op card */
+  
+  /* Border kleuren - zachte blauwe tinten */
+  --border: oklch(0.92 0.04 240);                    /* Licht blauw - card borders */
+  
+  /* Circular Menu kleuren - blauwe tinten */
+  --circular-menu-chapter-fill: oklch(0.98 0.02 240); /* Zeer licht blauw - chapter achtergrond */
+  --circular-menu-chapter-hover: oklch(0.94 0.04 240); /* Licht blauw - chapter hover */
+  --circular-menu-chapter-stroke: oklch(0.3 0.1 240); /* Donker blauw - chapter rand */
+  --circular-menu-chapter-text: oklch(0.3 0.1 240); /* Donker blauw - chapter tekst */
+  --circular-menu-center-fill: oklch(0.94 0.04 240); /* Licht blauw - center circle achtergrond */
+  --circular-menu-center-fill-expanded: oklch(0.91 0.06 240); /* Donkerder blauw - center circle expanded */
+  --circular-menu-center-stroke: oklch(0.98 0.02 240); /* Zeer licht blauw - center circle rand */
+  --circular-menu-center-text: oklch(0.3 0.1 240); /* Donker blauw - center circle tekst */
+  
+  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
+  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  
+  /* Achtergrond afbeelding */
+  --background-image: url('/BackgroundPictures/BackgroundAdult.png');  /* Achtergrond voor volwassen mannen */
+  
+  /* Navbar kleuren - transparante achtergrond */
+  --navbar: transparent;                        /* Transparant - navbar achtergrond */
+  --navbar-border: oklch(0.92 0.04 240 / 30%); /* 30% transparant licht blauw - navbar border */
+  
+  /* Container border color - transparant */
+  --container-border-color: transparent;
+}
+
+/* ============================================
+   YOUNG ADULT MALE THEME - Levendige geel/oranje kleuren
+   ============================================ */
+
+[data-user-group="young-adult-male"] {
+  /* Primary kleuren - levendig geel/oranje */
+  --primary: oklch(0.6 0.2 60);                    /* Levendig geel/oranje - button achtergrond */
+  --primary-foreground: oklch(0.15 0 0);          /* Bijna zwart - tekst op button */
+  
+  /* Secondary kleuren */
+  --secondary: oklch(0.96 0.08 60);              /* Zeer licht geel - secondary achtergrond */
+  --secondary-foreground: oklch(0.3 0.15 60);    /* Donker oranje - tekst op secondary */
+  
+  /* Accent kleuren - voor hover states */
+  --accent: oklch(0.93 0.1 60);                  /* Licht geel - accent achtergrond */
+  --accent-foreground: oklch(0.3 0.15 60);        /* Donker oranje - accent tekst */
+  
+  /* Muted kleuren */
+  --muted: oklch(0.95 0.05 60);                  /* Zeer licht geel - muted achtergrond */
+  --muted-foreground: oklch(0.55 0.12 60);       /* Middel oranje - muted tekst */
+  
+  /* Positive kleuren - levendige geel/oranje tinten */
+  --positive-bg: oklch(0.98 0.05 60);
+  --positive-border: oklch(0.6 0.2 60);
+  --positive-icon-bg: oklch(0.7 0.2 60);
+  --positive-text: oklch(0.3 0.15 60);
+  
+  /* Negative kleuren - grijze tinten */
+  --negative-bg: oklch(0.95 0.02 60);
+  --negative-border: oklch(0.6 0.05 60);
+  --negative-icon-bg: oklch(0.6 0.05 60);
+  --negative-text: oklch(0.4 0.05 60);
+  
+  /* Warning kleuren - geel/oranje tinten */
+  --warning-bg: oklch(0.99 0.03 60);
+  --warning-border: oklch(0.9 0.08 60);
+  --warning-text: oklch(0.5 0.15 60);
+  
+  /* Error kleuren */
+  --error-text: oklch(0.577 0.245 27.325);
+  
+  /* Loading spinner */
+  --loading-spinner: oklch(0.6 0.2 60);
+  
+  /* Card kleuren - zachte oranje tinten */
+  --card: oklch(0.98 0.03 60);                       /* Zeer licht oranje/geel - card achtergrond */
+  --card-foreground: oklch(0.3 0.15 60);             /* Donker oranje - tekst op card */
+  
+  /* Border kleuren - zachte oranje tinten */
+  --border: oklch(0.92 0.08 60);                     /* Licht oranje/geel - card borders */
+  
+  /* Circular Menu kleuren - levendige geel/oranje tinten */
+  --circular-menu-chapter-fill: oklch(0.98 0.05 60); /* Zeer licht geel - chapter achtergrond */
+  --circular-menu-chapter-hover: oklch(0.96 0.08 60); /* Licht geel - chapter hover */
+  --circular-menu-chapter-stroke: oklch(0.3 0.15 60); /* Donker oranje - chapter rand */
+  --circular-menu-chapter-text: oklch(0.3 0.15 60); /* Donker oranje - chapter tekst */
+  --circular-menu-center-fill: oklch(0.96 0.08 60); /* Licht geel - center circle achtergrond */
+  --circular-menu-center-fill-expanded: oklch(0.93 0.1 60); /* Donkerder geel - center circle expanded */
+  --circular-menu-center-stroke: oklch(0.98 0.05 60); /* Zeer licht geel - center circle rand */
+  --circular-menu-center-text: oklch(0.3 0.15 60); /* Donker oranje - center circle tekst */
+  
+  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
+  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  
+  /* Achtergrond afbeelding */
+  --background-image: url('/BackgroundPictures/BackgroundYoungAdultMan.png');  /* Standaard achtergrond voor jonge volwassen mannen */
+  
+  /* Navbar kleuren - transparante achtergrond */
+  --navbar: transparent;                        /* Transparant - navbar achtergrond */
+  --navbar-border: oklch(0.92 0.08 60 / 30%);  /* 30% transparant licht oranje/geel - navbar border */
+  
+  /* Container border color - transparant */
+  --container-border-color: transparent;
+}
+
+/* ============================================
+   YOUNG ADULT FEMALE THEME - Levendige roze/paarse kleuren
+   ============================================ */
+
+[data-user-group="young-adult-female"] {
+  /* Primary kleuren - levendig roze/paars */
+  --primary: oklch(0.55 0.18 330);                 /* Levendig roze/paars - button achtergrond */
+  --primary-foreground: oklch(0.98 0.01 330);      /* Bijna wit - tekst op button */
+  
+  /* Secondary kleuren */
+  --secondary: oklch(0.96 0.06 330);              /* Zeer licht roze - secondary achtergrond */
+  --secondary-foreground: oklch(0.3 0.12 330);    /* Donker roze - tekst op secondary */
+  
+  /* Accent kleuren - voor hover states */
+  --accent: oklch(0.93 0.1 330);                  /* Licht roze - accent achtergrond */
+  --accent-foreground: oklch(0.3 0.12 330);        /* Donker roze - accent tekst */
+  
+  /* Muted kleuren */
+  --muted: oklch(0.95 0.04 330);                  /* Zeer licht roze - muted achtergrond */
+  --muted-foreground: oklch(0.5 0.1 330);         /* Middel roze - muted tekst */
+  
+  /* Positive kleuren - levendige roze tinten */
+  --positive-bg: oklch(0.98 0.03 330);
+  --positive-border: oklch(0.55 0.18 330);
+  --positive-icon-bg: oklch(0.65 0.15 330);
+  --positive-text: oklch(0.3 0.12 330);
+  
+  /* Negative kleuren - grijze tinten met roze nuance */
+  --negative-bg: oklch(0.95 0.02 330);
+  --negative-border: oklch(0.6 0.05 330);
+  --negative-icon-bg: oklch(0.6 0.05 330);
+  --negative-text: oklch(0.4 0.05 330);
+  
+  /* Warning kleuren - roze tinten */
+  --warning-bg: oklch(0.99 0.02 330);
+  --warning-border: oklch(0.9 0.06 330);
+  --warning-text: oklch(0.45 0.12 330);
+  
+  /* Error kleuren */
+  --error-text: oklch(0.577 0.245 27.325);
+  
+  /* Loading spinner */
+  --loading-spinner: oklch(0.55 0.18 330);
+  
+  /* Card kleuren - zachte roze tinten */
+  --card: oklch(0.98 0.02 330);                      /* Zeer licht roze - card achtergrond */
+  --card-foreground: oklch(0.3 0.12 330);             /* Donker roze - tekst op card */
+  
+  /* Border kleuren - zachte roze tinten */
+  --border: oklch(0.92 0.05 330);                    /* Licht roze - card borders */
+  
+  /* Circular Menu kleuren - levendige roze/paarse tinten */
+  --circular-menu-chapter-fill: oklch(0.98 0.03 330); /* Zeer licht roze - chapter achtergrond */
+  --circular-menu-chapter-hover: oklch(0.96 0.06 330); /* Licht roze - chapter hover */
+  --circular-menu-chapter-stroke: oklch(0.3 0.12 330); /* Donker roze - chapter rand */
+  --circular-menu-chapter-text: oklch(0.3 0.12 330); /* Donker roze - chapter tekst */
+  --circular-menu-center-fill: oklch(0.96 0.06 330); /* Licht roze - center circle achtergrond */
+  --circular-menu-center-fill-expanded: oklch(0.93 0.1 330); /* Donkerder roze - center circle expanded */
+  --circular-menu-center-stroke: oklch(0.98 0.03 330); /* Zeer licht roze - center circle rand */
+  --circular-menu-center-text: oklch(0.3 0.12 330); /* Donker roze - center circle tekst */
+  
+  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
+  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  
+  /* Achtergrond afbeelding */
+  --background-image: url('/BackgroundPictures/BackgroundYoungAdultWoman.png');  /* Standaard achtergrond voor jonge volwassen vrouwen */
+  
+  /* Navbar kleuren - transparante achtergrond */
+  --navbar: transparent;                        /* Transparant - navbar achtergrond */
+  --navbar-border: oklch(0.92 0.05 330 / 30%);  /* 30% transparant licht roze - navbar border */
+  
+  /* Container border color - transparant */
+  --container-border-color: transparent;
+}
+
+/* ============================================
+   UNIVERSAL THEME - Standaard kleuren (geen override)
+   ============================================
+   
+   Universal theme gebruikt de standaard :root waarden uit globals.css.
+   Geen extra CSS nodig - dit is de default.
+*/
