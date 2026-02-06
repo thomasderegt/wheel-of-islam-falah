@@ -17,13 +17,14 @@
     <version>2.0.0</version>
     <packaging>pom</packaging>
     <name>backend-v2-tazkiyyah</name>
-    <description>Wheel of Islam Tazkiyyah App Backend V2 (Clean Architecture Multi-Module)</description>
+    <description>Wheel of Islam Tazkiyyah App Backend V2 (Clean Architecture + Modular Monolith - Maven Multi-Module)</description>
     
     <modules>
         <module>user-module</module>
         <module>content-module</module>
         <module>learning-module</module>
         <module>assessment-module</module>
+        <module>goals-okr-module</module>
         <module>application</module>
     </modules>
     

@@ -94,6 +94,25 @@
   --color-circular-menu-chapter-8: var(--circular-menu-chapter-8); /* fill-circular-menu-chapter-8 */
   --color-circular-menu-chapter-9: var(--circular-menu-chapter-9); /* fill-circular-menu-chapter-9 */
   
+  /* NavCategoryCircle kleuren - voor de drie sectoren en Falah center */
+  --color-nav-category-circle-sector-0-start: var(--nav-category-circle-sector-0-start); /* Sector 0 gradient start */
+  --color-nav-category-circle-sector-0-mid1: var(--nav-category-circle-sector-0-mid1); /* Sector 0 gradient mid 1 */
+  --color-nav-category-circle-sector-0-mid2: var(--nav-category-circle-sector-0-mid2); /* Sector 0 gradient mid 2 */
+  --color-nav-category-circle-sector-0-end: var(--nav-category-circle-sector-0-end); /* Sector 0 gradient end */
+  --color-nav-category-circle-sector-1-start: var(--nav-category-circle-sector-1-start); /* Sector 1 gradient start */
+  --color-nav-category-circle-sector-1-mid: var(--nav-category-circle-sector-1-mid); /* Sector 1 gradient mid */
+  --color-nav-category-circle-sector-1-end: var(--nav-category-circle-sector-1-end); /* Sector 1 gradient end */
+  --color-nav-category-circle-sector-2-start: var(--nav-category-circle-sector-2-start); /* Sector 2 gradient start */
+  --color-nav-category-circle-sector-2-mid: var(--nav-category-circle-sector-2-mid); /* Sector 2 gradient mid */
+  --color-nav-category-circle-sector-2-end: var(--nav-category-circle-sector-2-end); /* Sector 2 gradient end */
+  --color-nav-category-circle-sector-stroke: var(--nav-category-circle-sector-stroke); /* Sector stroke color */
+  --color-nav-category-circle-sector-hover: var(--nav-category-circle-sector-hover); /* Sector hover fill */
+  --color-nav-category-circle-falah-start: var(--nav-category-circle-falah-start); /* Falah gradient start */
+  --color-nav-category-circle-falah-mid: var(--nav-category-circle-falah-mid); /* Falah gradient mid */
+  --color-nav-category-circle-falah-end: var(--nav-category-circle-falah-end); /* Falah gradient end */
+  --color-nav-category-circle-falah-stroke: var(--nav-category-circle-falah-stroke); /* Falah stroke color */
+  --color-nav-category-circle-falah-hover: var(--nav-category-circle-falah-hover); /* Falah hover fill */
+  
   /* Border radius variaties */
   --radius-sm: calc(var(--radius) - 4px);      /* rounded-sm */
   --radius-md: calc(var(--radius) - 2px);      /* rounded-md */
@@ -172,7 +191,7 @@
   --card: oklch(1 0 0);                        /* Wit - card achtergrond */
   --card-foreground: oklch(0.145 0 0);         /* Bijna zwart - tekst op card */
   
-  /* Circular Menu kleuren - gebruikt door CircularMenu component */
+  /* Circular Menu kleuren - gebruikt door NavBookCircle component */
   --circular-menu-chapter-fill: oklch(1 0 0);   /* Wit - chapter achtergrond (fallback) */
   --circular-menu-chapter-hover: oklch(0.97 0 0); /* Lichtgrijs - chapter hover */
   --circular-menu-chapter-stroke: oklch(0.145 0 0); /* Bijna zwart - chapter rand */
@@ -193,6 +212,25 @@
   --circular-menu-chapter-7: oklch(0.6 0.1 210);   /* Zachter blauw */
   --circular-menu-chapter-8: oklch(0.65 0.1 240);  /* Zachter blauw */
   --circular-menu-chapter-9: oklch(0.68 0.1 270);  /* Zachter paars */
+  
+  /* NavCategoryCircle kleuren - standaard waarden voor universal theme (zwart-wit) */
+  --nav-category-circle-sector-0-start: oklch(0.7 0 0);    /* Sector 0 gradient start */
+  --nav-category-circle-sector-0-mid1: oklch(0.65 0 0);    /* Sector 0 gradient mid 1 */
+  --nav-category-circle-sector-0-mid2: oklch(0.6 0 0);     /* Sector 0 gradient mid 2 */
+  --nav-category-circle-sector-0-end: oklch(0.55 0 0);     /* Sector 0 gradient end */
+  --nav-category-circle-sector-1-start: oklch(0.5 0 0);    /* Sector 1 gradient start */
+  --nav-category-circle-sector-1-mid: oklch(0.45 0 0);     /* Sector 1 gradient mid */
+  --nav-category-circle-sector-1-end: oklch(0.4 0 0);       /* Sector 1 gradient end */
+  --nav-category-circle-sector-2-start: oklch(0.35 0 0);   /* Sector 2 gradient start */
+  --nav-category-circle-sector-2-mid: oklch(0.3 0 0);      /* Sector 2 gradient mid */
+  --nav-category-circle-sector-2-end: oklch(0.25 0 0);      /* Sector 2 gradient end */
+  --nav-category-circle-sector-stroke: oklch(0 0 0);       /* Sector stroke color (zwart) */
+  --nav-category-circle-sector-hover: oklch(0.95 0 0);     /* Sector hover fill (lichtgrijs) */
+  --nav-category-circle-falah-start: oklch(0.7 0 0);      /* Falah gradient start */
+  --nav-category-circle-falah-mid: oklch(0.6 0 0);        /* Falah gradient mid */
+  --nav-category-circle-falah-end: oklch(0.5 0 0);         /* Falah gradient end */
+  --nav-category-circle-falah-stroke: oklch(0 0 0);       /* Falah stroke color (zwart) */
+  --nav-category-circle-falah-hover: oklch(0.95 0 0);     /* Falah hover fill (lichtgrijs) */
   
   /* Popover kleuren - voor popover/dropdown componenten */
   --popover: oklch(1 0 0);                     /* Wit - popover achtergrond */
@@ -370,6 +408,20 @@
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
+    position: relative;
+  }
+  
+  /* Overlay om achtergrondafbeelding te dimmen - minder aanwezig maken */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: oklch(0 0 0 / 0.2); /* 20% transparant zwart overlay - dimt de achtergrond subtiel */
+    pointer-events: none; /* Laat clicks door */
+    z-index: -1; /* Achter de content maar voor de achtergrond */
   }
 }
 

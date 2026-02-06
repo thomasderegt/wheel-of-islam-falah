@@ -8,7 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
     "com.woi.user",
     "com.woi.content",
     "com.woi.learning",
-    "com.woi.assessment"
+    "com.woi.assessment",
+    "com.woi.goalsokr"
 })
 public class BackendV2Application {
     public static void main(String[] args) {

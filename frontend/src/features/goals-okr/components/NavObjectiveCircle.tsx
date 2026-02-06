@@ -1,0 +1,120 @@
+'use client'
+
+/**
+ * NavObjectiveCircle Component
+ * 
+ * Grid navigation voor objectives binnen een life domain
+ * - Objectives in een grid layout
+ * - Click handlers voor navigatie
+ */
+
+import { useRouter } from 'next/navigation'
+import { useObjectivesByGoal } from '../hooks/useObjectivesByGoal'
+import { useTheme } from '@/shared/contexts/ThemeContext'
+import { Loading } from '@/shared/components/ui/Loading'
+import { useAuth } from '@/features/auth'
+import { useAddKanbanItem } from '../hooks/useKanbanItems'
+import { Button } from '@/shared/components/ui/button'
+import { Plus } from 'lucide-react'
+import type { ObjectiveDTO } from '../api/goalsOkrApi'
+
+interface NavObjectiveCircleProps {
+  readonly goalId: number
+  readonly language?: 'nl' | 'en'
+}
+
+export function NavObjectiveCircle({ goalId, language = 'en' }: NavObjectiveCircleProps) {
+  const router = useRouter()
+  const { data: objectives, isLoading } = useObjectivesByGoal(goalId)
+  const { userGroup } = useTheme()
+  const { user } = useAuth()
+  const addKanbanItem = useAddKanbanItem()
+  const isWireframeTheme = !userGroup || userGroup === 'universal'
+
+  // Helper function to get objective title based on language
+  const getObjectiveTitle = (objective: ObjectiveDTO): string => {
+    if (language === 'nl' && objective.titleNl) {
+      return objective.titleNl
+    }
+    return objective.titleEn || objective.titleNl || `Objective ${objective.id}`
+  }
+
+  const handleObjectiveClick = (objectiveId: number) => {
+    router.push(`/goals-okr/objectives/${objectiveId}`)
+  }
+
+  const handleAddToKanban = (e: React.MouseEvent, objectiveId: number) => {
+    e.stopPropagation()
+    if (!user?.id) return
+    addKanbanItem.mutate({
+      userId: user.id,
+      itemType: 'OBJECTIVE',
+      itemId: objectiveId,
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <div className="relative w-full aspect-square flex items-center justify-center">
+          <Loading />
+        </div>
+      </div>
+    )
+  }
+
+  if (!objectives || objectives.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="relative w-full aspect-square flex items-center justify-center">
+          <div className="text-muted-foreground text-center">
+            <p>No objectives found</p>
+            <p className="text-sm mt-2">Objectives will appear here once templates are created</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Simple grid layout for objectives (similar to goal areas)
+  return (
+    <div className="w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {objectives.map((objective) => (
+          <div
+            key={objective.id}
+            onClick={() => handleObjectiveClick(objective.id)}
+            className={`
+              p-6 rounded-lg border-2 cursor-pointer transition-all relative
+              ${isWireframeTheme 
+                ? 'border-border hover:border-foreground hover:bg-accent' 
+                : 'border-primary/20 hover:border-primary hover:bg-primary/5'}
+            `}
+          >
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <h3 className="text-xl font-bold flex-1">
+                {getObjectiveTitle(objective)}
+              </h3>
+              {user?.id && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => handleAddToKanban(e, objective.id)}
+                  className="h-6 w-6 p-0 flex-shrink-0"
+                  title="Add to Progress"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {(language === 'nl' ? objective.descriptionNl : objective.descriptionEn) && (
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {language === 'nl' ? objective.descriptionNl : objective.descriptionEn}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

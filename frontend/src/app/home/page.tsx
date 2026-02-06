@@ -12,16 +12,16 @@
 import { ProtectedRoute } from '@/features/auth'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
-import { ThreeCircleMenu } from '@/shared/components/navigation/ThreeCircleMenu'
+import { NavCategoryCircle } from '@/shared/components/navigation/NavCategoryCircle'
 
 export default function HomePage() {
   // TODO: Get from language context
   const language = 'en' as 'nl' | 'en'
   
-  const homeTitle = language === 'nl' ? 'Welkom bij Wheel of Islam' : 'Welcome to Wheel of Islam'
+  const homeTitle = language === 'nl' ? 'Success-Mode' : 'Success-Mode'
   const homeDescription = language === 'nl' 
-    ? 'Klik op Falah om te beginnen met jouw reis naar echt succes'
-    : 'Click on Falah to begin your journey to real success'
+    ? 'Klik op Falah om te beginnen met jouw reis'
+    : 'Click on Falah to regain your journey, discover other areas of the Falah model.'
 
   return (
     <ProtectedRoute>
@@ -42,8 +42,8 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* ThreeCircleMenu */}
-            <ThreeCircleMenu />
+            {/* NavCategoryCircle */}
+            <NavCategoryCircle />
           </Container>
         </main>
       </div>

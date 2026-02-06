@@ -1,0 +1,289 @@
+package com.woi.goalsokr.api;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Public interface for Goals OKR module
+ * This is the contract that other modules can use to interact with OKR goals
+ *
+ * OKR Structure:
+ * Life Domain → Goal → Objective → KeyResult → Initiative
+ */
+public interface GoalsOKRModuleInterface {
+
+    // ========== Goals (Templates) ==========
+
+    /**
+     * Create a new goal
+     * @param lifeDomainId Life domain ID
+     * @param titleNl Dutch title
+     * @param titleEn English title
+     * @param descriptionNl Dutch description (optional)
+     * @param descriptionEn English description (optional)
+     * @param orderIndex Order index within the life domain
+     * @return The created goal summary
+     */
+    GoalSummary createGoal(Long lifeDomainId, String titleNl, String titleEn,
+                          String descriptionNl, String descriptionEn, Integer orderIndex);
+
+    /**
+     * Get a goal by ID
+     * @param goalId Goal ID
+     * @return Optional containing the goal if found
+     */
+    Optional<GoalSummary> getGoal(Long goalId);
+
+    /**
+     * Get all goals for a life domain
+     * @param lifeDomainId Life domain ID
+     * @return List of goals for that life domain
+     */
+    List<GoalSummary> getGoalsByLifeDomain(Long lifeDomainId);
+
+    // ========== Objectives (Templates) ==========
+
+    /**
+     * Create a new objective
+     * @param goalId Goal ID
+     * @param titleNl Dutch title
+     * @param titleEn English title
+     * @param descriptionNl Dutch description (optional)
+     * @param descriptionEn English description (optional)
+     * @param orderIndex Order index within the goal
+     * @return The created objective summary
+     */
+    ObjectiveSummary createObjective(Long goalId, String titleNl, String titleEn, 
+                                     String descriptionNl, String descriptionEn, Integer orderIndex);
+
+    /**
+     * Get an objective by ID
+     * @param objectiveId Objective ID
+     * @return Optional containing the objective if found
+     */
+    Optional<ObjectiveSummary> getObjective(Long objectiveId);
+
+    /**
+     * Get all objectives for a goal
+     * @param goalId Goal ID
+     * @return List of objectives for that goal
+     */
+    List<ObjectiveSummary> getObjectivesByGoal(Long goalId);
+
+    // ========== Key Results (Templates) ==========
+
+    /**
+     * Create a new key result
+     * @param objectiveId Objective ID
+     * @param titleNl Dutch title
+     * @param titleEn English title
+     * @param descriptionNl Dutch description (optional)
+     * @param descriptionEn English description (optional)
+     * @param targetValue Target value (required, must be positive)
+     * @param unit Unit of measurement (e.g., "dagen", "uren", "euro")
+     * @param orderIndex Order index within the objective
+     * @return The created key result summary
+     */
+    KeyResultSummary createKeyResult(Long objectiveId, String titleNl, String titleEn,
+                                     String descriptionNl, String descriptionEn,
+                                     BigDecimal targetValue, String unit, Integer orderIndex);
+
+    /**
+     * Get a key result by ID
+     * @param keyResultId Key result ID
+     * @return Optional containing the key result if found
+     */
+    Optional<KeyResultSummary> getKeyResult(Long keyResultId);
+
+    /**
+     * Get all key results for an objective
+     * @param objectiveId Objective ID
+     * @return List of key results for that objective
+     */
+    List<KeyResultSummary> getKeyResultsByObjective(Long objectiveId);
+
+    // ========== User Goal Instances (User-specific - Aggregate Root) ==========
+
+    /**
+     * Start a new user goal instance (subscription/enrollment)
+     * @param userId User ID
+     * @param goalId Goal ID (template)
+     * @return The created user goal instance summary
+     */
+    UserGoalInstanceSummary startUserGoalInstance(Long userId, Long goalId);
+
+    /**
+     * Get a user goal instance by ID
+     * @param userGoalInstanceId User goal instance ID
+     * @return Optional containing the user goal instance if found
+     */
+    Optional<UserGoalInstanceSummary> getUserGoalInstance(Long userGoalInstanceId);
+
+    /**
+     * Get all user goal instances for a user (in which goals is user subscribed?)
+     * @param userId User ID
+     * @return List of user goal instances for that user
+     */
+    List<UserGoalInstanceSummary> getUserGoalInstancesForUser(Long userId);
+
+    /**
+     * Get all user goal instances for a goal (which users are subscribed to this goal?)
+     * @param goalId Goal ID
+     * @return List of user goal instances for that goal
+     */
+    List<UserGoalInstanceSummary> getUserGoalInstancesByGoal(Long goalId);
+
+    /**
+     * Complete a user goal instance
+     * @param userGoalInstanceId User goal instance ID
+     * @return Updated user goal instance summary
+     */
+    UserGoalInstanceSummary completeUserGoalInstance(Long userGoalInstanceId);
+
+    // ========== User Objective Instances (User-specific) ==========
+
+    /**
+     * Start a new user objective instance
+     * @param userId User ID (for validation)
+     * @param userGoalInstanceId User goal instance ID (aggregate root)
+     * @param objectiveId Objective ID (template)
+     * @return The created user objective instance summary
+     */
+    UserObjectiveInstanceSummary startUserObjectiveInstance(Long userId, Long userGoalInstanceId, Long objectiveId);
+
+    /**
+     * Get a user objective instance by ID
+     * @param userObjectiveInstanceId User objective instance ID
+     * @return Optional containing the user objective instance if found
+     */
+    Optional<UserObjectiveInstanceSummary> getUserObjectiveInstance(Long userObjectiveInstanceId);
+
+    /**
+     * Get all user objective instances for a user
+     * @param userId User ID
+     * @return List of user objective instances for that user
+     */
+    List<UserObjectiveInstanceSummary> getUserObjectiveInstancesForUser(Long userId);
+
+    /**
+     * Complete a user objective instance
+     * @param userObjectiveInstanceId User objective instance ID
+     * @return Updated user objective instance summary
+     */
+    UserObjectiveInstanceSummary completeUserObjectiveInstance(Long userObjectiveInstanceId);
+
+    // ========== Initiatives (User-specific) ==========
+
+    /**
+     * Create a new initiative
+     * @param userId User ID
+     * @param keyResultId Key result ID (template reference)
+     * @param userObjectiveInstanceId User objective instance ID
+     * @param title Initiative title
+     * @param description Initiative description (optional)
+     * @param targetDate Target date (optional)
+     * @return The created initiative summary
+     */
+    InitiativeSummary createInitiative(Long userId, Long keyResultId, Long userObjectiveInstanceId,
+                                       String title, String description, LocalDate targetDate);
+
+    /**
+     * Get an initiative by ID
+     * @param initiativeId Initiative ID
+     * @return Optional containing the initiative if found
+     */
+    Optional<InitiativeSummary> getInitiative(Long initiativeId);
+
+    /**
+     * Get all initiatives for a user
+     * @param userId User ID
+     * @return List of initiatives for that user
+     */
+    List<InitiativeSummary> getInitiativesForUser(Long userId);
+
+    /**
+     * Get all initiatives for a user objective instance
+     * @param userObjectiveInstanceId User objective instance ID
+     * @return List of initiatives for that instance
+     */
+    List<InitiativeSummary> getInitiativesByUserObjectiveInstance(Long userObjectiveInstanceId);
+
+    /**
+     * Update an initiative
+     * @param initiativeId Initiative ID
+     * @param title New title (optional, null to keep existing)
+     * @param description New description (optional, null to keep existing)
+     * @param targetDate New target date (optional, null to keep existing)
+     * @return Updated initiative summary
+     * @throws IllegalArgumentException if initiative not found
+     */
+    InitiativeSummary updateInitiative(Long initiativeId, String title, String description, LocalDate targetDate);
+
+    /**
+     * Complete an initiative
+     * @param initiativeId Initiative ID
+     * @return Updated initiative summary
+     * @throws IllegalArgumentException if initiative not found
+     */
+    InitiativeSummary completeInitiative(Long initiativeId);
+
+    // ========== Key Result Progress ==========
+
+    /**
+     * Get key result progress
+     * @param userId User ID
+     * @param keyResultId Key result ID
+     * @param userObjectiveInstanceId User objective instance ID
+     * @return Optional containing the progress if found
+     */
+    Optional<KeyResultProgressSummary> getKeyResultProgress(Long userId, Long keyResultId, Long userObjectiveInstanceId);
+
+    /**
+     * Update key result progress
+     * @param userId User ID
+     * @param keyResultId Key result ID
+     * @param userObjectiveInstanceId User objective instance ID
+     * @param currentValue Current progress value (can be null, must be >= 0 if set)
+     * @return Updated or created progress summary
+     * @throws IllegalArgumentException if key result or user instance not found
+     */
+    KeyResultProgressSummary updateKeyResultProgress(Long userId, Long keyResultId, Long userObjectiveInstanceId, BigDecimal currentValue);
+
+    // ========== Kanban Items ==========
+
+    /**
+     * Get all kanban items for a user
+     * @param userId User ID
+     * @return List of kanban items for that user
+     */
+    List<KanbanItemSummary> getKanbanItemsByUser(Long userId);
+
+    /**
+     * Add a kanban item
+     * @param userId User ID
+     * @param itemType Item type (GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE)
+     * @param itemId Item ID
+     * @return The created kanban item summary
+     * @throws IllegalArgumentException if item already exists or invalid parameters
+     */
+    KanbanItemSummary addKanbanItem(Long userId, String itemType, Long itemId);
+
+    /**
+     * Update kanban item position
+     * @param itemId Kanban item ID
+     * @param columnName Column name (TODO, IN_PROGRESS, IN_REVIEW, DONE)
+     * @param position Position within the column
+     * @return Updated kanban item summary
+     * @throws IllegalArgumentException if item not found or invalid parameters
+     */
+    KanbanItemSummary updateKanbanItemPosition(Long itemId, String columnName, Integer position);
+
+    /**
+     * Delete a kanban item
+     * @param itemId Kanban item ID
+     * @throws IllegalArgumentException if item not found
+     */
+    void deleteKanbanItem(Long itemId);
+}

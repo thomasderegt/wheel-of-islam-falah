@@ -15,6 +15,10 @@ const apiClient: AxiosInstance = axios.create({
   },
 })
 
+// Track "no response" errors to avoid spam
+let noResponseErrorCount = 0
+const MAX_NO_RESPONSE_ERRORS = 3
+
 /**
  * Request interceptor - Add JWT token to requests
  */
@@ -54,17 +58,30 @@ apiClient.interceptors.response.use(
           requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : undefined
         })
     } else if (error.request) {
-      // Network errors (no response) - only log if not a 404-related request
-      // These can happen due to network issues, but we handle them gracefully
+      // Network errors (no response) - backend is likely not available
+      // Log first few errors, then suppress to avoid console spam
       const url = error.config?.url || 'unknown'
-      // Don't log errors for /versions/current or /public endpoints (expected 404s)
-      if (!url.includes('/versions/current') && !url.includes('/public/')) {
-        console.error('API Request Error (no response):', {
-          request: error.request,
-          message: error.message,
-          url: error.config?.url,
-          method: error.config?.method
-        })
+      
+      // Always suppress these endpoints (expected to fail gracefully)
+      const shouldSuppress = url.includes('/versions/current') || 
+                            url.includes('/public/') || 
+                            url.includes('/key-result-progress') ||
+                            url.includes('/life-domains') ||
+                            url.includes('/categories')
+      
+      if (!shouldSuppress) {
+        noResponseErrorCount++
+        if (noResponseErrorCount <= MAX_NO_RESPONSE_ERRORS) {
+          console.error('API Request Error (no response):', {
+            request: error.request,
+            message: error.message,
+            url: error.config?.url,
+            method: error.config?.method,
+            note: noResponseErrorCount === MAX_NO_RESPONSE_ERRORS 
+              ? 'Further "no response" errors will be suppressed. Backend may not be available.' 
+              : undefined
+          })
+        }
       }
     } else {
       console.error('API Error (setup):', {

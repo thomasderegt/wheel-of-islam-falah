@@ -131,9 +131,33 @@ function SelectContent({ children }: SelectContentProps) {
       const trigger = selectContainer.querySelector('button')
       if (trigger) {
         const rect = trigger.getBoundingClientRect()
+        const viewportWidth = window.innerWidth
+        const viewportHeight = window.innerHeight
+        const dropdownHeight = 200 // Estimated dropdown height
+        const dropdownWidth = rect.width
+        
+        // Calculate position with viewport boundaries in mind
+        let top = rect.bottom + window.scrollY + 4
+        let left = rect.left + window.scrollX
+        
+        // If dropdown would go below viewport, show it above instead
+        if (rect.bottom + dropdownHeight > viewportHeight && rect.top > dropdownHeight) {
+          top = rect.top + window.scrollY - dropdownHeight - 4
+        }
+        
+        // If dropdown would go off right edge, align to right edge
+        if (left + dropdownWidth > viewportWidth) {
+          left = viewportWidth - dropdownWidth - 8
+        }
+        
+        // Ensure dropdown doesn't go off left edge
+        if (left < 8) {
+          left = 8
+        }
+        
         setPosition({
-          top: rect.bottom + window.scrollY + 4,
-          left: rect.left + window.scrollX,
+          top,
+          left,
           width: rect.width,
         })
       }
@@ -161,7 +185,7 @@ function SelectContent({ children }: SelectContentProps) {
     <div
       ref={contentRef}
       data-select-content={context.selectId}
-      className="fixed z-[100] min-w-[8rem] overflow-hidden rounded-md border bg-white border-black shadow-lg"
+      className="fixed z-[100] min-w-[8rem] overflow-hidden rounded-md border bg-background border-border shadow-lg"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,

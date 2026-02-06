@@ -13,6 +13,15 @@ export const routes = {
   // App (Protected)
   home: '/home',
   
+  // Goals
+  goals: '/goals',
+  goalLifeDomain: (id: number) => `/goals/life-domains/${id}`,
+  goalArea: (id: number) => `/goals/goal-areas/${id}`,
+  goalGroup: (id: number) => `/goals/goal-groups/${id}`,
+  goalSet: (id: number) => `/goals/goal-sets/${id}`,
+  userGoalInstance: (id: number) => `/goals/user-goal-instances/${id}`,
+  goal: (id: number) => `/goals/goals/${id}`,
+  
   // Content
   categories: '/categories',
   category: (id: number) => `/categories/${id}`,

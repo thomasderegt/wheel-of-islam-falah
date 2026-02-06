@@ -79,35 +79,23 @@ export default function LandingPage() {
       {/* SECTION 1 — Hero Section */}
       <section className="relative px-4 py-20 md:py-32 min-h-[80vh] flex items-center">
         <Container className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left: Text Content */}
+          <div className="max-w-3xl mx-auto">
+            {/* Text Content */}
             <div className="space-y-8">
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-foreground">
-                  You Want Success?<br />
-                  <span className="text-primary">Beautiful</span> —<br />
-                  Your success is our success.
+                  Hey Gen Z!<br />
+                  Looking for success in this life and the next?<br />
+                  <span className="text-primary">Check!</span><br />
+                  Looking for a life with meaning and direction?<br />
+                  <span className="text-primary">Check!</span>
                 </h1>
                 
                 <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl">
-                  This web app is built to help you achieve real success - Falah - the complete and sustainable way of succeeding.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-lg font-medium text-foreground">It includes:</p>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    <span>the success you're seeking in this world</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    <span>the success you need for your next life</span>
-                  </li>
-                </ul>
-                <p className="text-muted-foreground pt-2">
-                  By focussing on inner growth - Tazkiyyah - needed to achieve both
+                  Welcome to <span className="font-bold">Qalbsalim</span> (Soundheart).<br />
+                  A platform designed to help you flourish and achieve true success (Falah) in this life and the next.<br />
+                  <br />
+                  Experience sustainable growth through Tazkiyyah — the purification and development of the heart — as taught in the Qur'an and Sunnah.
                 </p>
               </div>
 
@@ -131,16 +119,41 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right: Aspirational Image */}
-            <div className="relative hidden md:block">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img
-                  src="/LandingPagePictures/Lifestyle1.png"
-                  alt="Wheel of Islam"
-                  className="w-full h-auto object-contain"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
-              </div>
+            {/* Why Tazkiyyah Section */}
+            <div className="space-y-6 mt-12 max-w-2xl">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                Authenticity check:
+              </h2>
+              
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "The Day when neither wealth nor children will benefit anyone — except one who comes to Allah with a sound heart."<br />
+                <span className="text-base not-italic mt-2 block">Qur'an 26:88–89</span>
+              </blockquote>
+                
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "Allah does not look at your appearance or your wealth, but He looks at your hearts and your deeds."<br />
+                <span className="text-base not-italic mt-2 block">Ṣaḥīḥ Muslim 2564</span>
+              </blockquote>
+                
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "Successful is the one who purifies himself, remembers the name of his Lord, and prays."<br />
+                <span className="text-base not-italic mt-2 block">Qur'an 87:14–15</span>
+              </blockquote>
+                
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "Successful is the one who purifies it, and ruined is the one who corrupts it."<br />
+                <span className="text-base not-italic mt-2 block">Qur'an 91:9–10</span>
+              </blockquote>
+                
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "Unquestionably, in the remembrance of Allah do hearts find rest."<br />
+                <span className="text-base not-italic mt-2 block">Qur'an 13:28</span>
+              </blockquote>
+              
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "And that the ultimate goal is to your Lord"<br />
+                <span className="text-base not-italic mt-2 block">Quran 53:42</span>
+              </blockquote>
             </div>
           </div>
         </Container>
@@ -320,7 +333,7 @@ export default function LandingPage() {
         <Container className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Wheel of Islam
+              © {new Date().getFullYear()} Qalbsalim
             </div>
             <div className="flex flex-wrap gap-4 justify-center">
               <Button
