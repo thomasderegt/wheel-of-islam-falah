@@ -14,13 +14,13 @@ import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Lightbulb, BookOpen, Plus } from 'lucide-react'
-import type { InitiativeSuggestionDTO } from '../api/goalsOkrApi'
+import type { InitiativeDTO } from '../api/goalsOkrApi'
 
 interface InitiativeSuggestionsProps {
   readonly keyResultId: number
   readonly language?: 'nl' | 'en'
-  readonly onSelectSuggestion?: (suggestion: InitiativeSuggestionDTO) => void
-  readonly onStartLearningFlow?: (suggestion: InitiativeSuggestionDTO) => void
+  readonly onSelectSuggestion?: (suggestion: InitiativeDTO) => void
+  readonly onStartLearningFlow?: (suggestion: InitiativeDTO) => void
 }
 
 export function InitiativeSuggestions({ 
@@ -31,13 +31,13 @@ export function InitiativeSuggestions({
 }: InitiativeSuggestionsProps) {
   const { data: suggestions, isLoading } = useInitiativeSuggestions(keyResultId)
 
-  const getTitle = (suggestion: InitiativeSuggestionDTO): string => {
+  const getTitle = (suggestion: InitiativeDTO): string => {
     return language === 'nl' 
       ? (suggestion.titleNl || suggestion.titleEn)
       : (suggestion.titleEn || suggestion.titleNl)
   }
 
-  const getDescription = (suggestion: InitiativeSuggestionDTO): string => {
+  const getDescription = (suggestion: InitiativeDTO): string => {
     return language === 'nl'
       ? (suggestion.descriptionNl || suggestion.descriptionEn || '')
       : (suggestion.descriptionEn || suggestion.descriptionNl || '')
@@ -64,7 +64,7 @@ export function InitiativeSuggestions({
         </h3>
       </div>
       
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {suggestions.map((suggestion) => (
           <Card key={suggestion.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
@@ -82,7 +82,7 @@ export function InitiativeSuggestions({
             </CardHeader>
             <CardContent className="pt-0">
               {getDescription(suggestion) && (
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                   {getDescription(suggestion)}
                 </p>
               )}

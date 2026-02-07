@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public record UpdateKeyResultProgressCommand(
     Long userId,
     Long keyResultId,
-    Long userObjectiveInstanceId,
+    Long userKeyResultInstanceId,
     BigDecimal currentValue
 ) {
     public UpdateKeyResultProgressCommand {
@@ -18,8 +18,8 @@ public record UpdateKeyResultProgressCommand(
         if (keyResultId == null) {
             throw new IllegalArgumentException("Key Result ID cannot be null");
         }
-        if (userObjectiveInstanceId == null) {
-            throw new IllegalArgumentException("User Objective Instance ID cannot be null");
+        if (userKeyResultInstanceId == null) {
+            throw new IllegalArgumentException("User Key Result Instance ID cannot be null");
         }
         if (currentValue != null && currentValue.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Current value cannot be negative");

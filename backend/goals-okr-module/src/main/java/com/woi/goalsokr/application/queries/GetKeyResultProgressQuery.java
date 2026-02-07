@@ -6,7 +6,7 @@ package com.woi.goalsokr.application.queries;
 public record GetKeyResultProgressQuery(
     Long userId,
     Long keyResultId,
-    Long userObjectiveInstanceId
+    Long userKeyResultInstanceId
 ) {
     public GetKeyResultProgressQuery {
         if (userId == null) {
@@ -15,8 +15,8 @@ public record GetKeyResultProgressQuery(
         if (keyResultId == null) {
             throw new IllegalArgumentException("Key Result ID cannot be null");
         }
-        if (userObjectiveInstanceId == null) {
-            throw new IllegalArgumentException("User Objective Instance ID cannot be null");
+        if (userKeyResultInstanceId == null) {
+            throw new IllegalArgumentException("User Key Result Instance ID cannot be null");
         }
     }
 }

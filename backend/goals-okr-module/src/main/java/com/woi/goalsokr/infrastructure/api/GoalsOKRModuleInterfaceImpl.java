@@ -28,6 +28,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     private final StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler;
     private final CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler;
     private final StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler;
+    private final StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler;
+    private final StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler;
+    private final CompleteUserKeyResultInstanceCommandHandler completeUserKeyResultInstanceHandler;
+    private final CompleteUserInitiativeInstanceCommandHandler completeUserInitiativeInstanceHandler;
     private final CreateInitiativeCommandHandler createInitiativeHandler;
     private final UpdateKeyResultProgressCommandHandler updateKeyResultProgressHandler;
     private final UpdateInitiativeCommandHandler updateInitiativeHandler;
@@ -46,7 +50,11 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     private final GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler;
     private final GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler;
     private final GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler;
-    private final GetInitiativesByUserObjectiveInstanceQueryHandler getInitiativesByUserObjectiveInstanceHandler;
+    private final GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler;
+    private final GetUserKeyResultInstancesQueryHandler getUserKeyResultInstancesHandler;
+    private final GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler;
+    private final GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler;
+    private final GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler;
     private final GetInitiativesByUserQueryHandler getInitiativesByUserHandler;
     private final GetKeyResultProgressQueryHandler getKeyResultProgressHandler;
     private final GetInitiativeQueryHandler getInitiativeHandler;
@@ -62,6 +70,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler,
             CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler,
             StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler,
+            StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler,
+            StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler,
+            CompleteUserKeyResultInstanceCommandHandler completeUserKeyResultInstanceHandler,
+            CompleteUserInitiativeInstanceCommandHandler completeUserInitiativeInstanceHandler,
             CreateInitiativeCommandHandler createInitiativeHandler,
             UpdateKeyResultProgressCommandHandler updateKeyResultProgressHandler,
             UpdateInitiativeCommandHandler updateInitiativeHandler,
@@ -78,7 +90,11 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler,
             GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler,
             GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler,
-            GetInitiativesByUserObjectiveInstanceQueryHandler getInitiativesByUserObjectiveInstanceHandler,
+            GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler,
+            GetUserKeyResultInstancesQueryHandler getUserKeyResultInstancesHandler,
+            GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler,
+            GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler,
+            GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler,
             GetInitiativesByUserQueryHandler getInitiativesByUserHandler,
             GetKeyResultProgressQueryHandler getKeyResultProgressHandler,
             GetInitiativeQueryHandler getInitiativeHandler,
@@ -92,6 +108,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         this.startUserGoalInstanceHandler = startUserGoalInstanceHandler;
         this.completeUserGoalInstanceHandler = completeUserGoalInstanceHandler;
         this.startUserObjectiveInstanceHandler = startUserObjectiveInstanceHandler;
+        this.startUserKeyResultInstanceHandler = startUserKeyResultInstanceHandler;
+        this.startUserInitiativeInstanceHandler = startUserInitiativeInstanceHandler;
+        this.completeUserKeyResultInstanceHandler = completeUserKeyResultInstanceHandler;
+        this.completeUserInitiativeInstanceHandler = completeUserInitiativeInstanceHandler;
         this.createInitiativeHandler = createInitiativeHandler;
         this.updateKeyResultProgressHandler = updateKeyResultProgressHandler;
         this.updateInitiativeHandler = updateInitiativeHandler;
@@ -108,7 +128,11 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         this.getUserGoalInstancesByGoalHandler = getUserGoalInstancesByGoalHandler;
         this.getUserObjectiveInstanceHandler = getUserObjectiveInstanceHandler;
         this.getUserObjectiveInstancesHandler = getUserObjectiveInstancesHandler;
-        this.getInitiativesByUserObjectiveInstanceHandler = getInitiativesByUserObjectiveInstanceHandler;
+        this.getUserKeyResultInstanceHandler = getUserKeyResultInstanceHandler;
+        this.getUserKeyResultInstancesHandler = getUserKeyResultInstancesHandler;
+        this.getUserInitiativeInstanceHandler = getUserInitiativeInstanceHandler;
+        this.getUserInitiativeInstancesHandler = getUserInitiativeInstancesHandler;
+        this.getInitiativesByUserKeyResultInstanceHandler = getInitiativesByUserKeyResultInstanceHandler;
         this.getInitiativesByUserHandler = getInitiativesByUserHandler;
         this.getKeyResultProgressHandler = getKeyResultProgressHandler;
         this.getInitiativeHandler = getInitiativeHandler;
@@ -266,13 +290,75 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         return toUserObjectiveInstanceSummary(result);
     }
 
+    // ========== User Key Result Instances ==========
+
+    @Override
+    public UserKeyResultInstanceSummary startUserKeyResultInstance(Long userId, Long userObjectiveInstanceId, Long keyResultId) {
+        UserKeyResultInstanceResult result = startUserKeyResultInstanceHandler.handle(
+            new StartUserKeyResultInstanceCommand(userId, userObjectiveInstanceId, keyResultId));
+        return toUserKeyResultInstanceSummary(result);
+    }
+
+    @Override
+    public Optional<UserKeyResultInstanceSummary> getUserKeyResultInstance(Long userKeyResultInstanceId) {
+        return getUserKeyResultInstanceHandler.handle(new GetUserKeyResultInstanceQuery(userKeyResultInstanceId))
+            .map(this::toUserKeyResultInstanceSummary);
+    }
+
+    @Override
+    public List<UserKeyResultInstanceSummary> getUserKeyResultInstancesForUser(Long userId) {
+        List<UserKeyResultInstanceResult> results = getUserKeyResultInstancesHandler.handle(
+            new GetUserKeyResultInstancesQuery(userId));
+        return results.stream()
+            .map(this::toUserKeyResultInstanceSummary)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserKeyResultInstanceSummary completeUserKeyResultInstance(Long userKeyResultInstanceId) {
+        UserKeyResultInstanceResult result = completeUserKeyResultInstanceHandler.handle(
+            new CompleteUserKeyResultInstanceCommand(userKeyResultInstanceId));
+        return toUserKeyResultInstanceSummary(result);
+    }
+
+    // ========== User Initiative Instances ==========
+
+    @Override
+    public UserInitiativeInstanceSummary startUserInitiativeInstance(Long userId, Long userKeyResultInstanceId, Long initiativeId) {
+        UserInitiativeInstanceResult result = startUserInitiativeInstanceHandler.handle(
+            new StartUserInitiativeInstanceCommand(userId, userKeyResultInstanceId, initiativeId));
+        return toUserInitiativeInstanceSummary(result);
+    }
+
+    @Override
+    public Optional<UserInitiativeInstanceSummary> getUserInitiativeInstance(Long userInitiativeInstanceId) {
+        return getUserInitiativeInstanceHandler.handle(new GetUserInitiativeInstanceQuery(userInitiativeInstanceId))
+            .map(this::toUserInitiativeInstanceSummary);
+    }
+
+    @Override
+    public List<UserInitiativeInstanceSummary> getUserInitiativeInstancesForUser(Long userId) {
+        List<UserInitiativeInstanceResult> results = getUserInitiativeInstancesHandler.handle(
+            new GetUserInitiativeInstancesQuery(userId));
+        return results.stream()
+            .map(this::toUserInitiativeInstanceSummary)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserInitiativeInstanceSummary completeUserInitiativeInstance(Long userInitiativeInstanceId) {
+        UserInitiativeInstanceResult result = completeUserInitiativeInstanceHandler.handle(
+            new CompleteUserInitiativeInstanceCommand(userInitiativeInstanceId));
+        return toUserInitiativeInstanceSummary(result);
+    }
+
     // ========== Initiatives ==========
 
     @Override
-    public InitiativeSummary createInitiative(Long userId, Long keyResultId, Long userObjectiveInstanceId,
+    public InitiativeSummary createInitiative(Long userId, Long keyResultId, Long userKeyResultInstanceId,
                                                 String title, String description, LocalDate targetDate) {
-        InitiativeResult result = createInitiativeHandler.handle(
-            new CreateInitiativeCommand(userId, keyResultId, userObjectiveInstanceId, title, description, targetDate, null));
+        UserInitiativeResult result = createInitiativeHandler.handle(
+            new CreateInitiativeCommand(userId, keyResultId, userKeyResultInstanceId, title, description, targetDate, null));
         return toInitiativeSummary(result);
     }
 
@@ -284,7 +370,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
 
     @Override
     public List<InitiativeSummary> getInitiativesForUser(Long userId) {
-        List<InitiativeResult> results = getInitiativesByUserHandler.handle(
+        List<UserInitiativeResult> results = getInitiativesByUserHandler.handle(
             new GetInitiativesByUserQuery(userId));
         return results.stream()
             .map(this::toInitiativeSummary)
@@ -292,9 +378,9 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     }
 
     @Override
-    public List<InitiativeSummary> getInitiativesByUserObjectiveInstance(Long userObjectiveInstanceId) {
-        List<InitiativeResult> results = getInitiativesByUserObjectiveInstanceHandler.handle(
-            new GetInitiativesByUserObjectiveInstanceQuery(userObjectiveInstanceId));
+    public List<InitiativeSummary> getInitiativesByUserKeyResultInstance(Long userKeyResultInstanceId) {
+        List<UserInitiativeResult> results = getInitiativesByUserKeyResultInstanceHandler.handle(
+            new GetInitiativesByUserKeyResultInstanceQuery(userKeyResultInstanceId));
         return results.stream()
             .map(this::toInitiativeSummary)
             .collect(Collectors.toList());
@@ -302,14 +388,14 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
 
     @Override
     public InitiativeSummary updateInitiative(Long initiativeId, String title, String description, LocalDate targetDate) {
-        InitiativeResult result = updateInitiativeHandler.handle(
+        UserInitiativeResult result = updateInitiativeHandler.handle(
             new UpdateInitiativeCommand(initiativeId, title, description, targetDate, null));
         return toInitiativeSummary(result);
     }
 
     @Override
     public InitiativeSummary completeInitiative(Long initiativeId) {
-        InitiativeResult result = completeInitiativeHandler.handle(
+        UserInitiativeResult result = completeInitiativeHandler.handle(
             new CompleteInitiativeCommand(initiativeId));
         return toInitiativeSummary(result);
     }
@@ -317,16 +403,16 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     // ========== Key Result Progress ==========
 
     @Override
-    public Optional<KeyResultProgressSummary> getKeyResultProgress(Long userId, Long keyResultId, Long userObjectiveInstanceId) {
+    public Optional<KeyResultProgressSummary> getKeyResultProgress(Long userId, Long keyResultId, Long userKeyResultInstanceId) {
         return getKeyResultProgressHandler.handle(
-            new GetKeyResultProgressQuery(userId, keyResultId, userObjectiveInstanceId))
+            new GetKeyResultProgressQuery(userId, keyResultId, userKeyResultInstanceId))
             .map(this::toKeyResultProgressSummary);
     }
 
     @Override
-    public KeyResultProgressSummary updateKeyResultProgress(Long userId, Long keyResultId, Long userObjectiveInstanceId, BigDecimal currentValue) {
+    public KeyResultProgressSummary updateKeyResultProgress(Long userId, Long keyResultId, Long userKeyResultInstanceId, BigDecimal currentValue) {
         KeyResultProgressResult result = updateKeyResultProgressHandler.handle(
-            new UpdateKeyResultProgressCommand(userId, keyResultId, userObjectiveInstanceId, currentValue));
+            new UpdateKeyResultProgressCommand(userId, keyResultId, userKeyResultInstanceId, currentValue));
         return toKeyResultProgressSummary(result);
     }
 
@@ -376,11 +462,34 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         );
     }
 
-    private InitiativeSummary toInitiativeSummary(InitiativeResult result) {
+    private UserKeyResultInstanceSummary toUserKeyResultInstanceSummary(UserKeyResultInstanceResult result) {
+        return new UserKeyResultInstanceSummary(
+            result.id(),
+            result.userObjectiveInstanceId(),
+            result.keyResultId(),
+            result.startedAt(),
+            result.completedAt()
+        );
+    }
+
+    private UserInitiativeInstanceSummary toUserInitiativeInstanceSummary(UserInitiativeInstanceResult result) {
+        return new UserInitiativeInstanceSummary(
+            result.id(),
+            result.userKeyResultInstanceId(),
+            result.initiativeId(),
+            result.startedAt(),
+            result.completedAt()
+        );
+    }
+
+    private InitiativeSummary toInitiativeSummary(UserInitiativeResult result) {
+        // Note: InitiativeSummary.userObjectiveInstanceId is deprecated but kept for API compatibility
+        // We use userKeyResultInstanceId from UserInitiativeResult
+        // TODO: Update InitiativeSummary to use userKeyResultInstanceId in future API version
         return new InitiativeSummary(
             result.id(),
             result.keyResultId(),
-            result.userObjectiveInstanceId(),
+            result.userKeyResultInstanceId(), // Using userKeyResultInstanceId instead of userObjectiveInstanceId
             result.title(),
             result.description(),
             result.status(),
@@ -414,7 +523,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         return new KeyResultProgressSummary(
             result.id(),
             result.keyResultId(),
-            result.userObjectiveInstanceId(),
+            result.userKeyResultInstanceId(),
             result.currentValue(),
             result.updatedAt()
         );

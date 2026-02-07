@@ -16,7 +16,7 @@ public class KeyResultProgressEntityMapper {
         KeyResultProgress domain = new KeyResultProgress();
         domain.setId(jpaEntity.getId());
         domain.setKeyResultId(jpaEntity.getKeyResultId());
-        domain.setUserObjectiveInstanceId(jpaEntity.getUserObjectiveInstanceId());
+        domain.setUserKeyResultInstanceId(jpaEntity.getUserKeyResultInstanceId());
         domain.setCurrentValue(jpaEntity.getCurrentValue());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
 
@@ -31,7 +31,7 @@ public class KeyResultProgressEntityMapper {
         KeyResultProgressJpaEntity jpaEntity = new KeyResultProgressJpaEntity();
         jpaEntity.setId(domain.getId());
         jpaEntity.setKeyResultId(domain.getKeyResultId());
-        jpaEntity.setUserObjectiveInstanceId(domain.getUserObjectiveInstanceId());
+        jpaEntity.setUserKeyResultInstanceId(domain.getUserKeyResultInstanceId());
         jpaEntity.setCurrentValue(domain.getCurrentValue());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
 

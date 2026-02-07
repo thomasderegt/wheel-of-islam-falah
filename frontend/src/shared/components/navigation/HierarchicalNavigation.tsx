@@ -155,12 +155,12 @@ export function AutoHierarchicalNavigation({ language = 'en' }: { language?: 'nl
     if (isNaN(lifeDomainId)) return null
     return <LifeDomainNavigation lifeDomainId={lifeDomainId} language={language} />
   }
-  if (pathname?.startsWith('/goals-okr/goals/')) {
+  if (pathname?.startsWith('/goals-okr/goals/') && pathname.includes('/objectives')) {
     const goalId = Number(pathname.split('/')[3])
     if (isNaN(goalId)) return null
     return <HierarchicalNavigation entityType="goals-okr" entityId={goalId} language={language} goalsOkrEntityType="goal" />
   }
-  if (pathname?.startsWith('/goals-okr/objectives/')) {
+  if (pathname?.startsWith('/goals-okr/objectives/') && pathname.includes('/key-results')) {
     const objectiveId = Number(pathname.split('/')[3])
     if (isNaN(objectiveId)) return null
     return <HierarchicalNavigation entityType="goals-okr" entityId={objectiveId} language={language} goalsOkrEntityType="objective" />
@@ -220,7 +220,7 @@ function LifeDomainNavigation({ lifeDomainId, language = 'en' }: { lifeDomainId:
 
   const handleDown = () => {
     if (firstGoal) {
-      router.push(`/goals-okr/goals/${firstGoal.id}`)
+      router.push(`/goals-okr/goals/${firstGoal.id}/objectives`)
     }
   }
 
@@ -430,14 +430,14 @@ async function getGoalsOKRNavigation(
           const objective = await getObjective(keyResult.objectiveId)
           parent = {
             id: keyResult.objectiveId,
-            route: `/goals-okr/objectives/${keyResult.objectiveId}`,
+            route: `/goals-okr/objectives/${keyResult.objectiveId}/key-results`,
             title: language === 'nl' ? (objective.titleNl || objective.titleEn) : (objective.titleEn || objective.titleNl),
           }
         } catch {
           // Objective not found, but we can still set parent route
           parent = {
             id: keyResult.objectiveId,
-            route: `/goals-okr/objectives/${keyResult.objectiveId}`,
+            route: `/goals-okr/objectives/${keyResult.objectiveId}/key-results`,
             title: `Objective ${keyResult.objectiveId}`,
           }
         }
@@ -494,14 +494,14 @@ async function getGoalsOKRNavigation(
           const goal = await getGoal(objective.goalId)
           parent = {
             id: objective.goalId,
-            route: `/goals-okr/goals/${objective.goalId}`,
+            route: `/goals-okr/goals/${objective.goalId}/objectives`,
             title: language === 'nl' ? (goal.titleNl || goal.titleEn) : (goal.titleEn || goal.titleNl),
           }
         } catch {
           // Goal not found, but we can still set parent route
           parent = {
             id: objective.goalId,
-            route: `/goals-okr/goals/${objective.goalId}`,
+            route: `/goals-okr/goals/${objective.goalId}/objectives`,
             title: `Goal ${objective.goalId}`,
           }
         }
@@ -513,13 +513,13 @@ async function getGoalsOKRNavigation(
           
           previousSibling = currentIndex > 0 ? {
             id: objectives[currentIndex - 1].id,
-            route: `/goals-okr/objectives/${objectives[currentIndex - 1].id}`,
+            route: `/goals-okr/objectives/${objectives[currentIndex - 1].id}/key-results`,
             title: language === 'nl' ? (objectives[currentIndex - 1].titleNl || objectives[currentIndex - 1].titleEn) : (objectives[currentIndex - 1].titleEn || objectives[currentIndex - 1].titleNl),
           } : null
           
           nextSibling = currentIndex < objectives.length - 1 && currentIndex >= 0 ? {
             id: objectives[currentIndex + 1].id,
-            route: `/goals-okr/objectives/${objectives[currentIndex + 1].id}`,
+            route: `/goals-okr/objectives/${objectives[currentIndex + 1].id}/key-results`,
             title: language === 'nl' ? (objectives[currentIndex + 1].titleNl || objectives[currentIndex + 1].titleEn) : (objectives[currentIndex + 1].titleEn || objectives[currentIndex + 1].titleNl),
           } : null
         } catch {
@@ -576,13 +576,13 @@ async function getGoalsOKRNavigation(
           
           previousSibling = currentIndex > 0 ? {
             id: goals[currentIndex - 1].id,
-            route: `/goals-okr/goals/${goals[currentIndex - 1].id}`,
+            route: `/goals-okr/goals/${goals[currentIndex - 1].id}/objectives`,
             title: language === 'nl' ? (goals[currentIndex - 1].titleNl || goals[currentIndex - 1].titleEn) : (goals[currentIndex - 1].titleEn || goals[currentIndex - 1].titleNl),
           } : null
           
           nextSibling = currentIndex < goals.length - 1 && currentIndex >= 0 ? {
             id: goals[currentIndex + 1].id,
-            route: `/goals-okr/goals/${goals[currentIndex + 1].id}`,
+            route: `/goals-okr/goals/${goals[currentIndex + 1].id}/objectives`,
             title: language === 'nl' ? (goals[currentIndex + 1].titleNl || goals[currentIndex + 1].titleEn) : (goals[currentIndex + 1].titleEn || goals[currentIndex + 1].titleNl),
           } : null
         } catch {
@@ -595,7 +595,7 @@ async function getGoalsOKRNavigation(
         const objectives = await getObjectivesByGoal(entityId)
         children = objectives.map(obj => ({
           id: obj.id,
-          route: `/goals-okr/objectives/${obj.id}`,
+          route: `/goals-okr/objectives/${obj.id}/key-results`,
           title: language === 'nl' ? (obj.titleNl || obj.titleEn) : (obj.titleEn || obj.titleNl),
         }))
       } catch {
@@ -630,14 +630,14 @@ async function getGoalsOKRNavigation(
         const objective = await getObjective(keyResult.objectiveId)
         parent = {
           id: keyResult.objectiveId,
-          route: `/goals-okr/objectives/${keyResult.objectiveId}`,
+          route: `/goals-okr/objectives/${keyResult.objectiveId}/key-results`,
           title: language === 'nl' ? (objective.titleNl || objective.titleEn) : (objective.titleEn || objective.titleNl),
         }
       } catch {
         // Objective not found, but we can still set parent route
         parent = {
           id: keyResult.objectiveId,
-          route: `/goals-okr/objectives/${keyResult.objectiveId}`,
+          route: `/goals-okr/objectives/${keyResult.objectiveId}/key-results`,
           title: `Objective ${keyResult.objectiveId}`,
         }
       }
@@ -686,14 +686,14 @@ async function getGoalsOKRNavigation(
         const goal = await getGoal(objective.goalId)
         parent = {
           id: objective.goalId,
-          route: `/goals-okr/goals/${objective.goalId}`,
+          route: `/goals-okr/goals/${objective.goalId}/objectives`,
           title: language === 'nl' ? (goal.titleNl || goal.titleEn) : (goal.titleEn || goal.titleNl),
         }
       } catch {
         // Goal not found, but we can still set parent route
         parent = {
           id: objective.goalId,
-          route: `/goals-okr/goals/${objective.goalId}`,
+          route: `/goals-okr/goals/${objective.goalId}/objectives`,
           title: `Goal ${objective.goalId}`,
         }
       }

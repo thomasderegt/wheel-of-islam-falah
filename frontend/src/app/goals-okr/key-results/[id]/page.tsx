@@ -57,7 +57,7 @@ export default function OKRKeyResultPage() {
                 <h1 className="text-2xl font-bold">Key result niet gevonden</h1>
                 {objectiveId && (
                   <button
-                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}`)}
+                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}/key-results`)}
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                   >
                     Terug naar Objective
@@ -85,7 +85,7 @@ export default function OKRKeyResultPage() {
               <div className="space-y-4">
                 {objectiveId && (
                   <button
-                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}`)}
+                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}/key-results`)}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     ← Terug naar Objective

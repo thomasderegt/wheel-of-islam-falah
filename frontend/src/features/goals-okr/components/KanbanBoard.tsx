@@ -8,8 +8,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
-import { getGoal, getObjective, getKeyResult, getInitiative } from '../api/goalsOkrApi'
-import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, InitiativeDTO } from '../api/goalsOkrApi'
+import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance } from '../api/goalsOkrApi'
+import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO } from '../api/goalsOkrApi'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -241,12 +241,16 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
           
           switch (item.itemType) {
             case 'GOAL':
-              const goal = await getGoal(item.itemId)
+              // item.itemId is a userGoalInstanceId, not a goalId
+              const userGoalInstance = await getUserGoalInstance(item.itemId)
+              const goal = await getGoal(userGoalInstance.goalId)
               title = language === 'nl' ? goal.titleNl : goal.titleEn
               lifeDomainId = goal.lifeDomainId
               break
             case 'OBJECTIVE':
-              const objective = await getObjective(item.itemId)
+              // item.itemId is a userObjectiveInstanceId, not an objectiveId
+              const userObjectiveInstance = await getUserObjectiveInstance(item.itemId)
+              const objective = await getObjective(userObjectiveInstance.objectiveId)
               title = language === 'nl' ? objective.titleNl : objective.titleEn
               // Get goal to find lifeDomainId
               if (objective.goalId) {
@@ -255,7 +259,9 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
               }
               break
             case 'KEY_RESULT':
-              const keyResult = await getKeyResult(item.itemId)
+              // item.itemId is a userKeyResultInstanceId, not a keyResultId
+              const userKeyResultInstance = await getUserKeyResultInstance(item.itemId)
+              const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
               title = language === 'nl' ? keyResult.titleNl : keyResult.titleEn
               // Get objective -> goal to find lifeDomainId
               if (keyResult.objectiveId) {
@@ -267,6 +273,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
               }
               break
             case 'INITIATIVE':
+              // item.itemId is a userInitiativeId (user-created initiative)
               const initiative = await getInitiative(item.itemId)
               title = initiative.title
               // Get keyResult -> objective -> goal to find lifeDomainId

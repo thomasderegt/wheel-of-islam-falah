@@ -11,7 +11,7 @@ import java.util.Optional;
  */
 public interface KeyResultProgressRepository {
     Optional<KeyResultProgress> findById(Long id);
-    List<KeyResultProgress> findByUserObjectiveInstanceId(Long userObjectiveInstanceId);
+    List<KeyResultProgress> findByUserKeyResultInstanceId(Long userKeyResultInstanceId);
     List<KeyResultProgress> findByKeyResultId(Long keyResultId);
     KeyResultProgress save(KeyResultProgress keyResultProgress);
     void delete(KeyResultProgress keyResultProgress);

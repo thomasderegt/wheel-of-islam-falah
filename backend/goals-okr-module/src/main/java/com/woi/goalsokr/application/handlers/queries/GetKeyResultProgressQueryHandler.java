@@ -21,8 +21,8 @@ public class GetKeyResultProgressQueryHandler {
 
     @Transactional(readOnly = true)
     public Optional<KeyResultProgressResult> handle(GetKeyResultProgressQuery query) {
-        // Query via userObjectiveInstanceId (strikt DDD), then filter by keyResultId
-        return progressRepository.findByUserObjectiveInstanceId(query.userObjectiveInstanceId()).stream()
+        // Query via userKeyResultInstanceId (strikt DDD), then filter by keyResultId
+        return progressRepository.findByUserKeyResultInstanceId(query.userKeyResultInstanceId()).stream()
             .filter(p -> p.getKeyResultId().equals(query.keyResultId()))
             .findFirst()
             .map(KeyResultProgressResult::from);

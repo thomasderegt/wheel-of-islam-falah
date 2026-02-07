@@ -1,178 +1,93 @@
 package com.woi.goalsokr.domain.entities;
 
-import com.woi.goalsokr.domain.enums.GoalStatus;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * Initiative domain entity - Pure POJO (no JPA annotations)
  *
- * Represents a concrete action/task to achieve a Key Result (user-specific).
- * Part of OKR structure: KeyResult → Initiative
+ * Represents an initiative template for a Key Result (template).
+ * Part of OKR structure: Life Domain → Goal → Objective → KeyResult → Initiative
  *
  * Business rules:
  * - keyResultId is required (reference to template)
- * - userObjectiveInstanceId is required (reference to user's instance)
- * - title is required
- * - status defaults to ACTIVE
- * - targetDate can be null (no deadline)
- * - learningFlowEnrollmentId is optional (soft reference to learning flow enrollment)
- * - userId is accessed via UserObjectiveInstance → UserGoalInstance (strikt DDD)
+ * - titleNl/En are required (with fallback logic)
+ * - learningFlowTemplateId is optional (soft reference to learning flow template)
+ * - displayOrder is required for sorting
  */
 public class Initiative {
     private Long id;
     private Long keyResultId; // Required - FK to KeyResult (template)
-    private Long userObjectiveInstanceId; // Required - FK to UserObjectiveInstance (user's instance)
-    private String title;
-    private String description;
-    private GoalStatus status;
-    private LocalDate targetDate;
-    private Long learningFlowEnrollmentId; // Optional - Soft reference to learning.learning_flow_enrollments
+    private String titleNl;
+    private String titleEn;
+    private String descriptionNl;
+    private String descriptionEn;
+    private Long learningFlowTemplateId; // Optional - Soft reference to learning.learning_flow_templates
+    private Integer displayOrder;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     // Public constructor for mappers (infrastructure layer)
     public Initiative() {}
 
     /**
-     * Factory method: Create a new initiative
+     * Factory method: Create a new initiative template
      *
      * @param keyResultId Key Result ID (required)
-     * @param userObjectiveInstanceId User Objective Instance ID (required)
-     * @param title Initiative title (required)
-     * @return New Initiative instance with ACTIVE status
+     * @param titleNl Dutch title (can be null)
+     * @param titleEn English title (can be null)
+     * @param displayOrder Display order within the key result (required)
+     * @return New Initiative instance
      * @throws IllegalArgumentException if required fields are null or invalid
      */
-    public static Initiative create(Long keyResultId, Long userObjectiveInstanceId, String title) {
+    public static Initiative create(Long keyResultId, String titleNl, String titleEn, Integer displayOrder) {
         if (keyResultId == null) {
             throw new IllegalArgumentException("Key Result ID cannot be null");
         }
-        if (userObjectiveInstanceId == null) {
-            throw new IllegalArgumentException("User Objective Instance ID cannot be null");
+        if ((titleNl == null || titleNl.trim().isEmpty()) && 
+            (titleEn == null || titleEn.trim().isEmpty())) {
+            throw new IllegalArgumentException("At least one title (titleNl or titleEn) must be provided");
         }
-        if (title == null || title.trim().isEmpty()) {
-            throw new IllegalArgumentException("Title cannot be null or empty");
+        if (displayOrder == null || displayOrder < 1) {
+            throw new IllegalArgumentException("Display order must be a positive integer");
         }
 
         Initiative initiative = new Initiative();
         initiative.keyResultId = keyResultId;
-        initiative.userObjectiveInstanceId = userObjectiveInstanceId;
-        initiative.title = title.trim();
-        initiative.status = GoalStatus.ACTIVE;
+        initiative.titleNl = (titleNl != null && !titleNl.trim().isEmpty()) ? titleNl : titleEn;
+        initiative.titleEn = (titleEn != null && !titleEn.trim().isEmpty()) ? titleEn : titleNl;
+        initiative.displayOrder = displayOrder;
         initiative.createdAt = LocalDateTime.now();
-        initiative.updatedAt = LocalDateTime.now();
         return initiative;
     }
 
     /**
-     * Update initiative title
-     *
-     * @param title New title
-     * @throws IllegalArgumentException if title is null or empty
+     * Get title with fallback logic
      */
-    public void updateTitle(String title) {
-        if (title == null || title.trim().isEmpty()) {
-            throw new IllegalArgumentException("Title cannot be null or empty");
+    public String getTitle(String language) {
+        if ("nl".equals(language)) {
+            return titleNl != null ? titleNl : titleEn;
         }
-        this.title = title.trim();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * Update initiative description
-     */
-    public void updateDescription(String description) {
-        this.description = description;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * Update target date
-     */
-    public void updateTargetDate(LocalDate targetDate) {
-        this.targetDate = targetDate;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * Mark initiative as completed
-     */
-    public void complete() {
-        this.status = GoalStatus.COMPLETED;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * Archive initiative
-     */
-    public void archive() {
-        this.status = GoalStatus.ARCHIVED;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * Reactivate initiative (from ARCHIVED or COMPLETED)
-     */
-    public void reactivate() {
-        this.status = GoalStatus.ACTIVE;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * Link initiative to a learning flow enrollment
-     */
-    public void linkLearningFlowEnrollment(Long learningFlowEnrollmentId) {
-        this.learningFlowEnrollmentId = learningFlowEnrollmentId;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
-     * Unlink initiative from learning flow enrollment
-     */
-    public void unlinkLearningFlowEnrollment() {
-        this.learningFlowEnrollmentId = null;
-        this.updatedAt = LocalDateTime.now();
+        return titleEn != null ? titleEn : titleNl;
     }
 
     // Getters
     public Long getId() { return id; }
     public Long getKeyResultId() { return keyResultId; }
-    public Long getUserObjectiveInstanceId() { return userObjectiveInstanceId; }
-    public String getTitle() { return title; }
-    public String getDescription() { return description; }
-    public GoalStatus getStatus() { return status; }
-    public LocalDate getTargetDate() { return targetDate; }
-    public Long getLearningFlowEnrollmentId() { return learningFlowEnrollmentId; }
+    public String getTitleNl() { return titleNl; }
+    public String getTitleEn() { return titleEn; }
+    public String getDescriptionNl() { return descriptionNl; }
+    public String getDescriptionEn() { return descriptionEn; }
+    public Long getLearningFlowTemplateId() { return learningFlowTemplateId; }
+    public Integer getDisplayOrder() { return displayOrder; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     // Setters for entity mapping (infrastructure layer only)
     public void setId(Long id) { this.id = id; }
     public void setKeyResultId(Long keyResultId) { this.keyResultId = keyResultId; }
-    public void setUserObjectiveInstanceId(Long userObjectiveInstanceId) { this.userObjectiveInstanceId = userObjectiveInstanceId; }
-    /**
-     * Setter for title - ONLY for entity mapping (infrastructure layer)
-     * Validates that title is not null or empty (business invariant)
-     * 
-     * @param title Initiative title (required)
-     * @throws IllegalArgumentException if title is null or empty
-     */
-    public void setTitle(String title) {
-        if (title == null || title.trim().isEmpty()) {
-            throw new IllegalArgumentException("Title cannot be null or empty");
-        }
-        this.title = title.trim();
-    }
-    public void setDescription(String description) { this.description = description; }
-    public void setStatus(GoalStatus status) {
-        if (status == null) {
-            throw new IllegalArgumentException("Status cannot be null");
-        }
-        this.status = status;
-        this.updatedAt = LocalDateTime.now();
-    }
-    public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
-    public void setLearningFlowEnrollmentId(Long learningFlowEnrollmentId) { this.learningFlowEnrollmentId = learningFlowEnrollmentId; }
+    public void setTitleNl(String titleNl) { this.titleNl = titleNl; }
+    public void setTitleEn(String titleEn) { this.titleEn = titleEn; }
+    public void setDescriptionNl(String descriptionNl) { this.descriptionNl = descriptionNl; }
+    public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
+    public void setLearningFlowTemplateId(Long learningFlowTemplateId) { this.learningFlowTemplateId = learningFlowTemplateId; }
+    public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

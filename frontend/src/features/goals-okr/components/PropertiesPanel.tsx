@@ -19,7 +19,7 @@ import {
   type GoalDTO,
   type ObjectiveDTO,
   type KeyResultDTO,
-  type InitiativeDTO,
+  type UserInitiativeDTO,
   type LifeDomainDTO,
   type KanbanItemDTO
 } from '../api/goalsOkrApi'
@@ -38,7 +38,7 @@ interface HierarchyData {
   goal?: GoalDTO
   objective?: ObjectiveDTO
   keyResult?: KeyResultDTO
-  initiative?: InitiativeDTO
+  initiative?: UserInitiativeDTO
 }
 
 export function PropertiesPanel({ item, language = 'en', onClose }: PropertiesPanelProps) {

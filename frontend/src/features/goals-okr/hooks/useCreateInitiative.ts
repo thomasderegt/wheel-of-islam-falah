@@ -1,16 +1,16 @@
 /**
  * useCreateInitiative Hook
- * React Query mutation for creating a new initiative
+ * React Query mutation for creating a new user initiative
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createInitiative } from '../api/goalsOkrApi'
-import type { InitiativeDTO } from '../api/goalsOkrApi'
+import type { UserInitiativeDTO } from '../api/goalsOkrApi'
 
 interface CreateInitiativeRequest {
   userId: number
-  keyResultId: number
-  userObjectiveInstanceId: number
+  keyResultId?: number | null
+  userKeyResultInstanceId: number
   title: string
   description?: string | null
   targetDate?: string | null
@@ -20,19 +20,21 @@ interface CreateInitiativeRequest {
 export function useCreateInitiative() {
   const queryClient = useQueryClient()
 
-  return useMutation<InitiativeDTO, Error, CreateInitiativeRequest>({
+  return useMutation<UserInitiativeDTO, Error, CreateInitiativeRequest>({
     mutationFn: createInitiative,
     onSuccess: (data) => {
       // Invalidate initiatives queries
       queryClient.invalidateQueries({ 
-        queryKey: ['goals-okr', 'initiatives', 'userObjectiveInstance', data.userObjectiveInstanceId] 
+        queryKey: ['goals-okr', 'initiatives', 'userKeyResultInstance', data.userKeyResultInstanceId] 
       })
       queryClient.invalidateQueries({ 
         queryKey: ['goals-okr', 'initiatives', 'user', data.userId] 
       })
-      queryClient.invalidateQueries({ 
-        queryKey: ['goals-okr', 'initiatives', 'keyResult', data.keyResultId] 
-      })
+      if (data.keyResultId) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['goals-okr', 'initiatives', 'keyResult', data.keyResultId] 
+        })
+      }
     },
   })
 }

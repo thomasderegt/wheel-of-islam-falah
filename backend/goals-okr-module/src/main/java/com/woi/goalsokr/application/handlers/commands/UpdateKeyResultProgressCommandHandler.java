@@ -6,7 +6,7 @@ import com.woi.goalsokr.domain.entities.KeyResultProgress;
 import com.woi.goalsokr.domain.repositories.KeyResultProgressRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
-import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
+import com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,19 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateKeyResultProgressCommandHandler {
     private final KeyResultProgressRepository progressRepository;
     private final KeyResultRepository keyResultRepository;
-    private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
+    private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
     private final UserGoalInstanceRepository userGoalInstanceRepository;
     private final UserModuleInterface userModule;
 
     public UpdateKeyResultProgressCommandHandler(
             KeyResultProgressRepository progressRepository,
             KeyResultRepository keyResultRepository,
-            UserObjectiveInstanceRepository userObjectiveInstanceRepository,
+            UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             UserGoalInstanceRepository userGoalInstanceRepository,
             UserModuleInterface userModule) {
         this.progressRepository = progressRepository;
         this.keyResultRepository = keyResultRepository;
-        this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
+        this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userGoalInstanceRepository = userGoalInstanceRepository;
         this.userModule = userModule;
     }
@@ -46,20 +46,14 @@ public class UpdateKeyResultProgressCommandHandler {
         keyResultRepository.findById(command.keyResultId())
             .orElseThrow(() -> new IllegalArgumentException("Key result not found: " + command.keyResultId()));
 
-        // Validate user objective instance exists and belongs to user (via UserGoalInstance)
-        var userInstance = userObjectiveInstanceRepository.findById(command.userObjectiveInstanceId())
-            .orElseThrow(() -> new IllegalArgumentException("User objective instance not found: " + command.userObjectiveInstanceId()));
+        // Validate user key result instance exists and belongs to user (via UserObjectiveInstance → UserGoalInstance)
+        var userKeyResultInstance = userKeyResultInstanceRepository.findById(command.userKeyResultInstanceId())
+            .orElseThrow(() -> new IllegalArgumentException("User key result instance not found: " + command.userKeyResultInstanceId()));
 
-        // Validate user goal instance exists and belongs to user
-        var userGoalInstance = userGoalInstanceRepository.findById(userInstance.getUserGoalInstanceId())
-            .orElseThrow(() -> new IllegalArgumentException("User goal instance not found: " + userInstance.getUserGoalInstanceId()));
+        // Note: User validation is done via UserKeyResultInstance → UserObjectiveInstance → UserGoalInstance chain
 
-        if (!userGoalInstance.getUserId().equals(command.userId())) {
-            throw new IllegalArgumentException("User objective instance does not belong to user: " + command.userId());
-        }
-
-        // Find or create progress (query via userObjectiveInstanceId only)
-        var existingProgress = progressRepository.findByUserObjectiveInstanceId(command.userObjectiveInstanceId()).stream()
+        // Find or create progress (query via userKeyResultInstanceId)
+        var existingProgress = progressRepository.findByUserKeyResultInstanceId(command.userKeyResultInstanceId()).stream()
             .filter(p -> p.getKeyResultId().equals(command.keyResultId()))
             .findFirst();
 
@@ -70,7 +64,7 @@ public class UpdateKeyResultProgressCommandHandler {
         } else {
             progress = KeyResultProgress.create(
                 command.keyResultId(),
-                command.userObjectiveInstanceId(),
+                command.userKeyResultInstanceId(),
                 command.currentValue()
             );
         }

@@ -1,28 +1,28 @@
 package com.woi.goalsokr.application.handlers.commands;
 
 import com.woi.goalsokr.application.commands.UpdateInitiativeCommand;
-import com.woi.goalsokr.application.results.InitiativeResult;
-import com.woi.goalsokr.domain.entities.Initiative;
-import com.woi.goalsokr.domain.repositories.InitiativeRepository;
+import com.woi.goalsokr.application.results.UserInitiativeResult;
+import com.woi.goalsokr.domain.entities.UserInitiative;
+import com.woi.goalsokr.domain.repositories.UserInitiativeRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Command handler for updating an initiative
+ * Command handler for updating a user initiative
  */
 @Component
 public class UpdateInitiativeCommandHandler {
-    private final InitiativeRepository initiativeRepository;
+    private final UserInitiativeRepository userInitiativeRepository;
 
-    public UpdateInitiativeCommandHandler(InitiativeRepository initiativeRepository) {
-        this.initiativeRepository = initiativeRepository;
+    public UpdateInitiativeCommandHandler(UserInitiativeRepository userInitiativeRepository) {
+        this.userInitiativeRepository = userInitiativeRepository;
     }
 
     @Transactional
-    public InitiativeResult handle(UpdateInitiativeCommand command) {
-        // Find initiative
-        Initiative initiative = initiativeRepository.findById(command.initiativeId())
-            .orElseThrow(() -> new IllegalArgumentException("Initiative not found: " + command.initiativeId()));
+    public UserInitiativeResult handle(UpdateInitiativeCommand command) {
+        // Find user initiative
+        UserInitiative initiative = userInitiativeRepository.findById(command.initiativeId())
+            .orElseThrow(() -> new IllegalArgumentException("User initiative not found: " + command.initiativeId()));
 
         // Update fields if provided
         if (command.title() != null) {
@@ -42,9 +42,9 @@ public class UpdateInitiativeCommandHandler {
         }
 
         // Save initiative
-        Initiative savedInitiative = initiativeRepository.save(initiative);
+        UserInitiative savedInitiative = userInitiativeRepository.save(initiative);
 
         // Return result
-        return InitiativeResult.from(savedInitiative);
+        return UserInitiativeResult.from(savedInitiative);
     }
 }

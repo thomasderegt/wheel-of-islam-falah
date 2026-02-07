@@ -16,13 +16,13 @@ import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Textarea } from '@/shared/components/ui/textarea'
 import { InitiativeSuggestions } from './InitiativeSuggestions'
-import type { InitiativeSuggestionDTO } from '../api/goalsOkrApi'
+import type { InitiativeDTO } from '../api/goalsOkrApi'
 
 interface CreateInitiativeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  keyResultId: number
-  userObjectiveInstanceId: number
+  keyResultId?: number | null
+  userKeyResultInstanceId: number
   language?: 'nl' | 'en'
   onSuccess?: () => void
 }
@@ -31,7 +31,7 @@ export function CreateInitiativeDialog({
   open, 
   onOpenChange, 
   keyResultId,
-  userObjectiveInstanceId,
+  userKeyResultInstanceId,
   language = 'en',
   onSuccess 
 }: CreateInitiativeDialogProps) {
@@ -40,7 +40,7 @@ export function CreateInitiativeDialog({
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [targetDate, setTargetDate] = useState('')
-  const [selectedSuggestion, setSelectedSuggestion] = useState<InitiativeSuggestionDTO | null>(null)
+  const [selectedSuggestion, setSelectedSuggestion] = useState<InitiativeDTO | null>(null)
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -52,7 +52,7 @@ export function CreateInitiativeDialog({
     }
   }, [open])
 
-  const handleSelectSuggestion = (suggestion: InitiativeSuggestionDTO) => {
+  const handleSelectSuggestion = (suggestion: InitiativeDTO) => {
     setSelectedSuggestion(suggestion)
     setTitle(language === 'nl' ? suggestion.titleNl : suggestion.titleEn)
     setDescription(language === 'nl' ? suggestion.descriptionNl || '' : suggestion.descriptionEn || '')
@@ -65,8 +65,8 @@ export function CreateInitiativeDialog({
     createInitiative.mutate(
       {
         userId: user.id,
-        keyResultId,
-        userObjectiveInstanceId,
+        keyResultId: keyResultId || null,
+        userKeyResultInstanceId,
         title: title.trim(),
         description: description.trim() || null,
         targetDate: targetDate || null,
@@ -110,11 +110,13 @@ export function CreateInitiativeDialog({
 
           <div className="space-y-6 py-4">
             {/* Suggestions */}
-            <InitiativeSuggestions
-              keyResultId={keyResultId}
-              language={language}
-              onSelectSuggestion={handleSelectSuggestion}
-            />
+            {keyResultId && (
+              <InitiativeSuggestions
+                keyResultId={keyResultId}
+                language={language}
+                onSelectSuggestion={handleSelectSuggestion}
+              />
+            )}
 
             {/* Custom Form */}
             <div className="space-y-4 border-t pt-4">

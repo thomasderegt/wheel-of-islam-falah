@@ -19,9 +19,9 @@ public class KeyResultProgressJpaEntity {
     @Column(name = "key_result_id", nullable = false)
     private Long keyResultId; // FK to goals_okr.key_results
 
-    @Column(name = "user_objective_instance_id", nullable = false)
-    private Long userObjectiveInstanceId; // FK to goals_okr.user_objective_instances
-    // userId is accessed via userObjectiveInstanceId → userGoalInstanceId → userId (strikt DDD)
+    @Column(name = "user_key_result_instance_id", nullable = false)
+    private Long userKeyResultInstanceId; // FK to goals_okr.user_key_result_instances
+    // userId is accessed via userKeyResultInstanceId → userObjectiveInstanceId → userGoalInstanceId → userId (strikt DDD)
 
     @Column(name = "current_value", precision = 10, scale = 2)
     private BigDecimal currentValue; // Can be null, must be >= 0 if set
@@ -39,8 +39,8 @@ public class KeyResultProgressJpaEntity {
     public Long getKeyResultId() { return keyResultId; }
     public void setKeyResultId(Long keyResultId) { this.keyResultId = keyResultId; }
 
-    public Long getUserObjectiveInstanceId() { return userObjectiveInstanceId; }
-    public void setUserObjectiveInstanceId(Long userObjectiveInstanceId) { this.userObjectiveInstanceId = userObjectiveInstanceId; }
+    public Long getUserKeyResultInstanceId() { return userKeyResultInstanceId; }
+    public void setUserKeyResultInstanceId(Long userKeyResultInstanceId) { this.userKeyResultInstanceId = userKeyResultInstanceId; }
 
     public BigDecimal getCurrentValue() { return currentValue; }
     public void setCurrentValue(BigDecimal currentValue) { this.currentValue = currentValue; }

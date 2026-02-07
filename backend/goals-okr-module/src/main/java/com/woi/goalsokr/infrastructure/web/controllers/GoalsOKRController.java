@@ -31,6 +31,10 @@ public class GoalsOKRController {
     private final StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler;
     private final CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler;
     private final StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler;
+    private final StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler;
+    private final StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler;
+    private final CompleteUserKeyResultInstanceCommandHandler completeUserKeyResultInstanceHandler;
+    private final CompleteUserInitiativeInstanceCommandHandler completeUserInitiativeInstanceHandler;
     private final CreateInitiativeCommandHandler createInitiativeHandler;
     private final UpdateKeyResultProgressCommandHandler updateKeyResultProgressHandler;
     private final UpdateInitiativeCommandHandler updateInitiativeHandler;
@@ -51,11 +55,15 @@ public class GoalsOKRController {
     private final GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler;
     private final GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler;
     private final GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler;
-    private final GetInitiativesByUserObjectiveInstanceQueryHandler getInitiativesByUserObjectiveInstanceHandler;
+    private final GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler;
+    private final GetUserKeyResultInstancesQueryHandler getUserKeyResultInstancesHandler;
+    private final GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler;
+    private final GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler;
+    private final GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler;
     private final GetInitiativesByUserQueryHandler getInitiativesByUserHandler;
     private final GetKeyResultProgressQueryHandler getKeyResultProgressHandler;
     private final GetInitiativeQueryHandler getInitiativeHandler;
-    private final GetInitiativeSuggestionsByKeyResultQueryHandler getInitiativeSuggestionsByKeyResultHandler;
+    private final GetInitiativesByKeyResultQueryHandler getInitiativesByKeyResultHandler;
     private final AddKanbanItemCommandHandler addKanbanItemHandler;
     private final UpdateKanbanItemPositionCommandHandler updateKanbanItemPositionHandler;
     private final DeleteKanbanItemCommandHandler deleteKanbanItemHandler;
@@ -78,6 +86,10 @@ public class GoalsOKRController {
             StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler,
             CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler,
             StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler,
+            StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler,
+            StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler,
+            CompleteUserKeyResultInstanceCommandHandler completeUserKeyResultInstanceHandler,
+            CompleteUserInitiativeInstanceCommandHandler completeUserInitiativeInstanceHandler,
             CreateInitiativeCommandHandler createInitiativeHandler,
             UpdateKeyResultProgressCommandHandler updateKeyResultProgressHandler,
             UpdateInitiativeCommandHandler updateInitiativeHandler,
@@ -96,11 +108,15 @@ public class GoalsOKRController {
             GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler,
             GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler,
             GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler,
-            GetInitiativesByUserObjectiveInstanceQueryHandler getInitiativesByUserObjectiveInstanceHandler,
+            GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler,
+            GetUserKeyResultInstancesQueryHandler getUserKeyResultInstancesHandler,
+            GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler,
+            GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler,
+            GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler,
             GetInitiativesByUserQueryHandler getInitiativesByUserHandler,
             GetKeyResultProgressQueryHandler getKeyResultProgressHandler,
             GetInitiativeQueryHandler getInitiativeHandler,
-            GetInitiativeSuggestionsByKeyResultQueryHandler getInitiativeSuggestionsByKeyResultHandler,
+            GetInitiativesByKeyResultQueryHandler getInitiativesByKeyResultHandler,
             AddKanbanItemCommandHandler addKanbanItemHandler,
             UpdateKanbanItemPositionCommandHandler updateKanbanItemPositionHandler,
             DeleteKanbanItemCommandHandler deleteKanbanItemHandler,
@@ -117,6 +133,10 @@ public class GoalsOKRController {
         this.startUserGoalInstanceHandler = startUserGoalInstanceHandler;
         this.completeUserGoalInstanceHandler = completeUserGoalInstanceHandler;
         this.startUserObjectiveInstanceHandler = startUserObjectiveInstanceHandler;
+        this.startUserKeyResultInstanceHandler = startUserKeyResultInstanceHandler;
+        this.startUserInitiativeInstanceHandler = startUserInitiativeInstanceHandler;
+        this.completeUserKeyResultInstanceHandler = completeUserKeyResultInstanceHandler;
+        this.completeUserInitiativeInstanceHandler = completeUserInitiativeInstanceHandler;
         this.createInitiativeHandler = createInitiativeHandler;
         this.updateKeyResultProgressHandler = updateKeyResultProgressHandler;
         this.updateInitiativeHandler = updateInitiativeHandler;
@@ -135,11 +155,15 @@ public class GoalsOKRController {
         this.getUserGoalInstancesByGoalHandler = getUserGoalInstancesByGoalHandler;
         this.getUserObjectiveInstanceHandler = getUserObjectiveInstanceHandler;
         this.getUserObjectiveInstancesHandler = getUserObjectiveInstancesHandler;
-        this.getInitiativesByUserObjectiveInstanceHandler = getInitiativesByUserObjectiveInstanceHandler;
+        this.getUserKeyResultInstanceHandler = getUserKeyResultInstanceHandler;
+        this.getUserKeyResultInstancesHandler = getUserKeyResultInstancesHandler;
+        this.getUserInitiativeInstanceHandler = getUserInitiativeInstanceHandler;
+        this.getUserInitiativeInstancesHandler = getUserInitiativeInstancesHandler;
+        this.getInitiativesByUserKeyResultInstanceHandler = getInitiativesByUserKeyResultInstanceHandler;
         this.getInitiativesByUserHandler = getInitiativesByUserHandler;
         this.getKeyResultProgressHandler = getKeyResultProgressHandler;
         this.getInitiativeHandler = getInitiativeHandler;
-        this.getInitiativeSuggestionsByKeyResultHandler = getInitiativeSuggestionsByKeyResultHandler;
+        this.getInitiativesByKeyResultHandler = getInitiativesByKeyResultHandler;
         this.addKanbanItemHandler = addKanbanItemHandler;
         this.updateKanbanItemPositionHandler = updateKanbanItemPositionHandler;
         this.deleteKanbanItemHandler = deleteKanbanItemHandler;
@@ -517,6 +541,85 @@ public class GoalsOKRController {
         }
     }
 
+    // ========== User Key Result Instances ==========
+
+    /**
+     * Start a new user key result instance
+     * POST /api/v2/goals-okr/user-key-result-instances
+     */
+    @PostMapping("/user-key-result-instances")
+    @Transactional
+    public ResponseEntity<?> startUserKeyResultInstance(@RequestBody Map<String, Long> request) {
+        try {
+            Long userId = request.get("userId");
+            Long userObjectiveInstanceId = request.get("userObjectiveInstanceId");
+            Long keyResultId = request.get("keyResultId");
+            
+            if (userId == null || userObjectiveInstanceId == null || keyResultId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User ID, User Objective Instance ID, and Key Result ID are required"));
+            }
+            
+            UserKeyResultInstanceResult result = startUserKeyResultInstanceHandler.handle(
+                new StartUserKeyResultInstanceCommand(userId, userObjectiveInstanceId, keyResultId));
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Get a user key result instance by ID
+     * GET /api/v2/goals-okr/user-key-result-instances/{id}
+     */
+    @GetMapping("/user-key-result-instances/{userKeyResultInstanceId}")
+    public ResponseEntity<?> getUserKeyResultInstance(@PathVariable Long userKeyResultInstanceId) {
+        try {
+            Optional<UserKeyResultInstanceResult> result = getUserKeyResultInstanceHandler.handle(
+                new GetUserKeyResultInstanceQuery(userKeyResultInstanceId));
+            return result.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Get all user key result instances for a user
+     * GET /api/v2/goals-okr/users/{userId}/user-key-result-instances
+     */
+    @GetMapping("/users/{userId}/user-key-result-instances")
+    public ResponseEntity<List<UserKeyResultInstanceResult>> getUserKeyResultInstancesForUser(@PathVariable Long userId) {
+        List<UserKeyResultInstanceResult> results = getUserKeyResultInstancesHandler.handle(
+            new GetUserKeyResultInstancesQuery(userId));
+        return ResponseEntity.ok(results);
+    }
+
+    /**
+     * Complete a user key result instance
+     * POST /api/v2/goals-okr/user-key-result-instances/{id}/complete
+     */
+    @PostMapping("/user-key-result-instances/{userKeyResultInstanceId}/complete")
+    @Transactional
+    public ResponseEntity<?> completeUserKeyResultInstance(@PathVariable Long userKeyResultInstanceId) {
+        try {
+            UserKeyResultInstanceResult result = completeUserKeyResultInstanceHandler.handle(
+                new CompleteUserKeyResultInstanceCommand(userKeyResultInstanceId));
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
     // ========== Initiatives ==========
 
     /**
@@ -530,13 +633,13 @@ public class GoalsOKRController {
             CreateInitiativeCommand command = new CreateInitiativeCommand(
                 request.userId(),
                 request.keyResultId(),
-                request.userObjectiveInstanceId(),
+                request.userKeyResultInstanceId(),
                 request.title(),
                 request.description(),
                 request.targetDate(),
                 request.learningFlowEnrollmentId()
             );
-            InitiativeResult result = createInitiativeHandler.handle(command);
+            UserInitiativeResult result = createInitiativeHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -554,7 +657,7 @@ public class GoalsOKRController {
     @GetMapping("/initiatives/{initiativeId}")
     public ResponseEntity<?> getInitiative(@PathVariable Long initiativeId) {
         try {
-            Optional<InitiativeResult> result = getInitiativeHandler.handle(new GetInitiativeQuery(initiativeId));
+            Optional<UserInitiativeResult> result = getInitiativeHandler.handle(new GetInitiativeQuery(initiativeId));
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
@@ -569,21 +672,21 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/users/{userId}/initiatives
      */
     @GetMapping("/users/{userId}/initiatives")
-    public ResponseEntity<List<InitiativeResult>> getInitiativesForUser(@PathVariable Long userId) {
-        List<InitiativeResult> results = getInitiativesByUserHandler.handle(
+    public ResponseEntity<List<UserInitiativeResult>> getInitiativesForUser(@PathVariable Long userId) {
+        List<UserInitiativeResult> results = getInitiativesByUserHandler.handle(
             new GetInitiativesByUserQuery(userId));
         return ResponseEntity.ok(results);
     }
 
     /**
-     * Get all initiatives for a user objective instance
-     * GET /api/v2/goals-okr/user-objective-instances/{id}/initiatives
+     * Get all initiatives for a user key result instance
+     * GET /api/v2/goals-okr/user-key-result-instances/{id}/initiatives
      */
-    @GetMapping("/user-objective-instances/{userObjectiveInstanceId}/initiatives")
-    public ResponseEntity<List<InitiativeResult>> getInitiativesByUserObjectiveInstance(
-            @PathVariable Long userObjectiveInstanceId) {
-        List<InitiativeResult> results = getInitiativesByUserObjectiveInstanceHandler.handle(
-            new GetInitiativesByUserObjectiveInstanceQuery(userObjectiveInstanceId));
+    @GetMapping("/user-key-result-instances/{userKeyResultInstanceId}/initiatives")
+    public ResponseEntity<List<UserInitiativeResult>> getInitiativesByUserKeyResultInstance(
+            @PathVariable Long userKeyResultInstanceId) {
+        List<UserInitiativeResult> results = getInitiativesByUserKeyResultInstanceHandler.handle(
+            new GetInitiativesByUserKeyResultInstanceQuery(userKeyResultInstanceId));
         return ResponseEntity.ok(results);
     }
 
@@ -603,7 +706,7 @@ public class GoalsOKRController {
                 request.targetDate(),
                 request.learningFlowEnrollmentId()
             );
-            InitiativeResult result = updateInitiativeHandler.handle(command);
+            UserInitiativeResult result = updateInitiativeHandler.handle(command);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -622,7 +725,7 @@ public class GoalsOKRController {
     @Transactional
     public ResponseEntity<?> completeInitiative(@PathVariable Long initiativeId) {
         try {
-            InitiativeResult result = completeInitiativeHandler.handle(
+            UserInitiativeResult result = completeInitiativeHandler.handle(
                 new CompleteInitiativeCommand(initiativeId));
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
@@ -634,17 +737,17 @@ public class GoalsOKRController {
         }
     }
 
-    // ========== Initiative Suggestions ==========
+    // ========== Initiative Templates ==========
 
     /**
-     * Get initiative suggestions for a key result
-     * GET /api/v2/goals-okr/key-results/{keyResultId}/suggestions
+     * Get initiative templates for a key result
+     * GET /api/v2/goals-okr/key-results/{keyResultId}/initiatives
      */
-    @GetMapping("/key-results/{keyResultId}/suggestions")
-    public ResponseEntity<List<InitiativeSuggestionResult>> getInitiativeSuggestionsByKeyResult(
+    @GetMapping("/key-results/{keyResultId}/initiatives")
+    public ResponseEntity<List<InitiativeResult>> getInitiativesByKeyResult(
             @PathVariable Long keyResultId) {
-        List<InitiativeSuggestionResult> results = getInitiativeSuggestionsByKeyResultHandler.handle(
-            new GetInitiativeSuggestionsByKeyResultQuery(keyResultId));
+        List<InitiativeResult> results = getInitiativesByKeyResultHandler.handle(
+            new GetInitiativesByKeyResultQuery(keyResultId));
         return ResponseEntity.ok(results);
     }
 
@@ -658,10 +761,10 @@ public class GoalsOKRController {
     public ResponseEntity<?> getKeyResultProgress(
             @RequestParam Long userId,
             @RequestParam Long keyResultId,
-            @RequestParam Long userObjectiveInstanceId) {
+            @RequestParam Long userKeyResultInstanceId) {
         try {
             Optional<KeyResultProgressResult> result = getKeyResultProgressHandler.handle(
-                new GetKeyResultProgressQuery(userId, keyResultId, userObjectiveInstanceId));
+                new GetKeyResultProgressQuery(userId, keyResultId, userKeyResultInstanceId));
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
@@ -682,7 +785,7 @@ public class GoalsOKRController {
             UpdateKeyResultProgressCommand command = new UpdateKeyResultProgressCommand(
                 request.userId(),
                 request.keyResultId(),
-                request.userObjectiveInstanceId(),
+                request.userKeyResultInstanceId(),
                 request.currentValue()
             );
             KeyResultProgressResult result = updateKeyResultProgressHandler.handle(command);

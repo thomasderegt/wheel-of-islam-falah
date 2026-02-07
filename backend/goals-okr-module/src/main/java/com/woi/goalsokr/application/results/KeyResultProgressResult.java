@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record KeyResultProgressResult(
     Long id,
     Long keyResultId,
-    Long userObjectiveInstanceId,
+    Long userKeyResultInstanceId,
     BigDecimal currentValue,
     LocalDateTime updatedAt
 ) {
@@ -17,7 +17,7 @@ public record KeyResultProgressResult(
         return new KeyResultProgressResult(
             progress.getId(),
             progress.getKeyResultId(),
-            progress.getUserObjectiveInstanceId(),
+            progress.getUserKeyResultInstanceId(),
             progress.getCurrentValue(),
             progress.getUpdatedAt()
         );

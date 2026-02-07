@@ -1,70 +1,65 @@
 package com.woi.goalsokr.application.handlers.commands;
 
 import com.woi.goalsokr.application.commands.CreateInitiativeCommand;
-import com.woi.goalsokr.application.results.InitiativeResult;
-import com.woi.goalsokr.domain.entities.Initiative;
-import com.woi.goalsokr.domain.repositories.InitiativeRepository;
+import com.woi.goalsokr.application.results.UserInitiativeResult;
+import com.woi.goalsokr.domain.entities.UserInitiative;
+import com.woi.goalsokr.domain.repositories.UserInitiativeRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
-import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
-import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
+import com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository;
+import com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository;
+import com.woi.goalsokr.domain.entities.UserInitiativeInstance;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Command handler for creating a new initiative
+ * Command handler for creating a new user initiative
  */
 @Component
 public class CreateInitiativeCommandHandler {
-    private final InitiativeRepository initiativeRepository;
+    private final UserInitiativeRepository userInitiativeRepository;
     private final KeyResultRepository keyResultRepository;
-    private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
-    private final UserGoalInstanceRepository userGoalInstanceRepository;
+    private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
+    private final UserInitiativeInstanceRepository userInitiativeInstanceRepository;
     private final UserModuleInterface userModule;
 
     public CreateInitiativeCommandHandler(
-            InitiativeRepository initiativeRepository,
+            UserInitiativeRepository userInitiativeRepository,
             KeyResultRepository keyResultRepository,
-            UserObjectiveInstanceRepository userObjectiveInstanceRepository,
-            UserGoalInstanceRepository userGoalInstanceRepository,
+            UserKeyResultInstanceRepository userKeyResultInstanceRepository,
+            UserInitiativeInstanceRepository userInitiativeInstanceRepository,
             UserModuleInterface userModule) {
-        this.initiativeRepository = initiativeRepository;
+        this.userInitiativeRepository = userInitiativeRepository;
         this.keyResultRepository = keyResultRepository;
-        this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
-        this.userGoalInstanceRepository = userGoalInstanceRepository;
+        this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
+        this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
         this.userModule = userModule;
     }
 
     @Transactional
-    public InitiativeResult handle(CreateInitiativeCommand command) {
+    public UserInitiativeResult handle(CreateInitiativeCommand command) {
         // Validate user exists
         if (!userModule.userExists(command.userId())) {
             throw new IllegalArgumentException("User not found: " + command.userId());
         }
 
-        // Validate key result exists
-        keyResultRepository.findById(command.keyResultId())
-            .orElseThrow(() -> new IllegalArgumentException("Key result not found: " + command.keyResultId()));
-
-        // Validate user objective instance exists and belongs to user (via UserGoalInstance)
-        var userInstance = userObjectiveInstanceRepository.findById(command.userObjectiveInstanceId())
-            .orElseThrow(() -> new IllegalArgumentException("User objective instance not found: " + command.userObjectiveInstanceId()));
-
-        // Validate user goal instance exists and belongs to user
-        var userGoalInstance = userGoalInstanceRepository.findById(userInstance.getUserGoalInstanceId())
-            .orElseThrow(() -> new IllegalArgumentException("User goal instance not found: " + userInstance.getUserGoalInstanceId()));
-
-        if (!userGoalInstance.getUserId().equals(command.userId())) {
-            throw new IllegalArgumentException("User objective instance does not belong to user: " + command.userId());
+        // Validate key result exists (optional, for template reference)
+        if (command.keyResultId() != null) {
+            keyResultRepository.findById(command.keyResultId())
+                .orElseThrow(() -> new IllegalArgumentException("Key result not found: " + command.keyResultId()));
         }
 
-        // Create initiative (domain factory method validates - userId removed)
-        Initiative initiative = Initiative.create(
-            command.keyResultId(),
-            command.userObjectiveInstanceId(),
+        // Validate user key result instance exists and belongs to user
+        var userKeyResultInstance = userKeyResultInstanceRepository.findById(command.userKeyResultInstanceId())
+            .orElseThrow(() -> new IllegalArgumentException("User key result instance not found: " + command.userKeyResultInstanceId()));
+
+        // Create user initiative
+        UserInitiative initiative = UserInitiative.create(
+            command.userId(),
+            command.userKeyResultInstanceId(),
             command.title()
         );
-
+        
         // Set optional fields
         if (command.description() != null) {
             initiative.updateDescription(command.description());
@@ -72,14 +67,32 @@ public class CreateInitiativeCommandHandler {
         if (command.targetDate() != null) {
             initiative.updateTargetDate(command.targetDate());
         }
+        
+        // Save initiative first to get ID
+        UserInitiative savedInitiative = userInitiativeRepository.save(initiative);
+        
+        // Set keyResultId if provided (using setter for infrastructure layer)
+        if (command.keyResultId() != null) {
+            savedInitiative.setKeyResultId(command.keyResultId());
+            savedInitiative = userInitiativeRepository.save(savedInitiative);
+        }
+        
+        // Create UserInitiativeInstance (subscription to the initiative)
+        UserInitiativeInstance instance = UserInitiativeInstance.start(
+            command.userKeyResultInstanceId(),
+            savedInitiative.getId()
+        );
+        
+        // Save instance
+        userInitiativeInstanceRepository.save(instance);
+        
+        // Link learning flow enrollment if provided
         if (command.learningFlowEnrollmentId() != null) {
-            initiative.linkLearningFlowEnrollment(command.learningFlowEnrollmentId());
+            savedInitiative.linkLearningFlowEnrollment(command.learningFlowEnrollmentId());
+            savedInitiative = userInitiativeRepository.save(savedInitiative);
         }
 
-        // Save initiative
-        Initiative savedInitiative = initiativeRepository.save(initiative);
-
         // Return result
-        return InitiativeResult.from(savedInitiative);
+        return UserInitiativeResult.from(savedInitiative);
     }
 }

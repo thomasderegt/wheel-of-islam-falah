@@ -68,7 +68,9 @@ apiClient.interceptors.response.use(
                             url.includes('/key-result-progress') ||
                             url.includes('/key-results') ||
                             url.includes('/life-domains') ||
-                            url.includes('/categories')
+                            url.includes('/categories') ||
+                            url.includes('/user-key-result-instances') ||
+                            url.includes('/user-initiative-instances')
       
       if (!shouldSuppress) {
         noResponseErrorCount++

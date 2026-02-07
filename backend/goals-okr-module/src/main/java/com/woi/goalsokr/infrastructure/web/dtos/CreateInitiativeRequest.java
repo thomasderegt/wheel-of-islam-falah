@@ -14,8 +14,8 @@ public record CreateInitiativeRequest(
     @NotNull(message = "Key Result ID is required")
     Long keyResultId,
     
-    @NotNull(message = "User Objective Instance ID is required")
-    Long userObjectiveInstanceId,
+    @NotNull(message = "User Key Result Instance ID is required")
+    Long userKeyResultInstanceId,
     
     @NotBlank(message = "Title is required")
     String title,

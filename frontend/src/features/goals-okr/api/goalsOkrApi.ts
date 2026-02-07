@@ -44,29 +44,40 @@ export interface KeyResultDTO {
   updatedAt: string
 }
 
-export interface UserObjectiveInstanceDTO {
+export interface UserGoalInstanceDTO {
   id: number
   userId: number
+  goalId: number
+  startedAt: string
+  completedAt?: string | null
+}
+
+export interface UserObjectiveInstanceDTO {
+  id: number
+  userGoalInstanceId: number
   objectiveId: number
   startedAt: string
   completedAt?: string | null
 }
 
-export interface InitiativeDTO {
+export interface UserKeyResultInstanceDTO {
   id: number
-  userId: number
-  keyResultId: number
   userObjectiveInstanceId: number
-  title: string
-  description?: string | null
-  status: 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
-  targetDate?: string | null
-  learningFlowEnrollmentId?: number | null
-  createdAt: string
-  updatedAt: string
+  keyResultId: number
+  startedAt: string
+  completedAt?: string | null
 }
 
-export interface InitiativeSuggestionDTO {
+export interface UserInitiativeInstanceDTO {
+  id: number
+  userKeyResultInstanceId: number
+  initiativeId: number
+  startedAt: string
+  completedAt?: string | null
+}
+
+// Initiative template (voorheen InitiativeSuggestion)
+export interface InitiativeDTO {
   id: number
   keyResultId: number
   titleNl: string
@@ -77,11 +88,26 @@ export interface InitiativeSuggestionDTO {
   displayOrder: number
 }
 
-export interface KeyResultProgressDTO {
+// User-created initiative (voorheen Initiative)
+export interface UserInitiativeDTO {
   id: number
   userId: number
+  userKeyResultInstanceId: number
+  keyResultId?: number | null
+  title: string
+  description?: string | null
+  status: 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
+  targetDate?: string | null
+  learningFlowEnrollmentId?: number | null
+  createdAt: string
+  updatedAt: string
+  completedAt?: string | null
+}
+
+export interface KeyResultProgressDTO {
+  id: number
   keyResultId: number
-  userObjectiveInstanceId: number
+  userKeyResultInstanceId: number
   currentValue?: number | null
   updatedAt: string
 }
@@ -208,6 +234,66 @@ export async function getKeyResult(keyResultId: number): Promise<KeyResultDTO> {
   return response.data
 }
 
+/**
+ * Create a new key result
+ * POST /api/v2/goals-okr/key-results
+ */
+export async function createKeyResult(request: {
+  objectiveId: number
+  titleNl?: string
+  titleEn?: string
+  descriptionNl?: string
+  descriptionEn?: string
+  targetValue: number
+  unit: string
+  orderIndex: number
+}): Promise<KeyResultDTO> {
+  const response = await apiClient.post<KeyResultDTO>(
+    '/api/v2/goals-okr/key-results',
+    request
+  )
+  return response.data
+}
+
+// ========== User Goal Instances ==========
+
+/**
+ * Start a new user goal instance
+ * POST /api/v2/goals-okr/user-goal-instances
+ */
+export async function startUserGoalInstance(
+  userId: number,
+  goalId: number
+): Promise<UserGoalInstanceDTO> {
+  const response = await apiClient.post<UserGoalInstanceDTO>(
+    '/api/v2/goals-okr/user-goal-instances',
+    { userId, goalId }
+  )
+  return response.data
+}
+
+/**
+ * Get user goal instances for a user
+ * GET /api/v2/goals-okr/users/{userId}/user-goal-instances
+ */
+export async function getUserGoalInstances(userId: number): Promise<UserGoalInstanceDTO[]> {
+  const response = await apiClient.get<UserGoalInstanceDTO[]>(
+    `/api/v2/goals-okr/users/${userId}/user-goal-instances`
+  )
+  return response.data
+}
+
+/**
+ * Get a user goal instance by ID
+ * GET /api/v2/goals-okr/user-goal-instances/{id}
+ */
+export async function getUserGoalInstance(userGoalInstanceId: number): Promise<UserGoalInstanceDTO> {
+  const response = await apiClient.get<UserGoalInstanceDTO>(
+    `/api/v2/goals-okr/user-goal-instances/${userGoalInstanceId}`
+  )
+  return response.data
+}
+
 // ========== User Objective Instances ==========
 
 /**
@@ -216,11 +302,12 @@ export async function getKeyResult(keyResultId: number): Promise<KeyResultDTO> {
  */
 export async function startUserObjectiveInstance(
   userId: number,
+  userGoalInstanceId: number,
   objectiveId: number
 ): Promise<UserObjectiveInstanceDTO> {
   const response = await apiClient.post<UserObjectiveInstanceDTO>(
     '/api/v2/goals-okr/user-objective-instances',
-    { userId, objectiveId }
+    { userId, userGoalInstanceId, objectiveId }
   )
   return response.data
 }
@@ -262,60 +349,176 @@ export async function completeUserObjectiveInstance(
   return response.data
 }
 
-// ========== Initiatives ==========
+// ========== User Key Result Instances ==========
 
 /**
- * Get initiatives by user objective instance
- * GET /api/v2/goals-okr/user-objective-instances/{userObjectiveInstanceId}/initiatives
+ * Start a new user key result instance
+ * POST /api/v2/goals-okr/user-key-result-instances
  */
-export async function getInitiativesByUserObjectiveInstance(
-  userObjectiveInstanceId: number
-): Promise<InitiativeDTO[]> {
-  const response = await apiClient.get<InitiativeDTO[]>(
-    `/api/v2/goals-okr/user-objective-instances/${userObjectiveInstanceId}/initiatives`
+export async function startUserKeyResultInstance(
+  userId: number,
+  userObjectiveInstanceId: number,
+  keyResultId: number
+): Promise<UserKeyResultInstanceDTO> {
+  const response = await apiClient.post<UserKeyResultInstanceDTO>(
+    '/api/v2/goals-okr/user-key-result-instances',
+    { userId, userObjectiveInstanceId, keyResultId }
   )
   return response.data
 }
 
 /**
- * Get all initiatives for a user
+ * Get user key result instances for a user
+ * GET /api/v2/goals-okr/users/{userId}/user-key-result-instances
+ */
+export async function getUserKeyResultInstances(userId: number): Promise<UserKeyResultInstanceDTO[]> {
+  const response = await apiClient.get<UserKeyResultInstanceDTO[]>(
+    `/api/v2/goals-okr/users/${userId}/user-key-result-instances`
+  )
+  return response.data
+}
+
+/**
+ * Get a user key result instance by ID
+ * GET /api/v2/goals-okr/user-key-result-instances/{id}
+ */
+export async function getUserKeyResultInstance(
+  userKeyResultInstanceId: number
+): Promise<UserKeyResultInstanceDTO> {
+  const response = await apiClient.get<UserKeyResultInstanceDTO>(
+    `/api/v2/goals-okr/user-key-result-instances/${userKeyResultInstanceId}`
+  )
+  return response.data
+}
+
+/**
+ * Complete a user key result instance
+ * POST /api/v2/goals-okr/user-key-result-instances/{id}/complete
+ */
+export async function completeUserKeyResultInstance(
+  userKeyResultInstanceId: number
+): Promise<UserKeyResultInstanceDTO> {
+  const response = await apiClient.post<UserKeyResultInstanceDTO>(
+    `/api/v2/goals-okr/user-key-result-instances/${userKeyResultInstanceId}/complete`
+  )
+  return response.data
+}
+
+// ========== User Initiative Instances ==========
+
+/**
+ * Start a new user initiative instance
+ * POST /api/v2/goals-okr/user-initiative-instances
+ */
+export async function startUserInitiativeInstance(
+  userId: number,
+  userKeyResultInstanceId: number,
+  initiativeId: number
+): Promise<UserInitiativeInstanceDTO> {
+  const response = await apiClient.post<UserInitiativeInstanceDTO>(
+    '/api/v2/goals-okr/user-initiative-instances',
+    { userId, userKeyResultInstanceId, initiativeId }
+  )
+  return response.data
+}
+
+/**
+ * Get user initiative instances for a user
+ * GET /api/v2/goals-okr/users/{userId}/user-initiative-instances
+ */
+export async function getUserInitiativeInstances(userId: number): Promise<UserInitiativeInstanceDTO[]> {
+  const response = await apiClient.get<UserInitiativeInstanceDTO[]>(
+    `/api/v2/goals-okr/users/${userId}/user-initiative-instances`
+  )
+  return response.data
+}
+
+/**
+ * Get a user initiative instance by ID
+ * GET /api/v2/goals-okr/user-initiative-instances/{id}
+ */
+export async function getUserInitiativeInstance(
+  userInitiativeInstanceId: number
+): Promise<UserInitiativeInstanceDTO> {
+  const response = await apiClient.get<UserInitiativeInstanceDTO>(
+    `/api/v2/goals-okr/user-initiative-instances/${userInitiativeInstanceId}`
+  )
+  return response.data
+}
+
+/**
+ * Complete a user initiative instance
+ * POST /api/v2/goals-okr/user-initiative-instances/{id}/complete
+ */
+export async function completeUserInitiativeInstance(
+  userInitiativeInstanceId: number
+): Promise<UserInitiativeInstanceDTO> {
+  const response = await apiClient.post<UserInitiativeInstanceDTO>(
+    `/api/v2/goals-okr/user-initiative-instances/${userInitiativeInstanceId}/complete`
+  )
+  return response.data
+}
+
+// ========== Initiatives ==========
+
+/**
+ * Get initiatives by user key result instance
+ * GET /api/v2/goals-okr/user-key-result-instances/{userKeyResultInstanceId}/initiatives
+ */
+// ========== User Initiatives (user-created) ==========
+
+/**
+ * Get user initiatives by user key result instance
+ * GET /api/v2/goals-okr/user-key-result-instances/{userKeyResultInstanceId}/initiatives
+ */
+export async function getInitiativesByUserKeyResultInstance(
+  userKeyResultInstanceId: number
+): Promise<UserInitiativeDTO[]> {
+  const response = await apiClient.get<UserInitiativeDTO[]>(
+    `/api/v2/goals-okr/user-key-result-instances/${userKeyResultInstanceId}/initiatives`
+  )
+  return response.data
+}
+
+/**
+ * Get all user initiatives for a user
  * GET /api/v2/goals-okr/users/{userId}/initiatives
  */
-export async function getInitiativesForUser(userId: number): Promise<InitiativeDTO[]> {
-  const response = await apiClient.get<InitiativeDTO[]>(
+export async function getInitiativesForUser(userId: number): Promise<UserInitiativeDTO[]> {
+  const response = await apiClient.get<UserInitiativeDTO[]>(
     `/api/v2/goals-okr/users/${userId}/initiatives`
   )
   return response.data
 }
 
 /**
- * Get an initiative by ID
+ * Get a user initiative by ID
  * GET /api/v2/goals-okr/initiatives/{id}
  */
-export async function getInitiative(initiativeId: number): Promise<InitiativeDTO> {
-  const response = await apiClient.get<InitiativeDTO>(`/api/v2/goals-okr/initiatives/${initiativeId}`)
+export async function getInitiative(initiativeId: number): Promise<UserInitiativeDTO> {
+  const response = await apiClient.get<UserInitiativeDTO>(`/api/v2/goals-okr/initiatives/${initiativeId}`)
   return response.data
 }
 
 /**
- * Create a new initiative
+ * Create a new user initiative
  * POST /api/v2/goals-okr/initiatives
  */
 export async function createInitiative(request: {
   userId: number
-  keyResultId: number
-  userObjectiveInstanceId: number
+  keyResultId?: number | null
+  userKeyResultInstanceId: number
   title: string
   description?: string | null
   targetDate?: string | null
   learningFlowEnrollmentId?: number | null
-}): Promise<InitiativeDTO> {
-  const response = await apiClient.post<InitiativeDTO>('/api/v2/goals-okr/initiatives', request)
+}): Promise<UserInitiativeDTO> {
+  const response = await apiClient.post<UserInitiativeDTO>('/api/v2/goals-okr/initiatives', request)
   return response.data
 }
 
 /**
- * Update an initiative
+ * Update a user initiative
  * PUT /api/v2/goals-okr/initiatives/{id}
  */
 export async function updateInitiative(
@@ -326,8 +529,8 @@ export async function updateInitiative(
     targetDate?: string | null
     learningFlowEnrollmentId?: number | null
   }
-): Promise<InitiativeDTO> {
-  const response = await apiClient.put<InitiativeDTO>(
+): Promise<UserInitiativeDTO> {
+  const response = await apiClient.put<UserInitiativeDTO>(
     `/api/v2/goals-okr/initiatives/${initiativeId}`,
     request
   )
@@ -335,23 +538,27 @@ export async function updateInitiative(
 }
 
 /**
- * Complete an initiative
+ * Complete a user initiative
  * POST /api/v2/goals-okr/initiatives/{id}/complete
  */
-export async function completeInitiative(initiativeId: number): Promise<InitiativeDTO> {
-  const response = await apiClient.post<InitiativeDTO>(
+export async function completeInitiative(initiativeId: number): Promise<UserInitiativeDTO> {
+  const response = await apiClient.post<UserInitiativeDTO>(
     `/api/v2/goals-okr/initiatives/${initiativeId}/complete`
   )
   return response.data
 }
 
-// ========== Initiative Suggestions ==========
+// ========== Initiative Templates ==========
 
-export async function getInitiativeSuggestionsByKeyResult(
+/**
+ * Get initiative templates for a key result
+ * GET /api/v2/goals-okr/key-results/{keyResultId}/initiatives
+ */
+export async function getInitiativesByKeyResult(
   keyResultId: number
-): Promise<InitiativeSuggestionDTO[]> {
-  const response = await apiClient.get<InitiativeSuggestionDTO[]>(
-    `/api/v2/goals-okr/key-results/${keyResultId}/suggestions`
+): Promise<InitiativeDTO[]> {
+  const response = await apiClient.get<InitiativeDTO[]>(
+    `/api/v2/goals-okr/key-results/${keyResultId}/initiatives`
   )
   return response.data
 }
@@ -360,15 +567,15 @@ export async function getInitiativeSuggestionsByKeyResult(
 
 /**
  * Get key result progress
- * GET /api/v2/goals-okr/key-result-progress?userId={userId}&keyResultId={keyResultId}&userObjectiveInstanceId={userObjectiveInstanceId}
+ * GET /api/v2/goals-okr/key-result-progress?userId={userId}&keyResultId={keyResultId}&userKeyResultInstanceId={userKeyResultInstanceId}
  */
 export async function getKeyResultProgress(
   userId: number,
   keyResultId: number,
-  userObjectiveInstanceId: number
+  userKeyResultInstanceId: number
 ): Promise<KeyResultProgressDTO | null> {
   // Don't make request if parameters are invalid
-  if (!userId || !keyResultId || !userObjectiveInstanceId || userObjectiveInstanceId <= 0) {
+  if (!userId || !keyResultId || !userKeyResultInstanceId || userKeyResultInstanceId <= 0) {
     return null
   }
 
@@ -379,7 +586,7 @@ export async function getKeyResultProgress(
         params: {
           userId,
           keyResultId,
-          userObjectiveInstanceId,
+          userKeyResultInstanceId,
         },
       }
     )
@@ -391,12 +598,12 @@ export async function getKeyResultProgress(
     }
     // For network errors (no response), also return null instead of throwing
     // This prevents console errors when the backend is not available or when
-    // the user hasn't started the objective yet
+    // the user hasn't started the key result yet
     if (!error.response) {
       console.warn('Key result progress request failed (no response):', {
         userId,
         keyResultId,
-        userObjectiveInstanceId,
+        userKeyResultInstanceId,
       })
       return null
     }

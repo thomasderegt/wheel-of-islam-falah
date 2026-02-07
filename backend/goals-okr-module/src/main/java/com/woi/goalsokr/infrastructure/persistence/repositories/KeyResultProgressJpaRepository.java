@@ -12,6 +12,6 @@ import java.util.Optional;
  */
 @Repository
 public interface KeyResultProgressJpaRepository extends JpaRepository<KeyResultProgressJpaEntity, Long> {
-    List<KeyResultProgressJpaEntity> findByUserObjectiveInstanceId(Long userObjectiveInstanceId);
+    List<KeyResultProgressJpaEntity> findByUserKeyResultInstanceId(Long userKeyResultInstanceId);
     List<KeyResultProgressJpaEntity> findByKeyResultId(Long keyResultId);
 }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public record KeyResultProgressSummary(
     Long id,
     Long keyResultId,
-    Long userObjectiveInstanceId,
+    Long userKeyResultInstanceId,
     BigDecimal currentValue,
     LocalDateTime updatedAt
 ) {}

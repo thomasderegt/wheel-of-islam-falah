@@ -1,11 +1,10 @@
 package com.woi.goalsokr.infrastructure.persistence.entities;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * JPA entity for Initiative (database mapping)
+ * JPA entity for Initiative (template) - database mapping
  */
 @Entity
 @Table(name = "initiatives", schema = "goals_okr")
@@ -19,30 +18,26 @@ public class InitiativeJpaEntity {
     @Column(name = "key_result_id", nullable = false)
     private Long keyResultId; // FK to goals_okr.key_results
 
-    @Column(name = "user_objective_instance_id", nullable = false)
-    private Long userObjectiveInstanceId; // FK to goals_okr.user_objective_instances
-    // userId is accessed via userObjectiveInstanceId → userGoalInstanceId → userId (strikt DDD)
+    @Column(name = "title_nl", nullable = false)
+    private String titleNl;
 
-    @Column(name = "title", nullable = false, length = 255)
-    private String title;
+    @Column(name = "title_en", nullable = false)
+    private String titleEn;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "description_nl", columnDefinition = "TEXT")
+    private String descriptionNl;
 
-    @Column(name = "status", nullable = false, length = 50)
-    private String status; // ACTIVE, COMPLETED, ARCHIVED
+    @Column(name = "description_en", columnDefinition = "TEXT")
+    private String descriptionEn;
 
-    @Column(name = "target_date")
-    private LocalDate targetDate;
+    @Column(name = "learning_flow_template_id")
+    private Long learningFlowTemplateId; // Optional - Soft reference to learning.learning_flow_templates
 
-    @Column(name = "learning_flow_enrollment_id")
-    private Long learningFlowEnrollmentId; // Optional - Soft reference to learning.learning_flow_enrollments
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 
     // Public constructor for JPA
     public InitiativeJpaEntity() {}
@@ -54,27 +49,24 @@ public class InitiativeJpaEntity {
     public Long getKeyResultId() { return keyResultId; }
     public void setKeyResultId(Long keyResultId) { this.keyResultId = keyResultId; }
 
-    public Long getUserObjectiveInstanceId() { return userObjectiveInstanceId; }
-    public void setUserObjectiveInstanceId(Long userObjectiveInstanceId) { this.userObjectiveInstanceId = userObjectiveInstanceId; }
+    public String getTitleNl() { return titleNl; }
+    public void setTitleNl(String titleNl) { this.titleNl = titleNl; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getTitleEn() { return titleEn; }
+    public void setTitleEn(String titleEn) { this.titleEn = titleEn; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getDescriptionNl() { return descriptionNl; }
+    public void setDescriptionNl(String descriptionNl) { this.descriptionNl = descriptionNl; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getDescriptionEn() { return descriptionEn; }
+    public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
 
-    public LocalDate getTargetDate() { return targetDate; }
-    public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
+    public Long getLearningFlowTemplateId() { return learningFlowTemplateId; }
+    public void setLearningFlowTemplateId(Long learningFlowTemplateId) { this.learningFlowTemplateId = learningFlowTemplateId; }
 
-    public Long getLearningFlowEnrollmentId() { return learningFlowEnrollmentId; }
-    public void setLearningFlowEnrollmentId(Long learningFlowEnrollmentId) { this.learningFlowEnrollmentId = learningFlowEnrollmentId; }
+    public Integer getDisplayOrder() { return displayOrder; }
+    public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

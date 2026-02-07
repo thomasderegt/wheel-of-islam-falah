@@ -19,6 +19,8 @@ import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
 import { CreateUserGoalDialog } from './CreateUserGoalDialog'
 import { Plus } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { startUserGoalInstance } from '../api/goalsOkrApi'
 import type { GoalDTO } from '../api/goalsOkrApi'
 
 interface NavGoalCircleProps {
@@ -32,12 +34,19 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
   const { userGroup } = useTheme()
   const { user } = useAuth()
   const addKanbanItem = useAddKanbanItem()
+  const queryClient = useQueryClient()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
   
   // Modal state
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<GoalDTO | null>(null)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+
+  // Mutation for starting goal instance
+  const startGoalInstanceMutation = useMutation({
+    mutationFn: ({ userId, goalId }: { userId: number; goalId: number }) =>
+      startUserGoalInstance(userId, goalId),
+  })
 
   // Helper function to get goal title based on language
   const getGoalTitle = (goal: GoalDTO): string => {
@@ -48,7 +57,7 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
   }
 
   const handleGoalClick = (goalId: number) => {
-    router.push(`/goals-okr/goals/${goalId}`)
+    router.push(`/goals-okr/goals/${goalId}/objectives`)
   }
 
   const handleAddToKanbanClick = (e: React.MouseEvent, goal: GoalDTO) => {
@@ -58,19 +67,55 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
     setConfirmDialogOpen(true)
   }
 
-  const handleConfirmAddToKanban = () => {
+  const handleConfirmAddToKanban = async () => {
     if (!user?.id || !selectedGoal) return
     
-    addKanbanItem.mutate({
-      userId: user.id,
-      itemType: 'GOAL',
-      itemId: selectedGoal.id,
-    }, {
-      onSuccess: () => {
+    try {
+      // 1. Start UserGoalInstance first
+      const userGoalInstance = await startGoalInstanceMutation.mutateAsync({
+        userId: user.id,
+        goalId: selectedGoal.id,
+      })
+      
+      // Validate that we got a valid instance ID
+      if (!userGoalInstance?.id) {
+        console.error('Failed to get userGoalInstance ID:', userGoalInstance)
+        alert('Failed to start goal instance. Please try again.')
         setConfirmDialogOpen(false)
         setSelectedGoal(null)
+        return
       }
-    })
+      
+      // Invalidate userGoalInstances query so NavObjectiveCircle can see it
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userGoalInstances'] })
+      
+      // 2. Add to Kanban with the instance ID (not template ID)
+      addKanbanItem.mutate({
+        userId: user.id,
+        itemType: 'GOAL',
+        itemId: userGoalInstance.id, // Use instance ID!
+      }, {
+        onSuccess: () => {
+          setConfirmDialogOpen(false)
+          setSelectedGoal(null)
+          // 3. Navigate to objectives page so user can see and select objectives
+          router.push(`/goals-okr/goals/${selectedGoal.id}/objectives`)
+        },
+        onError: (error: any) => {
+          console.error('Failed to add kanban item:', error)
+          const errorMessage = error?.response?.data?.error || error?.message || 'Failed to add goal to kanban board'
+          alert(errorMessage)
+          setConfirmDialogOpen(false)
+          setSelectedGoal(null)
+        }
+      })
+    } catch (error: any) {
+      console.error('Failed to start goal instance:', error)
+      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to start goal instance'
+      alert(errorMessage)
+      setConfirmDialogOpen(false)
+      setSelectedGoal(null)
+    }
   }
 
   const handleCancelAddToKanban = () => {
@@ -198,9 +243,9 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
             </Button>
             <Button
               onClick={handleConfirmAddToKanban}
-              disabled={addKanbanItem.isPending}
+              disabled={addKanbanItem.isPending || startGoalInstanceMutation.isPending}
             >
-              {addKanbanItem.isPending ? 'Adding...' : 'Add to Progress'}
+              {(addKanbanItem.isPending || startGoalInstanceMutation.isPending) ? 'Starting...' : 'Add to Progress'}
             </Button>
           </DialogFooter>
         </DialogContent>

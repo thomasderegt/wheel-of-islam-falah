@@ -174,19 +174,83 @@ public interface GoalsOKRModuleInterface {
      */
     UserObjectiveInstanceSummary completeUserObjectiveInstance(Long userObjectiveInstanceId);
 
+    // ========== User Key Result Instances (User-specific) ==========
+
+    /**
+     * Start a new user key result instance
+     * @param userId User ID (for validation)
+     * @param userObjectiveInstanceId User objective instance ID
+     * @param keyResultId Key result ID (template)
+     * @return The created user key result instance summary
+     */
+    UserKeyResultInstanceSummary startUserKeyResultInstance(Long userId, Long userObjectiveInstanceId, Long keyResultId);
+
+    /**
+     * Get a user key result instance by ID
+     * @param userKeyResultInstanceId User key result instance ID
+     * @return Optional containing the user key result instance if found
+     */
+    Optional<UserKeyResultInstanceSummary> getUserKeyResultInstance(Long userKeyResultInstanceId);
+
+    /**
+     * Get all user key result instances for a user
+     * @param userId User ID
+     * @return List of user key result instances for that user
+     */
+    List<UserKeyResultInstanceSummary> getUserKeyResultInstancesForUser(Long userId);
+
+    /**
+     * Complete a user key result instance
+     * @param userKeyResultInstanceId User key result instance ID
+     * @return Updated user key result instance summary
+     */
+    UserKeyResultInstanceSummary completeUserKeyResultInstance(Long userKeyResultInstanceId);
+
+    // ========== User Initiative Instances (User-specific) ==========
+
+    /**
+     * Start a new user initiative instance
+     * @param userId User ID (for validation)
+     * @param userKeyResultInstanceId User key result instance ID
+     * @param initiativeId Initiative ID
+     * @return The created user initiative instance summary
+     */
+    UserInitiativeInstanceSummary startUserInitiativeInstance(Long userId, Long userKeyResultInstanceId, Long initiativeId);
+
+    /**
+     * Get a user initiative instance by ID
+     * @param userInitiativeInstanceId User initiative instance ID
+     * @return Optional containing the user initiative instance if found
+     */
+    Optional<UserInitiativeInstanceSummary> getUserInitiativeInstance(Long userInitiativeInstanceId);
+
+    /**
+     * Get all user initiative instances for a user
+     * @param userId User ID
+     * @return List of user initiative instances for that user
+     */
+    List<UserInitiativeInstanceSummary> getUserInitiativeInstancesForUser(Long userId);
+
+    /**
+     * Complete a user initiative instance
+     * @param userInitiativeInstanceId User initiative instance ID
+     * @return Updated user initiative instance summary
+     */
+    UserInitiativeInstanceSummary completeUserInitiativeInstance(Long userInitiativeInstanceId);
+
     // ========== Initiatives (User-specific) ==========
 
     /**
      * Create a new initiative
      * @param userId User ID
      * @param keyResultId Key result ID (template reference)
-     * @param userObjectiveInstanceId User objective instance ID
+     * @param userKeyResultInstanceId User key result instance ID
      * @param title Initiative title
      * @param description Initiative description (optional)
      * @param targetDate Target date (optional)
      * @return The created initiative summary
      */
-    InitiativeSummary createInitiative(Long userId, Long keyResultId, Long userObjectiveInstanceId,
+    InitiativeSummary createInitiative(Long userId, Long keyResultId, Long userKeyResultInstanceId,
                                        String title, String description, LocalDate targetDate);
 
     /**
@@ -204,11 +268,11 @@ public interface GoalsOKRModuleInterface {
     List<InitiativeSummary> getInitiativesForUser(Long userId);
 
     /**
-     * Get all initiatives for a user objective instance
-     * @param userObjectiveInstanceId User objective instance ID
+     * Get all initiatives for a user key result instance
+     * @param userKeyResultInstanceId User key result instance ID
      * @return List of initiatives for that instance
      */
-    List<InitiativeSummary> getInitiativesByUserObjectiveInstance(Long userObjectiveInstanceId);
+    List<InitiativeSummary> getInitiativesByUserKeyResultInstance(Long userKeyResultInstanceId);
 
     /**
      * Update an initiative
@@ -235,21 +299,21 @@ public interface GoalsOKRModuleInterface {
      * Get key result progress
      * @param userId User ID
      * @param keyResultId Key result ID
-     * @param userObjectiveInstanceId User objective instance ID
+     * @param userKeyResultInstanceId User key result instance ID
      * @return Optional containing the progress if found
      */
-    Optional<KeyResultProgressSummary> getKeyResultProgress(Long userId, Long keyResultId, Long userObjectiveInstanceId);
+    Optional<KeyResultProgressSummary> getKeyResultProgress(Long userId, Long keyResultId, Long userKeyResultInstanceId);
 
     /**
      * Update key result progress
      * @param userId User ID
      * @param keyResultId Key result ID
-     * @param userObjectiveInstanceId User objective instance ID
+     * @param userKeyResultInstanceId User key result instance ID
      * @param currentValue Current progress value (can be null, must be >= 0 if set)
      * @return Updated or created progress summary
      * @throws IllegalArgumentException if key result or user instance not found
      */
-    KeyResultProgressSummary updateKeyResultProgress(Long userId, Long keyResultId, Long userObjectiveInstanceId, BigDecimal currentValue);
+    KeyResultProgressSummary updateKeyResultProgress(Long userId, Long keyResultId, Long userKeyResultInstanceId, BigDecimal currentValue);
 
     // ========== Kanban Items ==========
 

@@ -32,8 +32,8 @@ public class KeyResultProgressRepositoryImpl implements KeyResultProgressReposit
 
     @Override
     @Transactional(readOnly = true)
-    public List<KeyResultProgress> findByUserObjectiveInstanceId(Long userObjectiveInstanceId) {
-        return jpaRepository.findByUserObjectiveInstanceId(userObjectiveInstanceId).stream()
+    public List<KeyResultProgress> findByUserKeyResultInstanceId(Long userKeyResultInstanceId) {
+        return jpaRepository.findByUserKeyResultInstanceId(userKeyResultInstanceId).stream()
             .map(KeyResultProgressEntityMapper::toDomain)
             .collect(Collectors.toList());
     }

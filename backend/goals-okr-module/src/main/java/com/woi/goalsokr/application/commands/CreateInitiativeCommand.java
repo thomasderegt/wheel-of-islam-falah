@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public record CreateInitiativeCommand(
     Long userId,
     Long keyResultId,
-    Long userObjectiveInstanceId,
+    Long userKeyResultInstanceId,
     String title,
     String description,
     LocalDate targetDate,
@@ -21,8 +21,8 @@ public record CreateInitiativeCommand(
         if (keyResultId == null) {
             throw new IllegalArgumentException("Key Result ID cannot be null");
         }
-        if (userObjectiveInstanceId == null) {
-            throw new IllegalArgumentException("User Objective Instance ID cannot be null");
+        if (userKeyResultInstanceId == null) {
+            throw new IllegalArgumentException("User Key Result Instance ID cannot be null");
         }
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title cannot be null or empty");
