@@ -1,12 +1,12 @@
 /**
  * Book Page Component
  * 
- * Toont book met CircularMenu voor chapters
+ * Toont book met NavBookCircle voor chapters
  * Route: /book/[id]
  * 
  * Structuur:
  * - Book header
- * - CircularMenu met chapters (position 0-10)
+ * - NavBookCircle met chapters (position 0-10)
  */
 
 'use client'
@@ -15,7 +15,8 @@ import { useParams } from 'next/navigation'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { ProtectedRoute } from '@/features/auth'
-import { CircularMenu } from '@/features/content'
+import { NavBookCircle } from '@/features/content'
+import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function BookPage() {
   const params = useParams()
@@ -38,9 +39,12 @@ export default function BookPage() {
               </h1>
             </div>
 
-            {/* CircularMenu */}
+            {/* Hierarchical Navigation */}
+            <AutoHierarchicalNavigation language={language} />
+
+            {/* NavBookCircle */}
             <div className="flex items-center justify-center min-h-[600px]">
-              <CircularMenu bookId={bookId} language={language} />
+              <NavBookCircle bookId={bookId} language={language} />
             </div>
           </Container>
         </main>

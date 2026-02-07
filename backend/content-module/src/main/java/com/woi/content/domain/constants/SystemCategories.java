@@ -27,6 +27,11 @@ public class SystemCategories {
     public static final int PREPARE_FOR_AKHIRAH_NUMBER = 3;
     
     /**
+     * Category number for "Fiqh, Divine do's and donts"
+     */
+    public static final int FIQH_NUMBER = 4;
+    
+    /**
      * Check if a category number is a system category
      * 
      * @param categoryNumber Category number to check
@@ -39,7 +44,8 @@ public class SystemCategories {
         return categoryNumber == FALAH_NUMBER ||
                categoryNumber == BUILD_YOUR_DUNYA_NUMBER ||
                categoryNumber == STRENGTHEN_INNER_WORLD_NUMBER ||
-               categoryNumber == PREPARE_FOR_AKHIRAH_NUMBER;
+               categoryNumber == PREPARE_FOR_AKHIRAH_NUMBER ||
+               categoryNumber == FIQH_NUMBER;
     }
     
     /**
@@ -52,7 +58,8 @@ public class SystemCategories {
             FALAH_NUMBER,
             BUILD_YOUR_DUNYA_NUMBER,
             STRENGTHEN_INNER_WORLD_NUMBER,
-            PREPARE_FOR_AKHIRAH_NUMBER
+            PREPARE_FOR_AKHIRAH_NUMBER,
+            FIQH_NUMBER
         };
     }
 }

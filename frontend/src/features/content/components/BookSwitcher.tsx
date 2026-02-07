@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { CircularMenu } from './CircularMenu'
+import { NavBookCircle } from './NavBookCircle'
 import { Container } from '@/shared/components/ui/container'
 import { Button } from '@/shared/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -120,7 +120,7 @@ export function BookSwitcher({
     return (
       <div className="flex flex-col items-center space-y-1 -mt-4 border-2 border-red-500">
         <h3 className="text-lg font-semibold">Book {book.id}</h3>
-        <CircularMenu bookId={book.id} language={language} />
+        <NavBookCircle bookId={book.id} language={language} />
       </div>
     )
   }
@@ -175,7 +175,7 @@ export function BookSwitcher({
           </div>
         )}
 
-        {/* CircularMenu - swipeable container */}
+        {/* NavBookCircle - swipeable container */}
         <div
           ref={containerRef}
           className="w-full touch-none select-none border-2 border-red-300"
@@ -184,7 +184,7 @@ export function BookSwitcher({
           onTouchEnd={onTouchEnd}
         >
           <div className="flex flex-col items-center border-2 border-red-200">
-            <CircularMenu bookId={currentBook.id} language={language} />
+            <NavBookCircle bookId={currentBook.id} language={language} />
           </div>
         </div>
       </Container>

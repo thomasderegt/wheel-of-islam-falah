@@ -105,6 +105,9 @@
   --color-nav-category-circle-sector-2-start: var(--nav-category-circle-sector-2-start); /* Sector 2 gradient start */
   --color-nav-category-circle-sector-2-mid: var(--nav-category-circle-sector-2-mid); /* Sector 2 gradient mid */
   --color-nav-category-circle-sector-2-end: var(--nav-category-circle-sector-2-end); /* Sector 2 gradient end */
+  --color-nav-category-circle-sector-3-start: var(--nav-category-circle-sector-3-start); /* Sector 3 gradient start */
+  --color-nav-category-circle-sector-3-mid: var(--nav-category-circle-sector-3-mid); /* Sector 3 gradient mid */
+  --color-nav-category-circle-sector-3-end: var(--nav-category-circle-sector-3-end); /* Sector 3 gradient end */
   --color-nav-category-circle-sector-stroke: var(--nav-category-circle-sector-stroke); /* Sector stroke color */
   --color-nav-category-circle-sector-hover: var(--nav-category-circle-sector-hover); /* Sector hover fill */
   --color-nav-category-circle-falah-start: var(--nav-category-circle-falah-start); /* Falah gradient start */
@@ -224,6 +227,9 @@
   --nav-category-circle-sector-2-start: oklch(0.35 0 0);   /* Sector 2 gradient start */
   --nav-category-circle-sector-2-mid: oklch(0.3 0 0);      /* Sector 2 gradient mid */
   --nav-category-circle-sector-2-end: oklch(0.25 0 0);      /* Sector 2 gradient end */
+  --nav-category-circle-sector-3-start: oklch(0.2 0 0);    /* Sector 3 gradient start */
+  --nav-category-circle-sector-3-mid: oklch(0.15 0 0);     /* Sector 3 gradient mid */
+  --nav-category-circle-sector-3-end: oklch(0.1 0 0);      /* Sector 3 gradient end */
   --nav-category-circle-sector-stroke: oklch(0 0 0);       /* Sector stroke color (zwart) */
   --nav-category-circle-sector-hover: oklch(0.95 0 0);     /* Sector hover fill (lichtgrijs) */
   --nav-category-circle-falah-start: oklch(0.7 0 0);      /* Falah gradient start */
@@ -410,19 +416,6 @@
     background-attachment: fixed;
     position: relative;
   }
-  
-  /* Overlay om achtergrondafbeelding te dimmen - minder aanwezig maken */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: oklch(0 0 0 / 0.2); /* 20% transparant zwart overlay - dimt de achtergrond subtiel */
-    pointer-events: none; /* Laat clicks door */
-    z-index: -1; /* Achter de content maar voor de achtergrond */
-  }
 }
 
 /* ============================================
@@ -456,6 +449,12 @@
   .navbar {
     background-color: var(--navbar);
     border-bottom-color: var(--navbar-border);
+  }
+  
+  /* Bottom navigation bar padding for all screen sizes */
+  /* When body has has-bottom-nav class, add padding to main content */
+  body.has-bottom-nav main {
+    padding-bottom: 80px; /* Space for bottom nav bar */
   }
 }
 

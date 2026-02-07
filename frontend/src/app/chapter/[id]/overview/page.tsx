@@ -19,11 +19,11 @@ import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { ProtectedRoute } from '@/features/auth'
 import { SectionsList, useChapter, useChapterCurrentVersion, ChapterHeader, useBook, useCategory } from '@/features/content'
-import { SYSTEM_CATEGORIES } from '@/shared/constants/systemCategories'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Error } from '@/shared/components/ui/Error'
 import { useQuery } from '@tanstack/react-query'
 import { FalahDashboard } from '@/features/falah/components/FalahDashboard'
+import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function ChapterOverviewPage() {
   const params = useParams()
@@ -37,9 +37,9 @@ export default function ChapterOverviewPage() {
   const { data: book, isLoading: isLoadingBook } = useBook(chapter?.bookId || null)
   const { data: category, isLoading: isLoadingCategory } = useCategory(book?.categoryId || null)
   
-  // Check if this is Falah Dashboard (Chapter 0 in Falah Book)
+  // Check if this is Falah Dashboard (Chapter 0 in Falah Book, Category #0)
   const isFalahDashboard = chapter?.position === 0 && 
-                           category?.categoryNumber === SYSTEM_CATEGORIES.FALAH.categoryNumber
+                           category?.categoryNumber === 0
 
   if (isLoading || isLoadingVersion || isLoadingBook || isLoadingCategory) {
     return (
@@ -103,6 +103,9 @@ export default function ChapterOverviewPage() {
               chapterVersion={chapterVersion || null}
               language={language}
             />
+
+            {/* Hierarchical Navigation */}
+            <AutoHierarchicalNavigation language={language} />
 
             {/* Sections List */}
             <SectionsList chapterId={chapterId} language={language} />

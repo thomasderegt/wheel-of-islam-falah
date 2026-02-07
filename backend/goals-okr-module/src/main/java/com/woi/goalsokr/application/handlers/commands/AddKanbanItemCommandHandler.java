@@ -5,6 +5,7 @@ import com.woi.goalsokr.application.results.KanbanItemResult;
 import com.woi.goalsokr.domain.entities.KanbanItem;
 import com.woi.goalsokr.domain.enums.ItemType;
 import com.woi.goalsokr.domain.repositories.KanbanItemRepository;
+import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,13 +15,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class AddKanbanItemCommandHandler {
     private final KanbanItemRepository kanbanItemRepository;
+    private final UserModuleInterface userModule;
 
-    public AddKanbanItemCommandHandler(KanbanItemRepository kanbanItemRepository) {
+    public AddKanbanItemCommandHandler(
+            KanbanItemRepository kanbanItemRepository,
+            UserModuleInterface userModule) {
         this.kanbanItemRepository = kanbanItemRepository;
+        this.userModule = userModule;
     }
 
     @Transactional
     public KanbanItemResult handle(AddKanbanItemCommand command) {
+        // Validate user exists
+        if (!userModule.userExists(command.userId())) {
+            throw new IllegalArgumentException("User not found: " + command.userId());
+        }
+
         // Check if item already exists
         ItemType itemType = ItemType.valueOf(command.itemType());
         kanbanItemRepository.findByUserIdAndItemTypeAndItemId(

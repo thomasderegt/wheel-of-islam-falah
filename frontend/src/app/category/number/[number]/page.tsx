@@ -1,12 +1,12 @@
 /**
  * Category Page Component (by number)
  * 
- * Toont category header en CircularMenu voor het eerste book in de category
+ * Toont category header en NavBookCircle voor het eerste book in de category
  * Route: /category/number/[number]
  * 
  * Structuur:
  * - Category Header (titel + description)
- * - CircularMenu voor het eerste book
+ * - NavBookCircle voor het eerste book
  */
 
 'use client'
@@ -16,7 +16,7 @@ import { useParams } from 'next/navigation'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { ProtectedRoute } from '@/features/auth'
-import { CircularMenu, usePublicBooksByCategory, useBookCurrentVersion } from '@/features/content'
+import { NavBookCircle, usePublicBooksByCategory, useBookCurrentVersion } from '@/features/content'
 import { getCategoryByNumber } from '@/features/content/api/contentApi'
 import { useQuery } from '@tanstack/react-query'
 import { Loading } from '@/shared/components/ui/Loading'
@@ -90,7 +90,6 @@ export default function CategoryByNumberPage() {
   }
 
   const categoryTitle = language === 'nl' ? category.titleNl : category.titleEn
-  const categoryDescription = language === 'nl' ? category.descriptionNl : category.descriptionEn
 
   return (
     <ProtectedRoute>
@@ -106,9 +105,6 @@ export default function CategoryByNumberPage() {
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">
                 {categoryTitle || `Category ${categoryNumber}`}
               </h1>
-              {categoryDescription && (
-                <p className="text-muted-foreground text-lg">{categoryDescription}</p>
-              )}
             </div>
 
             {books && books.length > 0 ? (
@@ -140,8 +136,8 @@ export default function CategoryByNumberPage() {
                   </div>
                 )}
 
-                {/* CircularMenu */}
-                <CircularMenu bookId={books[currentBookIndex].id} language={language} />
+                {/* NavBookCircle */}
+                <NavBookCircle bookId={books[currentBookIndex].id} language={language} />
               </div>
             ) : (
               <div className="text-center py-12">

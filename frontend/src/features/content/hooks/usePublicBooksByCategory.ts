@@ -20,9 +20,13 @@ export function usePublicBooksByCategory(categoryId: number | null) {
       } catch (error: any) {
         // Log error for debugging
         console.error('Failed to fetch published books:', {
+          categoryId,
           status: error.response?.status,
+          statusText: error.response?.statusText,
           message: error.message,
-          url: error.config?.url
+          url: error.config?.url || error.request?.responseURL,
+          error: error.response?.data || error,
+          fullError: error
         })
         
         // Return empty array - this ensures DRAFT books are NEVER shown

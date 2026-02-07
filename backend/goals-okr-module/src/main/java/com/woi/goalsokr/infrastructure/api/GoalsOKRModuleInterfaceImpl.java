@@ -272,7 +272,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     public InitiativeSummary createInitiative(Long userId, Long keyResultId, Long userObjectiveInstanceId,
                                                 String title, String description, LocalDate targetDate) {
         InitiativeResult result = createInitiativeHandler.handle(
-            new CreateInitiativeCommand(userId, keyResultId, userObjectiveInstanceId, title, description, targetDate));
+            new CreateInitiativeCommand(userId, keyResultId, userObjectiveInstanceId, title, description, targetDate, null));
         return toInitiativeSummary(result);
     }
 
@@ -303,7 +303,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     @Override
     public InitiativeSummary updateInitiative(Long initiativeId, String title, String description, LocalDate targetDate) {
         InitiativeResult result = updateInitiativeHandler.handle(
-            new UpdateInitiativeCommand(initiativeId, title, description, targetDate));
+            new UpdateInitiativeCommand(initiativeId, title, description, targetDate, null));
         return toInitiativeSummary(result);
     }
 

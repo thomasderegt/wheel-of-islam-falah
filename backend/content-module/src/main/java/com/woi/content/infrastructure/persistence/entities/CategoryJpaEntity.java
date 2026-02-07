@@ -24,6 +24,12 @@ public class CategoryJpaEntity {
     @Column(name = "title_en", nullable = false)
     private String titleEn;
     
+    @Column(name = "subtitle_nl")
+    private String subtitleNl;
+    
+    @Column(name = "subtitle_en")
+    private String subtitleEn;
+    
     @Column(name = "description_nl", columnDefinition = "TEXT")
     private String descriptionNl;
     
@@ -57,6 +63,12 @@ public class CategoryJpaEntity {
     
     public String getDescriptionEn() { return descriptionEn; }
     public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
+    
+    public String getSubtitleNl() { return subtitleNl; }
+    public void setSubtitleNl(String subtitleNl) { this.subtitleNl = subtitleNl; }
+    
+    public String getSubtitleEn() { return subtitleEn; }
+    public void setSubtitleEn(String subtitleEn) { this.subtitleEn = subtitleEn; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

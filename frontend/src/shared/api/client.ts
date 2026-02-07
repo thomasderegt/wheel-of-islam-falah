@@ -66,6 +66,7 @@ apiClient.interceptors.response.use(
       const shouldSuppress = url.includes('/versions/current') || 
                             url.includes('/public/') || 
                             url.includes('/key-result-progress') ||
+                            url.includes('/key-results') ||
                             url.includes('/life-domains') ||
                             url.includes('/categories')
       

@@ -1,12 +1,10 @@
 'use client'
 
 /**
- * Home Page Component - Drie Cirkels Keuzepagina
+ * Home Page Component - Success-Mode
  * 
- * Protected home page met drie grote cirkels:
- * - Build Your Dunya
- * - Strengthen Your Inner World
- * - Prepare for the Ākhirah
+ * Main entry point for the Success-Mode
+ * Shows categories in a circular navigation
  */
 
 import { ProtectedRoute } from '@/features/auth'

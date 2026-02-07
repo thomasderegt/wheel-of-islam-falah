@@ -83,6 +83,8 @@ public class GetPublicCategoriesQueryHandler {
             category.getId(),
             category.getTitleNl(),
             category.getTitleEn(),
+            category.getSubtitleNl(),
+            category.getSubtitleEn(),
             category.getDescriptionNl(),
             category.getDescriptionEn(),
             bookSummaries

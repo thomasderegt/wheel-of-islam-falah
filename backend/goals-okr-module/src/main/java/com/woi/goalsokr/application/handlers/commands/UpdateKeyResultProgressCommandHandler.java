@@ -7,6 +7,7 @@ import com.woi.goalsokr.domain.repositories.KeyResultProgressRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
+import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +20,28 @@ public class UpdateKeyResultProgressCommandHandler {
     private final KeyResultRepository keyResultRepository;
     private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
     private final UserGoalInstanceRepository userGoalInstanceRepository;
+    private final UserModuleInterface userModule;
 
     public UpdateKeyResultProgressCommandHandler(
             KeyResultProgressRepository progressRepository,
             KeyResultRepository keyResultRepository,
             UserObjectiveInstanceRepository userObjectiveInstanceRepository,
-            UserGoalInstanceRepository userGoalInstanceRepository) {
+            UserGoalInstanceRepository userGoalInstanceRepository,
+            UserModuleInterface userModule) {
         this.progressRepository = progressRepository;
         this.keyResultRepository = keyResultRepository;
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userGoalInstanceRepository = userGoalInstanceRepository;
+        this.userModule = userModule;
     }
 
     @Transactional
     public KeyResultProgressResult handle(UpdateKeyResultProgressCommand command) {
+        // Validate user exists
+        if (!userModule.userExists(command.userId())) {
+            throw new IllegalArgumentException("User not found: " + command.userId());
+        }
+
         // Validate key result exists
         keyResultRepository.findById(command.keyResultId())
             .orElseThrow(() -> new IllegalArgumentException("Key result not found: " + command.keyResultId()));

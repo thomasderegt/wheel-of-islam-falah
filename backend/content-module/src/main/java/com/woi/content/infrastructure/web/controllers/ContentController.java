@@ -1221,6 +1221,8 @@ public class ContentController {
         dto.setCategoryNumber(result.categoryNumber());
         dto.setTitleNl(result.titleNl());
         dto.setTitleEn(result.titleEn());
+        dto.setSubtitleNl(result.subtitleNl());
+        dto.setSubtitleEn(result.subtitleEn());
         dto.setDescriptionNl(result.descriptionNl());
         dto.setDescriptionEn(result.descriptionEn());
         dto.setCreatedAt(result.createdAt());

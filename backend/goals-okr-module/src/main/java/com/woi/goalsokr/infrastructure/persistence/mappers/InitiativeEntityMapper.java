@@ -35,6 +35,7 @@ public class InitiativeEntityMapper {
         }
         
         domain.setTargetDate(jpaEntity.getTargetDate());
+        domain.setLearningFlowEnrollmentId(jpaEntity.getLearningFlowEnrollmentId());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
 
@@ -54,6 +55,7 @@ public class InitiativeEntityMapper {
         jpaEntity.setDescription(domain.getDescription());
         jpaEntity.setStatus(domain.getStatus() != null ? domain.getStatus().name() : null);
         jpaEntity.setTargetDate(domain.getTargetDate());
+        jpaEntity.setLearningFlowEnrollmentId(domain.getLearningFlowEnrollmentId());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
 

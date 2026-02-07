@@ -96,6 +96,18 @@ public class KeyResultProgress {
     public void setId(Long id) { this.id = id; }
     public void setKeyResultId(Long keyResultId) { this.keyResultId = keyResultId; }
     public void setUserObjectiveInstanceId(Long userObjectiveInstanceId) { this.userObjectiveInstanceId = userObjectiveInstanceId; }
-    public void setCurrentValue(BigDecimal currentValue) { this.currentValue = currentValue; }
+    /**
+     * Setter for currentValue - ONLY for entity mapping (infrastructure layer)
+     * Validates that currentValue is >= 0 if not null (business invariant)
+     * 
+     * @param currentValue Current progress value (can be null, must be >= 0 if set)
+     * @throws IllegalArgumentException if currentValue is negative
+     */
+    public void setCurrentValue(BigDecimal currentValue) {
+        if (currentValue != null && currentValue.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Current value cannot be negative");
+        }
+        this.currentValue = currentValue;
+    }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

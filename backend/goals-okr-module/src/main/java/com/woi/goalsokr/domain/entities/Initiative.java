@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
  * - title is required
  * - status defaults to ACTIVE
  * - targetDate can be null (no deadline)
+ * - learningFlowEnrollmentId is optional (soft reference to learning flow enrollment)
  * - userId is accessed via UserObjectiveInstance → UserGoalInstance (strikt DDD)
  */
 public class Initiative {
@@ -26,6 +27,7 @@ public class Initiative {
     private String description;
     private GoalStatus status;
     private LocalDate targetDate;
+    private Long learningFlowEnrollmentId; // Optional - Soft reference to learning.learning_flow_enrollments
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -116,6 +118,22 @@ public class Initiative {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Link initiative to a learning flow enrollment
+     */
+    public void linkLearningFlowEnrollment(Long learningFlowEnrollmentId) {
+        this.learningFlowEnrollmentId = learningFlowEnrollmentId;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Unlink initiative from learning flow enrollment
+     */
+    public void unlinkLearningFlowEnrollment() {
+        this.learningFlowEnrollmentId = null;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     // Getters
     public Long getId() { return id; }
     public Long getKeyResultId() { return keyResultId; }
@@ -124,6 +142,7 @@ public class Initiative {
     public String getDescription() { return description; }
     public GoalStatus getStatus() { return status; }
     public LocalDate getTargetDate() { return targetDate; }
+    public Long getLearningFlowEnrollmentId() { return learningFlowEnrollmentId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -131,7 +150,19 @@ public class Initiative {
     public void setId(Long id) { this.id = id; }
     public void setKeyResultId(Long keyResultId) { this.keyResultId = keyResultId; }
     public void setUserObjectiveInstanceId(Long userObjectiveInstanceId) { this.userObjectiveInstanceId = userObjectiveInstanceId; }
-    public void setTitle(String title) { this.title = title; }
+    /**
+     * Setter for title - ONLY for entity mapping (infrastructure layer)
+     * Validates that title is not null or empty (business invariant)
+     * 
+     * @param title Initiative title (required)
+     * @throws IllegalArgumentException if title is null or empty
+     */
+    public void setTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be null or empty");
+        }
+        this.title = title.trim();
+    }
     public void setDescription(String description) { this.description = description; }
     public void setStatus(GoalStatus status) {
         if (status == null) {
@@ -141,6 +172,7 @@ public class Initiative {
         this.updatedAt = LocalDateTime.now();
     }
     public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
+    public void setLearningFlowEnrollmentId(Long learningFlowEnrollmentId) { this.learningFlowEnrollmentId = learningFlowEnrollmentId; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

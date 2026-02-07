@@ -9,7 +9,8 @@ public record UpdateInitiativeCommand(
     Long initiativeId,
     String title,
     String description,
-    LocalDate targetDate
+    LocalDate targetDate,
+    Long learningFlowEnrollmentId
 ) {
     public UpdateInitiativeCommand {
         if (initiativeId == null) {

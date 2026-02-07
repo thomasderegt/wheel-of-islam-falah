@@ -18,6 +18,8 @@ public class CategoryEntityMapper {
         category.setCategoryNumber(jpaEntity.getCategoryNumber());
         category.setTitleNl(jpaEntity.getTitleNl());
         category.setTitleEn(jpaEntity.getTitleEn());
+        category.setSubtitleNl(jpaEntity.getSubtitleNl());
+        category.setSubtitleEn(jpaEntity.getSubtitleEn());
         category.setDescriptionNl(jpaEntity.getDescriptionNl());
         category.setDescriptionEn(jpaEntity.getDescriptionEn());
         category.setCreatedAt(jpaEntity.getCreatedAt());
@@ -36,6 +38,8 @@ public class CategoryEntityMapper {
         jpaEntity.setCategoryNumber(domain.getCategoryNumber());
         jpaEntity.setTitleNl(domain.getTitleNl());
         jpaEntity.setTitleEn(domain.getTitleEn());
+        jpaEntity.setSubtitleNl(domain.getSubtitleNl());
+        jpaEntity.setSubtitleEn(domain.getSubtitleEn());
         jpaEntity.setDescriptionNl(domain.getDescriptionNl());
         jpaEntity.setDescriptionEn(domain.getDescriptionEn());
         jpaEntity.setCreatedAt(domain.getCreatedAt());

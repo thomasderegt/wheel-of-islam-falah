@@ -80,6 +80,28 @@
   /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
   /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
   
+  /* NavCategoryCircle kleuren - zachte roze/paarse tinten */
+  --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
+  --nav-category-circle-sector-0-mid1: oklch(0.68 0.1 30);     /* Sector 0 gradient mid 1 */
+  --nav-category-circle-sector-0-mid2: oklch(0.72 0.1 60);     /* Sector 0 gradient mid 2 */
+  --nav-category-circle-sector-0-end: oklch(0.68 0.1 90);      /* Sector 0 gradient end */
+  --nav-category-circle-sector-1-start: oklch(0.65 0.1 120);   /* Sector 1 gradient start */
+  --nav-category-circle-sector-1-mid: oklch(0.6 0.1 150);      /* Sector 1 gradient mid */
+  --nav-category-circle-sector-1-end: oklch(0.55 0.1 180);     /* Sector 1 gradient end */
+  --nav-category-circle-sector-2-start: oklch(0.6 0.1 210);    /* Sector 2 gradient start */
+  --nav-category-circle-sector-2-mid: oklch(0.65 0.1 240);     /* Sector 2 gradient mid */
+  --nav-category-circle-sector-2-end: oklch(0.68 0.1 270);      /* Sector 2 gradient end */
+  --nav-category-circle-sector-3-start: oklch(0.65 0.1 300);   /* Sector 3 gradient start */
+  --nav-category-circle-sector-3-mid: oklch(0.6 0.1 330);      /* Sector 3 gradient mid */
+  --nav-category-circle-sector-3-end: oklch(0.55 0.1 0);       /* Sector 3 gradient end */
+  --nav-category-circle-sector-stroke: oklch(0.3 0.1 330);     /* Sector stroke color (donker roze) */
+  --nav-category-circle-sector-hover: oklch(0.95 0.05 330);    /* Sector hover fill (licht roze) */
+  --nav-category-circle-falah-start: oklch(1 0 0);             /* Falah gradient start (wit) */
+  --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
+  --nav-category-circle-falah-end: oklch(0.98 0 0);            /* Falah gradient end (bijna wit) */
+  --nav-category-circle-falah-stroke: oklch(0.3 0.1 330);      /* Falah stroke color (donker roze) */
+  --nav-category-circle-falah-hover: oklch(0.95 0.05 330);     /* Falah hover fill (licht roze) */
+  
   /* Achtergrond afbeelding */
   --background-image: url('/BackgroundPictures/BackgroundAdultWoman.png');  /* Achtergrond voor volwassen vrouwen */
   
@@ -154,6 +176,28 @@
   
   /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
   /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  
+  /* NavCategoryCircle kleuren - blauwe tinten */
+  --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
+  --nav-category-circle-sector-0-mid1: oklch(0.68 0.1 30);     /* Sector 0 gradient mid 1 */
+  --nav-category-circle-sector-0-mid2: oklch(0.72 0.1 60);      /* Sector 0 gradient mid 2 */
+  --nav-category-circle-sector-0-end: oklch(0.68 0.1 90);       /* Sector 0 gradient end */
+  --nav-category-circle-sector-1-start: oklch(0.65 0.1 120);   /* Sector 1 gradient start */
+  --nav-category-circle-sector-1-mid: oklch(0.6 0.1 150);       /* Sector 1 gradient mid */
+  --nav-category-circle-sector-1-end: oklch(0.55 0.1 180);     /* Sector 1 gradient end */
+  --nav-category-circle-sector-2-start: oklch(0.6 0.1 210);   /* Sector 2 gradient start */
+  --nav-category-circle-sector-2-mid: oklch(0.65 0.1 240);     /* Sector 2 gradient mid */
+  --nav-category-circle-sector-2-end: oklch(0.68 0.1 270);     /* Sector 2 gradient end */
+  --nav-category-circle-sector-3-start: oklch(0.65 0.1 300);   /* Sector 3 gradient start */
+  --nav-category-circle-sector-3-mid: oklch(0.6 0.1 330);      /* Sector 3 gradient mid */
+  --nav-category-circle-sector-3-end: oklch(0.55 0.1 0);       /* Sector 3 gradient end */
+  --nav-category-circle-sector-stroke: oklch(0.3 0.1 240);     /* Sector stroke color (donker blauw) */
+  --nav-category-circle-sector-hover: oklch(0.94 0.04 240);     /* Sector hover fill (licht blauw) */
+  --nav-category-circle-falah-start: oklch(1 0 0);             /* Falah gradient start (wit) */
+  --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
+  --nav-category-circle-falah-end: oklch(0.98 0 0);             /* Falah gradient end (bijna wit) */
+  --nav-category-circle-falah-stroke: oklch(0.3 0.1 240);      /* Falah stroke color (donker blauw) */
+  --nav-category-circle-falah-hover: oklch(0.94 0.04 240);      /* Falah hover fill (licht blauw) */
   
   /* Achtergrond afbeelding */
   --background-image: url('/BackgroundPictures/BackgroundAdult.png');  /* Achtergrond voor volwassen mannen */
@@ -230,6 +274,28 @@
   /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
   /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
   
+  /* NavCategoryCircle kleuren - levendige geel/oranje tinten */
+  --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
+  --nav-category-circle-sector-0-mid1: oklch(0.68 0.1 30);      /* Sector 0 gradient mid 1 */
+  --nav-category-circle-sector-0-mid2: oklch(0.72 0.1 60);      /* Sector 0 gradient mid 2 */
+  --nav-category-circle-sector-0-end: oklch(0.68 0.1 90);       /* Sector 0 gradient end */
+  --nav-category-circle-sector-1-start: oklch(0.65 0.1 120);   /* Sector 1 gradient start */
+  --nav-category-circle-sector-1-mid: oklch(0.6 0.1 150);       /* Sector 1 gradient mid */
+  --nav-category-circle-sector-1-end: oklch(0.55 0.1 180);      /* Sector 1 gradient end */
+  --nav-category-circle-sector-2-start: oklch(0.6 0.1 210);    /* Sector 2 gradient start */
+  --nav-category-circle-sector-2-mid: oklch(0.65 0.1 240);      /* Sector 2 gradient mid */
+  --nav-category-circle-sector-2-end: oklch(0.68 0.1 270);       /* Sector 2 gradient end */
+  --nav-category-circle-sector-3-start: oklch(0.65 0.1 300);    /* Sector 3 gradient start */
+  --nav-category-circle-sector-3-mid: oklch(0.6 0.1 330);       /* Sector 3 gradient mid */
+  --nav-category-circle-sector-3-end: oklch(0.55 0.1 0);        /* Sector 3 gradient end */
+  --nav-category-circle-sector-stroke: oklch(0.3 0.15 60);      /* Sector stroke color (donker oranje) */
+  --nav-category-circle-sector-hover: oklch(0.96 0.08 60);      /* Sector hover fill (licht geel) */
+  --nav-category-circle-falah-start: oklch(1 0 0);              /* Falah gradient start (wit) */
+  --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
+  --nav-category-circle-falah-end: oklch(0.98 0 0);             /* Falah gradient end (bijna wit) */
+  --nav-category-circle-falah-stroke: oklch(0.3 0.15 60);       /* Falah stroke color (donker oranje) */
+  --nav-category-circle-falah-hover: oklch(0.96 0.08 60);       /* Falah hover fill (licht geel) */
+  
   /* Achtergrond afbeelding */
   --background-image: url('/BackgroundPictures/BackgroundYoungAdultMan.png');  /* Standaard achtergrond voor jonge volwassen mannen */
   
@@ -305,6 +371,28 @@
   /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
   /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
   
+  /* NavCategoryCircle kleuren - levendige roze/paarse tinten */
+  --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
+  --nav-category-circle-sector-0-mid1: oklch(0.68 0.1 30);      /* Sector 0 gradient mid 1 */
+  --nav-category-circle-sector-0-mid2: oklch(0.72 0.1 60);      /* Sector 0 gradient mid 2 */
+  --nav-category-circle-sector-0-end: oklch(0.68 0.1 90);       /* Sector 0 gradient end */
+  --nav-category-circle-sector-1-start: oklch(0.65 0.1 120);   /* Sector 1 gradient start */
+  --nav-category-circle-sector-1-mid: oklch(0.6 0.1 150);       /* Sector 1 gradient mid */
+  --nav-category-circle-sector-1-end: oklch(0.55 0.1 180);      /* Sector 1 gradient end */
+  --nav-category-circle-sector-2-start: oklch(0.6 0.1 210);     /* Sector 2 gradient start */
+  --nav-category-circle-sector-2-mid: oklch(0.65 0.1 240);      /* Sector 2 gradient mid */
+  --nav-category-circle-sector-2-end: oklch(0.68 0.1 270);     /* Sector 2 gradient end */
+  --nav-category-circle-sector-3-start: oklch(0.65 0.1 300);    /* Sector 3 gradient start */
+  --nav-category-circle-sector-3-mid: oklch(0.6 0.1 330);       /* Sector 3 gradient mid */
+  --nav-category-circle-sector-3-end: oklch(0.55 0.1 0);        /* Sector 3 gradient end */
+  --nav-category-circle-sector-stroke: oklch(0.3 0.12 330);     /* Sector stroke color (donker roze) */
+  --nav-category-circle-sector-hover: oklch(0.96 0.06 330);     /* Sector hover fill (licht roze) */
+  --nav-category-circle-falah-start: oklch(1 0 0);              /* Falah gradient start (wit) */
+  --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
+  --nav-category-circle-falah-end: oklch(0.98 0 0);             /* Falah gradient end (bijna wit) */
+  --nav-category-circle-falah-stroke: oklch(0.3 0.12 330);      /* Falah stroke color (donker roze) */
+  --nav-category-circle-falah-hover: oklch(0.96 0.06 330);      /* Falah hover fill (licht roze) */
+  
   /* Achtergrond afbeelding */
   --background-image: url('/BackgroundPictures/BackgroundYoungAdultWoman.png');  /* Standaard achtergrond voor jonge volwassen vrouwen */
   
@@ -317,9 +405,34 @@
 }
 
 /* ============================================
-   UNIVERSAL THEME - Standaard kleuren (geen override)
+   WIREFRAME THEME - Alleen borders, geen fills
    ============================================
    
-   Universal theme gebruikt de standaard :root waarden uit globals.css.
-   Geen extra CSS nodig - dit is de default.
+   Wireframe theme gebruikt alleen borders/outlines,
+   geen gevulde kleuren. Perfect voor prototyping.
 */
+
+/* Als er geen data-user-group is, gebruik wireframe stijl */
+:root:not([data-user-group]) {
+  /* Circular Menu kleuren - wireframe (transparante fills, zwarte borders) */
+  --circular-menu-chapter-fill: transparent;   /* Geen fill - wireframe */
+  --circular-menu-chapter-hover: oklch(0.95 0 0);   /* Lichtgrijs bij hover */
+  --circular-menu-chapter-stroke: oklch(0 0 0);  /* Zwart - chapter rand */
+  --circular-menu-chapter-text: oklch(0 0 0);    /* Zwart - chapter tekst */
+  --circular-menu-center-fill: transparent;     /* Geen fill - wireframe */
+  --circular-menu-center-fill-expanded: oklch(0.95 0 0); /* Lichtgrijs bij expand */
+  --circular-menu-center-stroke: oklch(0 0 0);   /* Zwart - center circle rand */
+  --circular-menu-center-text: oklch(0 0 0);   /* Zwart - center circle tekst */
+  
+  /* Regenboog chapter kleuren - allemaal transparant (wireframe) */
+  --circular-menu-chapter-0: transparent;
+  --circular-menu-chapter-1: transparent;
+  --circular-menu-chapter-2: transparent;
+  --circular-menu-chapter-3: transparent;
+  --circular-menu-chapter-4: transparent;
+  --circular-menu-chapter-5: transparent;
+  --circular-menu-chapter-6: transparent;
+  --circular-menu-chapter-7: transparent;
+  --circular-menu-chapter-8: transparent;
+  --circular-menu-chapter-9: transparent;
+}

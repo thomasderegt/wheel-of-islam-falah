@@ -11,7 +11,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth'
 import { getEnrollmentsForUser } from '@/features/learning/api/learningApi'
 import { getPublicBooksByCategory, getPublicChaptersByBook, getCategoryByNumber } from '@/features/content/api/contentApi'
-import { SYSTEM_CATEGORIES } from '@/shared/constants/systemCategories'
 
 interface DashboardData {
   dunya: {
@@ -55,7 +54,7 @@ export function useFalahDashboardData() {
 
       // Load content progress for each category
       // Category #1: Dunya
-      const dunyaCategory = await getCategoryByNumber(SYSTEM_CATEGORIES.BUILD_YOUR_DUNYA.categoryNumber)
+      const dunyaCategory = await getCategoryByNumber(1)
       const dunyaBooks = await getPublicBooksByCategory(dunyaCategory.id)
       let dunyaChaptersRead = 0
       for (const book of dunyaBooks) {
@@ -64,7 +63,7 @@ export function useFalahDashboardData() {
       }
 
       // Category #2: Inner World (already have enrollments)
-      const innerWorldCategory = await getCategoryByNumber(SYSTEM_CATEGORIES.STRENGTHEN_INNER_WORLD.categoryNumber)
+      const innerWorldCategory = await getCategoryByNumber(2)
       const innerWorldBooks = await getPublicBooksByCategory(innerWorldCategory.id)
       let sectionsRead = 0
       for (const enrollment of enrollments) {
@@ -73,7 +72,7 @@ export function useFalahDashboardData() {
       }
 
       // Category #3: Akhirah
-      const akhirahCategory = await getCategoryByNumber(SYSTEM_CATEGORIES.PREPARE_FOR_AKHIRAH.categoryNumber)
+      const akhirahCategory = await getCategoryByNumber(3)
       const akhirahBooks = await getPublicBooksByCategory(akhirahCategory.id)
       // TODO: Track good deeds when that module is implemented
 

@@ -16,7 +16,7 @@ public class GoalJpaEntity {
     private Long id;
 
     @Column(name = "life_domain_id", nullable = false)
-    private Long lifeDomainId; // FK to goals.life_domains
+    private Long lifeDomainId; // FK to goals_okr.life_domains
 
     @Column(name = "title_nl", nullable = false)
     private String titleNl;

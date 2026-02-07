@@ -14,6 +14,7 @@ public record InitiativeResult(
     String description,
     String status,
     LocalDate targetDate,
+    Long learningFlowEnrollmentId,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -32,6 +33,7 @@ public record InitiativeResult(
             initiative.getDescription(),
             initiative.getStatus().name(),
             initiative.getTargetDate(),
+            initiative.getLearningFlowEnrollmentId(),
             initiative.getCreatedAt(),
             initiative.getUpdatedAt()
         );

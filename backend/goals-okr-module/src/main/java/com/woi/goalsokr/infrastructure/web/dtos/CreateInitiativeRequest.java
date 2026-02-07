@@ -21,5 +21,6 @@ public record CreateInitiativeRequest(
     String title,
     
     String description,
-    LocalDate targetDate
+    LocalDate targetDate,
+    Long learningFlowEnrollmentId
 ) {}

@@ -59,7 +59,6 @@ export default function CategoryPage() {
   }
 
   const categoryTitle = language === 'nl' ? category?.titleNl : category?.titleEn
-  const categoryDescription = language === 'nl' ? category?.descriptionNl : category?.descriptionEn
 
   return (
     <ProtectedRoute>
@@ -75,9 +74,6 @@ export default function CategoryPage() {
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">
                 {categoryTitle || `Category ${categoryId}`}
               </h1>
-              {categoryDescription && (
-                <p className="text-muted-foreground text-lg">{categoryDescription}</p>
-              )}
             </div>
 
             {/* BookSwitcher */}

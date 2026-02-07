@@ -35,6 +35,9 @@ public class InitiativeJpaEntity {
     @Column(name = "target_date")
     private LocalDate targetDate;
 
+    @Column(name = "learning_flow_enrollment_id")
+    private Long learningFlowEnrollmentId; // Optional - Soft reference to learning.learning_flow_enrollments
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -65,6 +68,9 @@ public class InitiativeJpaEntity {
 
     public LocalDate getTargetDate() { return targetDate; }
     public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
+
+    public Long getLearningFlowEnrollmentId() { return learningFlowEnrollmentId; }
+    public void setLearningFlowEnrollmentId(Long learningFlowEnrollmentId) { this.learningFlowEnrollmentId = learningFlowEnrollmentId; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

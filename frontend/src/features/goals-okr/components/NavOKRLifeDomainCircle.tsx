@@ -10,12 +10,14 @@
  * - Click handlers voor navigatie naar /goals-okr
  */
 
-import { useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useState, useEffect, useMemo } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useLifeDomains } from '../hooks/useLifeDomains'
+import { useWheels } from '../hooks/useWheels'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Button } from '@/shared/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/components/ui/toggle-group'
 import type { LifeDomainDTO } from '../api/goalsOkrApi'
 
 interface NavOKRLifeDomainCircleProps {
@@ -25,13 +27,50 @@ interface NavOKRLifeDomainCircleProps {
 export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCircleProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const { data: lifeDomains, isLoading } = useLifeDomains()
+  const searchParams = useSearchParams()
+  const { data: lifeDomains, isLoading: isLoadingDomains } = useLifeDomains()
+  const { data: wheels, isLoading: isLoadingWheels } = useWheels()
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
+  
+  // State for selected wheel
+  const [selectedWheelId, setSelectedWheelId] = useState<number | null>(null)
   
   const [centerDomain, setCenterDomain] = useState<LifeDomainDTO | null>(null)
   const [ringDomains, setRingDomains] = useState<LifeDomainDTO[]>([])
   const [ringRotation, setRingRotation] = useState(0)
+
+  // Set wheel from URL query parameter or default to Wheel of Life
+  useEffect(() => {
+    if (!wheels || wheels.length === 0) return
+    
+    // Check for wheelId in URL query parameter (always respect URL)
+    const wheelIdParam = searchParams?.get('wheelId')
+    if (wheelIdParam) {
+      const wheelId = Number(wheelIdParam)
+      const wheel = wheels.find(w => w.id === wheelId)
+      if (wheel && selectedWheelId !== wheel.id) {
+        setSelectedWheelId(wheel.id)
+        return
+      }
+    } else if (selectedWheelId === null) {
+      // Only set default if no wheelId in URL and no wheel selected yet
+      // Default to Wheel of Life
+      const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
+      if (wheelOfLife) {
+        setSelectedWheelId(wheelOfLife.id)
+      } else if (wheels.length > 0) {
+        // Fallback to first wheel if WHEEL_OF_LIFE not found
+        setSelectedWheelId(wheels[0].id)
+      }
+    }
+  }, [wheels, searchParams])
+
+  // Filter life domains by selected wheel
+  const filteredDomains = useMemo(() => {
+    if (!lifeDomains || !selectedWheelId) return []
+    return lifeDomains.filter(d => d.wheelId === selectedWheelId)
+  }, [lifeDomains, selectedWheelId])
 
   // Helper function to get domain title based on language
   const getDomainTitle = (domain: LifeDomainDTO): string => {
@@ -58,12 +97,16 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
     return null
   }
 
-  // Process life domains data
+  // Process filtered life domains data
   useEffect(() => {
-    if (!lifeDomains || lifeDomains.length === 0) return
+    if (!filteredDomains || filteredDomains.length === 0) {
+      setCenterDomain(null)
+      setRingDomains([])
+      return
+    }
 
     // Sort by displayOrder
-    const sorted = [...lifeDomains].sort((a, b) => a.displayOrder - b.displayOrder)
+    const sorted = [...filteredDomains].sort((a, b) => a.displayOrder - b.displayOrder)
     
     // Find center domain (displayOrder 0, or first one)
     const center = sorted.find(d => d.displayOrder === 0) || sorted[0]
@@ -72,7 +115,7 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
     // Rest go in ring
     const ring = sorted.filter(d => d.id !== center.id)
     setRingDomains(ring)
-  }, [lifeDomains])
+  }, [filteredDomains])
 
   // Animate ring rotation when navigating to goals-okr page (like NavBookCircle)
   useEffect(() => {
@@ -98,13 +141,26 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
 
   const handleCenterClick = () => {
     if (centerDomain) {
-      router.push(`/goals-okr/life-domains/${centerDomain.id}`)
+      router.push(`/goals-okr/life-domains/${centerDomain.id}?wheelId=${selectedWheelId}`)
     }
   }
 
   const handleDomainClick = (domainId: number) => {
-    router.push(`/goals-okr/life-domains/${domainId}`)
+    router.push(`/goals-okr/life-domains/${domainId}?wheelId=${selectedWheelId}`)
   }
+
+  const handleWheelChange = (value: string) => {
+    if (value) {
+      const wheelId = Number(value)
+      setSelectedWheelId(wheelId)
+      // Update URL without navigation
+      const params = new URLSearchParams(searchParams?.toString() || '')
+      params.set('wheelId', value)
+      router.replace(`/goals-okr?${params.toString()}`, { scroll: false })
+    }
+  }
+
+  const isLoading = isLoadingDomains || isLoadingWheels
 
   if (isLoading) {
     return (
@@ -136,6 +192,40 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
 
   return (
     <div className="w-full space-y-4">
+      {/* Wheel Toggle - rechtsboven (Life / Business) */}
+      {wheels && wheels.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <ToggleGroup
+            type="single"
+            value={selectedWheelId?.toString() || ''}
+            onValueChange={handleWheelChange}
+            className="bg-muted rounded-full p-1"
+          >
+            {wheels
+              .filter(wheel => 
+                wheel.wheelKey === 'WHEEL_OF_LIFE' || 
+                wheel.wheelKey === 'WHEEL_OF_BUSINESS'
+              )
+              .map((wheel) => {
+                const label = wheel.wheelKey === 'WHEEL_OF_LIFE' 
+                  ? (language === 'nl' ? 'Life' : 'Life')
+                  : (language === 'nl' ? 'Business' : 'Business')
+                
+                return (
+                  <ToggleGroupItem
+                    key={wheel.id}
+                    value={wheel.id.toString()}
+                    aria-label={label}
+                    className="rounded-full px-4 py-1.5"
+                  >
+                    {label}
+                  </ToggleGroupItem>
+                )
+              })}
+          </ToggleGroup>
+        </div>
+      )}
+
       <div className="relative w-full aspect-square">
         {/* SVG Circular Menu */}
         <svg 

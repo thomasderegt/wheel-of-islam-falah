@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
 
 /**
  * JPA entity for LifeDomain (database mapping)
- * Points to goals.life_domains (shared schema)
+ * Points to goals_okr.life_domains
  */
 @Entity
-@Table(name = "life_domains", schema = "goals")
+@Table(name = "life_domains", schema = "goals_okr")
 public class LifeDomainJpaEntity {
     
     @Id
@@ -36,6 +36,9 @@ public class LifeDomainJpaEntity {
     
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
+    
+    @Column(name = "wheel_id")
+    private Long wheelId; // FK to goals_okr.wheels
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -67,6 +70,9 @@ public class LifeDomainJpaEntity {
     
     public Integer getDisplayOrder() { return displayOrder; }
     public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
+    
+    public Long getWheelId() { return wheelId; }
+    public void setWheelId(Long wheelId) { this.wheelId = wheelId; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

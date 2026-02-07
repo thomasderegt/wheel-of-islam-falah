@@ -15,6 +15,8 @@ public class Category {
     private Integer categoryNumber;  // Optional (for stable codes like CAT01)
     private String titleNl;
     private String titleEn;
+    private String subtitleNl;
+    private String subtitleEn;
     private String descriptionNl;
     private String descriptionEn;
     private LocalDateTime createdAt;
@@ -98,6 +100,8 @@ public class Category {
     public Integer getCategoryNumber() { return categoryNumber; }
     public String getTitleNl() { return titleNl; }
     public String getTitleEn() { return titleEn; }
+    public String getSubtitleNl() { return subtitleNl; }
+    public String getSubtitleEn() { return subtitleEn; }
     public String getDescriptionNl() { return descriptionNl; }
     public String getDescriptionEn() { return descriptionEn; }
     public LocalDateTime getCreatedAt() { return createdAt; }
@@ -156,6 +160,16 @@ public class Category {
      * DO NOT use in business logic - use updateDescriptions() method instead
      */
     public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
+    
+    /**
+     * Setter for subtitleNl - ONLY for entity mapping (infrastructure layer)
+     */
+    public void setSubtitleNl(String subtitleNl) { this.subtitleNl = subtitleNl; }
+    
+    /**
+     * Setter for subtitleEn - ONLY for entity mapping (infrastructure layer)
+     */
+    public void setSubtitleEn(String subtitleEn) { this.subtitleEn = subtitleEn; }
     
     /**
      * Get entity type for ContentStatus lookup

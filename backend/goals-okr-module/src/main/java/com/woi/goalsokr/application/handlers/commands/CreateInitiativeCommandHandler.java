@@ -7,6 +7,7 @@ import com.woi.goalsokr.domain.repositories.InitiativeRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
+import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +20,28 @@ public class CreateInitiativeCommandHandler {
     private final KeyResultRepository keyResultRepository;
     private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
     private final UserGoalInstanceRepository userGoalInstanceRepository;
+    private final UserModuleInterface userModule;
 
     public CreateInitiativeCommandHandler(
             InitiativeRepository initiativeRepository,
             KeyResultRepository keyResultRepository,
             UserObjectiveInstanceRepository userObjectiveInstanceRepository,
-            UserGoalInstanceRepository userGoalInstanceRepository) {
+            UserGoalInstanceRepository userGoalInstanceRepository,
+            UserModuleInterface userModule) {
         this.initiativeRepository = initiativeRepository;
         this.keyResultRepository = keyResultRepository;
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userGoalInstanceRepository = userGoalInstanceRepository;
+        this.userModule = userModule;
     }
 
     @Transactional
     public InitiativeResult handle(CreateInitiativeCommand command) {
+        // Validate user exists
+        if (!userModule.userExists(command.userId())) {
+            throw new IllegalArgumentException("User not found: " + command.userId());
+        }
+
         // Validate key result exists
         keyResultRepository.findById(command.keyResultId())
             .orElseThrow(() -> new IllegalArgumentException("Key result not found: " + command.keyResultId()));
@@ -62,6 +71,9 @@ public class CreateInitiativeCommandHandler {
         }
         if (command.targetDate() != null) {
             initiative.updateTargetDate(command.targetDate());
+        }
+        if (command.learningFlowEnrollmentId() != null) {
+            initiative.linkLearningFlowEnrollment(command.learningFlowEnrollmentId());
         }
 
         // Save initiative

@@ -11,7 +11,8 @@ public record LifeDomainResult(
     String descriptionNl,
     String descriptionEn,
     String iconName,
-    Integer displayOrder
+    Integer displayOrder,
+    Long wheelId
 ) {
     public static LifeDomainResult from(com.woi.goalsokr.domain.entities.LifeDomain lifeDomain) {
         return new LifeDomainResult(
@@ -22,7 +23,8 @@ public record LifeDomainResult(
             lifeDomain.getDescriptionNl(),
             lifeDomain.getDescriptionEn(),
             lifeDomain.getIconName(),
-            lifeDomain.getDisplayOrder()
+            lifeDomain.getDisplayOrder(),
+            lifeDomain.getWheelId()
         );
     }
 }

@@ -17,6 +17,7 @@ import { useAuth } from '@/features/auth'
 import { useAddKanbanItem } from '../hooks/useKanbanItems'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
+import { CreateUserGoalDialog } from './CreateUserGoalDialog'
 import { Plus } from 'lucide-react'
 import type { GoalDTO } from '../api/goalsOkrApi'
 
@@ -36,6 +37,7 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
   // Modal state
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<GoalDTO | null>(null)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
   // Helper function to get goal title based on language
   const getGoalTitle = (goal: GoalDTO): string => {
@@ -104,6 +106,42 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
     <>
       <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Create Personal Goal Card - First in grid */}
+          {user?.id && (
+            <div
+              onClick={() => setCreateDialogOpen(true)}
+              className={`
+                p-6 rounded-lg border-2 border-dashed cursor-pointer transition-all bg-card relative
+                ${isWireframeTheme 
+                  ? 'border-border hover:border-foreground hover:bg-accent' 
+                  : 'border-primary/40 hover:border-primary hover:bg-primary/10'}
+              `}
+            >
+              <div className="flex flex-col items-center justify-center text-center space-y-2 min-h-[120px]">
+                <div className={`
+                  p-3 rounded-full
+                  ${isWireframeTheme 
+                    ? 'bg-muted' 
+                    : 'bg-primary/20'}
+                `}>
+                  <Plus className={`
+                    h-6 w-6
+                    ${isWireframeTheme 
+                      ? 'text-foreground' 
+                      : 'text-primary'}
+                  `} />
+                </div>
+                <h3 className="text-xl font-bold">
+                  Create Personal Goal
+                </h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  Add your own goal for this life domain
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Template Goals */}
           {goals.map((goal) => (
             <div
               key={goal.id}
@@ -167,6 +205,13 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Personal Goal Dialog */}
+      <CreateUserGoalDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        lifeDomainId={lifeDomainId}
+      />
     </>
   )
 }

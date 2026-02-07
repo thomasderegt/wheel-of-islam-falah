@@ -15,15 +15,19 @@ import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/components/ui/select'
 import { useRegister } from '@/features/auth'
 import { getErrorMessage } from '@/shared/api/errors'
+import { useTheme } from '@/shared/contexts/ThemeContext'
 
 export default function RegisterPage() {
   const registerMutation = useRegister()
+  const { availableGroups, setUserGroup } = useTheme()
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [selectedTheme, setSelectedTheme] = useState<string>('universal')
   const [error, setError] = useState<string | null>(null)
   
   const handleRegister = async (e: React.FormEvent) => {
@@ -71,6 +75,8 @@ export default function RegisterPage() {
         email: email.trim(),
         password: password,
       })
+      // Save selected theme to localStorage and apply it
+      setUserGroup(selectedTheme)
       // useRegister hook redirects automatically to /login
     } catch (err) {
       setError(getErrorMessage(err))
@@ -151,6 +157,33 @@ export default function RegisterPage() {
                 required
                 disabled={registerMutation.isPending}
               />
+            </div>
+
+            {/* Theme selection */}
+            <div className="space-y-2">
+              <Label htmlFor="theme">
+                Kies je theme
+              </Label>
+              <Select
+                value={selectedTheme}
+                onValueChange={setSelectedTheme}
+                disabled={registerMutation.isPending}
+              >
+                <SelectTrigger id="theme" className="w-full">
+                  <SelectValue placeholder="Selecteer een theme" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableGroups.map((group) => (
+                    <SelectItem key={group} value={group}>
+                      {group === 'adult-woman' ? 'Adult Woman' :
+                       group === 'adult-man' ? 'Adult Man' :
+                       group === 'young-adult-male' ? 'Young Adult Male' :
+                       group === 'young-adult-female' ? 'Young Adult Female' :
+                       'Universal'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             {/* Register button */}

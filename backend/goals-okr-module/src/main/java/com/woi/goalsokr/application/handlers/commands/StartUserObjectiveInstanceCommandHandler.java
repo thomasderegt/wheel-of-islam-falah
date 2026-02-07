@@ -6,6 +6,7 @@ import com.woi.goalsokr.domain.entities.UserObjectiveInstance;
 import com.woi.goalsokr.domain.repositories.ObjectiveRepository;
 import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
+import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +18,28 @@ public class StartUserObjectiveInstanceCommandHandler {
     private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
     private final ObjectiveRepository objectiveRepository;
     private final UserGoalInstanceRepository userGoalInstanceRepository;
+    private final UserModuleInterface userModule;
 
     public StartUserObjectiveInstanceCommandHandler(
             UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             ObjectiveRepository objectiveRepository,
-            UserGoalInstanceRepository userGoalInstanceRepository) {
+            UserGoalInstanceRepository userGoalInstanceRepository,
+            UserModuleInterface userModule) {
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.objectiveRepository = objectiveRepository;
         this.userGoalInstanceRepository = userGoalInstanceRepository;
+        this.userModule = userModule;
     }
 
     @Transactional
     public UserObjectiveInstanceResult handle(StartUserObjectiveInstanceCommand command) {
+        // Validate user exists
+        if (!userModule.userExists(command.userId())) {
+            throw new IllegalArgumentException("User not found: " + command.userId());
+        }
+
         // Validate objective exists
-        var objective = objectiveRepository.findById(command.objectiveId())
+        objectiveRepository.findById(command.objectiveId())
             .orElseThrow(() -> new IllegalArgumentException("Objective not found: " + command.objectiveId()));
 
         // Validate user goal instance exists and belongs to user

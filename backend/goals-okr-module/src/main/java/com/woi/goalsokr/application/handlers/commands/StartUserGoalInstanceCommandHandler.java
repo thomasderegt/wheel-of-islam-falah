@@ -5,6 +5,7 @@ import com.woi.goalsokr.application.results.UserGoalInstanceResult;
 import com.woi.goalsokr.domain.entities.UserGoalInstance;
 import com.woi.goalsokr.domain.repositories.GoalRepository;
 import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
+import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,16 +16,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class StartUserGoalInstanceCommandHandler {
     private final UserGoalInstanceRepository userGoalInstanceRepository;
     private final GoalRepository goalRepository;
+    private final UserModuleInterface userModule;
 
     public StartUserGoalInstanceCommandHandler(
             UserGoalInstanceRepository userGoalInstanceRepository,
-            GoalRepository goalRepository) {
+            GoalRepository goalRepository,
+            UserModuleInterface userModule) {
         this.userGoalInstanceRepository = userGoalInstanceRepository;
         this.goalRepository = goalRepository;
+        this.userModule = userModule;
     }
 
     @Transactional
     public UserGoalInstanceResult handle(StartUserGoalInstanceCommand command) {
+        // Validate user exists
+        if (!userModule.userExists(command.userId())) {
+            throw new IllegalArgumentException("User not found: " + command.userId());
+        }
+
         // Validate goal exists
         goalRepository.findById(command.goalId())
             .orElseThrow(() -> new IllegalArgumentException("Goal not found: " + command.goalId()));

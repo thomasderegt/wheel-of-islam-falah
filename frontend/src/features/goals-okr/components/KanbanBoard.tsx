@@ -18,8 +18,7 @@ import { Button } from '@/shared/components/ui/button'
 import { Trash2, GripVertical } from 'lucide-react'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useTheme } from '@/shared/contexts/ThemeContext'
-import { useKanbanFilters } from '../hooks/useKanbanFilters'
-import { KanbanFilterPanel } from './KanbanFilterPanel'
+import type { KanbanFilters } from '../hooks/useKanbanFilters'
 
 const COLUMNS: Array<{ id: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'; label: string }> = [
   { id: 'TODO', label: 'To Do' },
@@ -161,23 +160,53 @@ function KanbanColumn({ columnId, label, items, itemTitles, onDelete, language =
 
 interface KanbanBoardProps {
   language?: 'nl' | 'en'
+  filters: KanbanFilters
 }
 
-export function KanbanBoard({ language = 'en' }: KanbanBoardProps) {
+export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const { user } = useAuth()
-  const { filters, setFilters } = useKanbanFilters()
   const { data: kanbanItems, isLoading } = useKanbanItems(user?.id || null)
   const updatePositionMutation = useUpdateKanbanItemPosition()
   const deleteMutation = useDeleteKanbanItem()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [itemTitles, setItemTitles] = useState<Map<number, string>>(new Map())
+  const [itemLifeDomainIds, setItemLifeDomainIds] = useState<Map<number, number>>(new Map())
 
   // Filter items based on filters
   const filteredItems = useMemo(() => {
     if (!kanbanItems) return []
-    if (!filters.itemType) return kanbanItems
-    return kanbanItems.filter(item => item.itemType === filters.itemType)
-  }, [kanbanItems, filters])
+    
+    let filtered = kanbanItems
+    
+    // Filter by showInitiatives toggle (if enabled, only show INITIATIVE items)
+    // If disabled, only show OKR items (GOAL, OBJECTIVE, KEY_RESULT)
+    if (filters.showInitiatives) {
+      filtered = filtered.filter(item => item.itemType === 'INITIATIVE')
+    } else {
+      // Show only OKR items (exclude INITIATIVE)
+      filtered = filtered.filter(item => 
+        item.itemType === 'GOAL' || 
+        item.itemType === 'OBJECTIVE' || 
+        item.itemType === 'KEY_RESULT'
+      )
+    }
+    
+    // Filter by itemType (only if showInitiatives is not enabled and itemType is set)
+    if (filters.itemType && !filters.showInitiatives) {
+      filtered = filtered.filter(item => item.itemType === filters.itemType)
+    }
+    
+    // Filter by lifeDomainId
+    // Only filter if we have loaded life domain IDs, otherwise show all items
+    if (filters.lifeDomainId && itemLifeDomainIds.size > 0) {
+      filtered = filtered.filter(item => {
+        const lifeDomainId = itemLifeDomainIds.get(item.itemId)
+        return lifeDomainId === filters.lifeDomainId
+      })
+    }
+    
+    return filtered
+  }, [kanbanItems, filters, itemLifeDomainIds])
 
   // Group items by column
   const itemsByColumn = useMemo(() => {
@@ -197,46 +226,78 @@ export function KanbanBoard({ language = 'en' }: KanbanBoardProps) {
     return grouped
   }, [filteredItems])
 
-  // Load item titles
+  // Load item titles and life domain IDs
   useEffect(() => {
-    if (!filteredItems || filteredItems.length === 0) return
+    if (!kanbanItems || kanbanItems.length === 0) return
 
-    const loadTitles = async () => {
+    const loadTitlesAndLifeDomains = async () => {
       const titles = new Map<number, string>()
+      const lifeDomainIds = new Map<number, number>()
       
-      for (const item of filteredItems) {
+      for (const item of kanbanItems) {
         try {
           let title = ''
+          let lifeDomainId: number | undefined
+          
           switch (item.itemType) {
             case 'GOAL':
               const goal = await getGoal(item.itemId)
               title = language === 'nl' ? goal.titleNl : goal.titleEn
+              lifeDomainId = goal.lifeDomainId
               break
             case 'OBJECTIVE':
               const objective = await getObjective(item.itemId)
               title = language === 'nl' ? objective.titleNl : objective.titleEn
+              // Get goal to find lifeDomainId
+              if (objective.goalId) {
+                const goal = await getGoal(objective.goalId)
+                lifeDomainId = goal.lifeDomainId
+              }
               break
             case 'KEY_RESULT':
               const keyResult = await getKeyResult(item.itemId)
               title = language === 'nl' ? keyResult.titleNl : keyResult.titleEn
+              // Get objective -> goal to find lifeDomainId
+              if (keyResult.objectiveId) {
+                const objective = await getObjective(keyResult.objectiveId)
+                if (objective.goalId) {
+                  const goal = await getGoal(objective.goalId)
+                  lifeDomainId = goal.lifeDomainId
+                }
+              }
               break
             case 'INITIATIVE':
               const initiative = await getInitiative(item.itemId)
               title = initiative.title
+              // Get keyResult -> objective -> goal to find lifeDomainId
+              if (initiative.keyResultId) {
+                const keyResult = await getKeyResult(initiative.keyResultId)
+                if (keyResult.objectiveId) {
+                  const objective = await getObjective(keyResult.objectiveId)
+                  if (objective.goalId) {
+                    const goal = await getGoal(objective.goalId)
+                    lifeDomainId = goal.lifeDomainId
+                  }
+                }
+              }
               break
           }
           titles.set(item.itemId, title)
+          if (lifeDomainId) {
+            lifeDomainIds.set(item.itemId, lifeDomainId)
+          }
         } catch (error) {
-          console.error(`Failed to load title for ${item.itemType} ${item.itemId}:`, error)
+          console.error(`Failed to load data for ${item.itemType} ${item.itemId}:`, error)
           titles.set(item.itemId, `${item.itemType} ${item.itemId}`)
         }
       }
       
       setItemTitles(titles)
+      setItemLifeDomainIds(lifeDomainIds)
     }
 
-    loadTitles()
-  }, [filteredItems, language])
+    loadTitlesAndLifeDomains()
+  }, [kanbanItems, language])
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
@@ -335,8 +396,6 @@ export function KanbanBoard({ language = 'en' }: KanbanBoardProps) {
           )}
         </DragOverlay>
       </DndContext>
-      
-      <KanbanFilterPanel value={filters} onChange={setFilters} />
     </div>
   )
 }

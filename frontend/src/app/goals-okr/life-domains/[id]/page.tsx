@@ -62,7 +62,7 @@ export default function OKRLifeDomainPage() {
               {/* Hierarchical Navigation */}
               <AutoHierarchicalNavigation />
 
-              {/* Goals Grid */}
+              {/* Goals Grid - Includes Create Personal Goal card */}
               <NavGoalCircle lifeDomainId={lifeDomainId} />
             </div>
           </Container>

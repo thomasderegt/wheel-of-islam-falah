@@ -10,6 +10,8 @@ public record CategorySummary(
     Long id,
     String titleNl,
     String titleEn,
+    String subtitleNl,
+    String subtitleEn,
     String descriptionNl,
     String descriptionEn,
     List<BookSummary> books

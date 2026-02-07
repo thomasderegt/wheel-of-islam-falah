@@ -11,8 +11,9 @@ import { useRouter } from 'next/navigation'
 import { useInitiativesByUserObjectiveInstance } from '../hooks/useInitiativesByUserObjectiveInstance'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
+import { Button } from '@/shared/components/ui/button'
 import { Loading } from '@/shared/components/ui/Loading'
-import { CheckCircle2, Circle, Archive } from 'lucide-react'
+import { CheckCircle2, Circle, Archive, BookOpen } from 'lucide-react'
 import type { InitiativeDTO } from '../api/goalsOkrApi'
 
 interface InitiativeListProps {
@@ -95,15 +96,31 @@ export function InitiativeList({ userObjectiveInstanceId, language = 'en' }: Ini
                   {initiative.description}
                 </p>
               )}
-              <div className="flex items-center justify-between text-sm">
-                {initiative.targetDate && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm">
+                  {initiative.targetDate && (
+                    <span className="text-muted-foreground">
+                      Target: {new Date(initiative.targetDate).toLocaleDateString()}
+                    </span>
+                  )}
                   <span className="text-muted-foreground">
-                    Target: {new Date(initiative.targetDate).toLocaleDateString()}
+                    {initiative.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
                   </span>
+                </div>
+                {initiative.learningFlowEnrollmentId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      router.push(`/enrollments/${initiative.learningFlowEnrollmentId}/flow`)
+                    }}
+                    className="gap-2"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    {language === 'nl' ? 'Ga naar Learning Flow' : 'Continue Learning Flow'}
+                  </Button>
                 )}
-                <span className="text-muted-foreground">
-                  {initiative.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
-                </span>
               </div>
             </CardContent>
           </Card>

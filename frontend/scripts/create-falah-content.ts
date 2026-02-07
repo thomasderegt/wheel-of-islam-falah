@@ -15,7 +15,6 @@
 
 import axios from 'axios'
 import { config } from '../src/shared/constants/config'
-import { SYSTEM_CATEGORIES } from '../src/shared/constants/systemCategories'
 
 const API_BASE_URL = config.api.baseUrl
 
@@ -49,7 +48,7 @@ async function createFalahContent() {
     // Step 1: Get Falah Category (Category #0)
     console.log('📂 Step 1: Fetching Falah category...')
     const categoryResponse = await apiClient.get(
-      `/api/v2/content/categories/${SYSTEM_CATEGORIES.FALAH.categoryNumber}?byNumber=true`
+      `/api/v2/content/categories/0?byNumber=true`
     )
     const falahCategory = categoryResponse.data
     console.log(`✅ Found Falah category: ${falahCategory.titleEn} (ID: ${falahCategory.id})\n`)

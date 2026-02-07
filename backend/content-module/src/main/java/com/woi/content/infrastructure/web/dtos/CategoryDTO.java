@@ -10,6 +10,8 @@ public class CategoryDTO {
     private Integer categoryNumber;
     private String titleNl;
     private String titleEn;
+    private String subtitleNl;
+    private String subtitleEn;
     private String descriptionNl;
     private String descriptionEn;
     private LocalDateTime createdAt;
@@ -45,6 +47,22 @@ public class CategoryDTO {
     
     public void setTitleEn(String titleEn) {
         this.titleEn = titleEn;
+    }
+    
+    public String getSubtitleNl() {
+        return subtitleNl;
+    }
+    
+    public void setSubtitleNl(String subtitleNl) {
+        this.subtitleNl = subtitleNl;
+    }
+    
+    public String getSubtitleEn() {
+        return subtitleEn;
+    }
+    
+    public void setSubtitleEn(String subtitleEn) {
+        this.subtitleEn = subtitleEn;
     }
     
     public String getDescriptionNl() {

@@ -2,7 +2,7 @@
 
 /**
  * KanbanFilterPanel Component
- * Filter panel for filtering kanban items by type
+ * Filter panel for filtering kanban items by type and life domain
  */
 
 import { useState } from 'react'
@@ -13,20 +13,31 @@ import { X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/components/ui/collapsible'
 import type { KanbanFilters } from '../hooks/useKanbanFilters'
+import { useLifeDomains } from '../hooks/useLifeDomains'
 
 interface KanbanFilterPanelProps {
   readonly value: KanbanFilters
   readonly onChange: (filters: KanbanFilters) => void
+  readonly language?: 'nl' | 'en'
 }
 
-export function KanbanFilterPanel({ value, onChange }: KanbanFilterPanelProps) {
+export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFilterPanelProps) {
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
-  const hasActiveFilters = !!value.itemType
+  const { data: lifeDomains } = useLifeDomains()
+  const hasActiveFilters = !!value.itemType || !!value.lifeDomainId
   const [isOpen, setIsOpen] = useState(false)
 
   const handleItemTypeChange = (itemType: string) => {
-    onChange({ itemType: itemType === 'ALL' ? undefined : itemType as KanbanFilters['itemType'] })
+    onChange({ ...value, itemType: itemType === 'ALL' ? undefined : itemType as KanbanFilters['itemType'] })
+  }
+
+  const handleLifeDomainChange = (lifeDomainId: string) => {
+    onChange({ ...value, lifeDomainId: lifeDomainId === 'ALL' ? undefined : parseInt(lifeDomainId) })
+  }
+
+  const getLifeDomainTitle = (domain: { titleNl: string; titleEn: string }) => {
+    return language === 'nl' ? (domain.titleNl || domain.titleEn) : (domain.titleEn || domain.titleNl)
   }
 
   const clearFilters = () => {
@@ -73,7 +84,7 @@ export function KanbanFilterPanel({ value, onChange }: KanbanFilterPanelProps) {
           </div>
         </CollapsibleTrigger>
         
-        <CollapsibleContent>
+        <CollapsibleContent className="relative z-[60]">
           <div className="px-4 pb-4 space-y-4">
             <div className="flex items-center justify-between">
               {hasActiveFilters && (
@@ -83,24 +94,45 @@ export function KanbanFilterPanel({ value, onChange }: KanbanFilterPanelProps) {
                 </Button>
               )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="item-type-filter">Item Type</Label>
-                <Select
-                  value={value.itemType || 'ALL'}
-                  onValueChange={handleItemTypeChange}
-                >
-                  <SelectTrigger id="item-type-filter">
-                    <SelectValue placeholder="All Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All Types</SelectItem>
-                    <SelectItem value="GOAL">Goal</SelectItem>
-                    <SelectItem value="OBJECTIVE">Objective</SelectItem>
-                    <SelectItem value="KEY_RESULT">Key Result</SelectItem>
-                    <SelectItem value="INITIATIVE">Initiative</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="item-type-filter">Item Type</Label>
+                  <Select
+                    value={value.itemType || 'ALL'}
+                    onValueChange={handleItemTypeChange}
+                  >
+                    <SelectTrigger id="item-type-filter">
+                      <SelectValue placeholder="All Types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Types</SelectItem>
+                      <SelectItem value="GOAL">Goal</SelectItem>
+                      <SelectItem value="OBJECTIVE">Objective</SelectItem>
+                      <SelectItem value="KEY_RESULT">Key Result</SelectItem>
+                      <SelectItem value="INITIATIVE">Initiative</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="life-domain-filter">Life Domain</Label>
+                  <Select
+                    value={value.lifeDomainId?.toString() || 'ALL'}
+                    onValueChange={handleLifeDomainChange}
+                  >
+                    <SelectTrigger id="life-domain-filter">
+                      <SelectValue placeholder="All Life Domains" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Life Domains</SelectItem>
+                      {lifeDomains?.map((domain) => (
+                        <SelectItem key={domain.id} value={domain.id.toString()}>
+                          {getLifeDomainTitle(domain)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </div>

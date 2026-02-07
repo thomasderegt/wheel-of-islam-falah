@@ -26,6 +26,7 @@ public class LifeDomainEntityMapper {
         domain.setDescriptionEn(jpa.getDescriptionEn());
         domain.setIconName(jpa.getIconName());
         domain.setDisplayOrder(jpa.getDisplayOrder());
+        domain.setWheelId(jpa.getWheelId());
         domain.setCreatedAt(jpa.getCreatedAt());
         return domain;
     }
@@ -47,6 +48,7 @@ public class LifeDomainEntityMapper {
         jpa.setDescriptionEn(domain.getDescriptionEn());
         jpa.setIconName(domain.getIconName());
         jpa.setDisplayOrder(domain.getDisplayOrder());
+        jpa.setWheelId(domain.getWheelId());
         jpa.setCreatedAt(domain.getCreatedAt());
         return jpa;
     }

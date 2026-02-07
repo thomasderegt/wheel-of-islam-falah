@@ -137,12 +137,27 @@ function SelectContent({ children }: SelectContentProps) {
         const dropdownWidth = rect.width
         
         // Calculate position with viewport boundaries in mind
+        // Account for bottom navbar (approximately 80px)
+        const bottomNavHeight = 80
+        const availableHeight = viewportHeight - bottomNavHeight
+        
         let top = rect.bottom + window.scrollY + 4
         let left = rect.left + window.scrollX
         
-        // If dropdown would go below viewport, show it above instead
-        if (rect.bottom + dropdownHeight > viewportHeight && rect.top > dropdownHeight) {
-          top = rect.top + window.scrollY - dropdownHeight - 4
+        // Check if dropdown would overlap with bottom navbar or go below viewport
+        const spaceBelow = availableHeight - rect.bottom
+        const spaceAbove = rect.top
+        
+        // If not enough space below (accounting for bottom nav), show above
+        if (spaceBelow < dropdownHeight + 4) {
+          // Always prefer showing above if there's not enough space below
+          if (spaceAbove >= dropdownHeight) {
+            // Show above the trigger
+            top = rect.top + window.scrollY - dropdownHeight - 4
+          } else {
+            // Not enough space above either, position it as high as possible above bottom nav
+            top = availableHeight - dropdownHeight + window.scrollY - 4
+          }
         }
         
         // If dropdown would go off right edge, align to right edge

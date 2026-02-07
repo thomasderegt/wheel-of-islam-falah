@@ -11,7 +11,8 @@ public record CreateInitiativeCommand(
     Long userObjectiveInstanceId,
     String title,
     String description,
-    LocalDate targetDate
+    LocalDate targetDate,
+    Long learningFlowEnrollmentId
 ) {
     public CreateInitiativeCommand {
         if (userId == null) {

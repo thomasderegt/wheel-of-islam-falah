@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  * LifeDomain domain entity - Pure POJO (no JPA annotations)
  * 
  * Represents a life domain for OKR goals (e.g., Religion, Family, Work)
- * Points to goals.life_domains (shared schema)
+ * Points to goals_okr.life_domains
  * 
  * Business logic:
  * - Title fallback logic (als titleNl null is, gebruik titleEn en vice versa)
@@ -23,6 +23,7 @@ public class LifeDomain {
     private String descriptionEn;
     private String iconName;
     private Integer displayOrder;
+    private Long wheelId; // FK to Wheel
     private LocalDateTime createdAt;
     
     // Public constructor for mappers (infrastructure layer)
@@ -102,6 +103,14 @@ public class LifeDomain {
     
     public void setDisplayOrder(Integer displayOrder) {
         this.displayOrder = displayOrder;
+    }
+    
+    public Long getWheelId() {
+        return wheelId;
+    }
+    
+    public void setWheelId(Long wheelId) {
+        this.wheelId = wheelId;
     }
     
     public LocalDateTime getCreatedAt() {

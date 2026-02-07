@@ -8,5 +8,6 @@ import java.time.LocalDate;
 public record UpdateInitiativeRequest(
     String title,
     String description,
-    LocalDate targetDate
+    LocalDate targetDate,
+    Long learningFlowEnrollmentId
 ) {}

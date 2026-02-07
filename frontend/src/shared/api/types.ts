@@ -57,6 +57,8 @@ export interface CategoryDTO {
   categoryNumber: number | null
   titleNl: string
   titleEn: string
+  subtitleNl: string | null
+  subtitleEn: string | null
   descriptionNl: string | null
   descriptionEn: string | null
   createdAt: string

@@ -30,10 +30,10 @@ export default function GoalsOKRNavigatorPage() {
                   Goal-Mode
                 </h1>
                 <p className="text-muted-foreground text-lg max-w-2xl">
-                  Navigate through your life domains to set your goals using the OKR methodology.
+                  Navigate through your life domains to set your goals.
                 </p>
                 <p className="text-sm text-muted-foreground mt-4">
-                  Structure: Life Domain → Goal → Objective → Key Result → Initiative
+                  Structure: Life Domain → Goal → Objective → Key Result
                 </p>
               </div>
 

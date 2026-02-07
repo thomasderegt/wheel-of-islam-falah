@@ -34,6 +34,12 @@ public class UpdateInitiativeCommandHandler {
         if (command.targetDate() != null) {
             initiative.updateTargetDate(command.targetDate());
         }
+        if (command.learningFlowEnrollmentId() != null) {
+            initiative.linkLearningFlowEnrollment(command.learningFlowEnrollmentId());
+        } else if (command.learningFlowEnrollmentId() == null && initiative.getLearningFlowEnrollmentId() != null) {
+            // Allow unsetting by passing null explicitly (not implemented in command, but could be)
+            // For now, we only set if provided
+        }
 
         // Save initiative
         Initiative savedInitiative = initiativeRepository.save(initiative);
