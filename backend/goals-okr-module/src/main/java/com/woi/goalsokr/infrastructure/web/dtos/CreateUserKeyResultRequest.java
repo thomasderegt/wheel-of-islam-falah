@@ -10,9 +10,6 @@ import java.math.BigDecimal;
  * Request DTO for creating a user-specific key result
  */
 public record CreateUserKeyResultRequest(
-    @NotNull(message = "User ID is required")
-    Long userId,
-    
     @NotNull(message = "User Objective ID is required")
     Long userObjectiveId,
     

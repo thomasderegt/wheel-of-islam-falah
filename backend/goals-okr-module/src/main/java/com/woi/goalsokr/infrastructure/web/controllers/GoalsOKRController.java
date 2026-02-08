@@ -321,7 +321,6 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/key-results
      */
     @PostMapping("/key-results")
-    @Transactional
     public ResponseEntity<?> createKeyResult(@Valid @RequestBody CreateKeyResultRequest request) {
         try {
             CreateKeyResultCommand command = new CreateKeyResultCommand(
@@ -469,7 +468,6 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/user-objective-instances
      */
     @PostMapping("/user-objective-instances")
-    @Transactional
     public ResponseEntity<?> startUserObjectiveInstance(@RequestBody Map<String, Long> request) {
         try {
             Long userId = request.get("userId");
@@ -548,7 +546,6 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/user-key-result-instances
      */
     @PostMapping("/user-key-result-instances")
-    @Transactional
     public ResponseEntity<?> startUserKeyResultInstance(@RequestBody Map<String, Long> request) {
         try {
             Long userId = request.get("userId");
