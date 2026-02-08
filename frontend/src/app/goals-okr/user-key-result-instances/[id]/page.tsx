@@ -23,6 +23,7 @@ import { Loading } from '@/shared/components/ui/Loading'
 import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useAddKanbanItem } from '@/features/goals-okr/hooks/useKanbanItems'
 
 export default function OKRUserKeyResultInstancePage() {
   const params = useParams()
@@ -34,6 +35,7 @@ export default function OKRUserKeyResultInstancePage() {
   const queryClient = useQueryClient()
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [selectedInitiative, setSelectedInitiative] = useState<InitiativeDTO | null>(null)
+  const addKanbanItem = useAddKanbanItem()
 
   // Get user key result instance to find the key result and objective instance
   const { data: userInstance, isLoading: isLoadingInstance } = useQuery({
@@ -58,13 +60,80 @@ export default function OKRUserKeyResultInstancePage() {
   }
 
   const startInitiativeMutation = useMutation({
-    mutationFn: ({ userId, userKeyResultInstanceId, initiativeId }: { userId: number; userKeyResultInstanceId: number; initiativeId: number }) =>
-      startUserInitiativeInstance(userId, userKeyResultInstanceId, initiativeId),
-    onSuccess: () => {
+    mutationFn: ({ userId, userKeyResultInstanceId, initiativeId }: { userId: number; userKeyResultInstanceId: number; initiativeId: number }) => {
+      console.log('Starting initiative instance:', { userId, userKeyResultInstanceId, initiativeId })
+      return startUserInitiativeInstance(userId, userKeyResultInstanceId, initiativeId)
+    },
+    onSuccess: async (userInitiativeInstance) => {
+      console.log('Initiative instance started successfully:', userInitiativeInstance)
+      
+      // Add to kanban board after starting the initiative instance
+      if (user?.id && userInitiativeInstance?.id) {
+        try {
+          console.log('Adding initiative to kanban board:', { userId: user.id, itemId: userInitiativeInstance.id })
+          await addKanbanItem.mutateAsync({
+            userId: user.id,
+            itemType: 'INITIATIVE',
+            itemId: userInitiativeInstance.id, // Use the UserInitiativeInstance ID
+          })
+          console.log('Initiative added to kanban board successfully')
+        } catch (error) {
+          console.error('Failed to add initiative to kanban board:', error)
+          alert(language === 'nl' 
+            ? 'Initiative gestart, maar kon niet worden toegevoegd aan progress board. Probeer het handmatig toe te voegen.'
+            : 'Initiative started, but could not be added to progress board. Please try adding it manually.')
+        }
+      } else {
+        console.warn('Missing user ID or initiative instance ID:', { userId: user?.id, instanceId: userInitiativeInstance?.id })
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userInitiativeInstances'] })
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'initiatives', 'userKeyResultInstance', instanceId] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', user?.id] })
+      
       setConfirmDialogOpen(false)
       setSelectedInitiative(null)
+      
+      // Show success message
+      const initiativeTitle = selectedInitiative 
+        ? (language === 'nl' ? (selectedInitiative.titleNl || selectedInitiative.titleEn) : (selectedInitiative.titleEn || selectedInitiative.titleNl))
+        : 'Initiative'
+      alert(language === 'nl' 
+        ? `${initiativeTitle} is gestart en toegevoegd aan je progress board!`
+        : `${initiativeTitle} has been started and added to your progress board!`)
+    },
+    onError: (error: any) => {
+      console.error('Failed to start initiative instance:', error)
+      console.error('Error details:', {
+        message: error?.message,
+        response: error?.response,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        url: error?.config?.url,
+        method: error?.config?.method
+      })
+      
+      let errorMessage = language === 'nl' 
+        ? 'Kon initiative niet starten. Probeer het opnieuw.'
+        : 'Failed to start initiative. Please try again.'
+      
+      if (error?.response) {
+        if (error.response.status === 404) {
+          errorMessage = language === 'nl'
+            ? 'Endpoint niet gevonden. Controleer of de backend draait en opnieuw is gestart.'
+            : 'Endpoint not found. Please check if the backend is running and has been restarted.'
+        } else if (error.response.data?.error) {
+          errorMessage = error.response.data.error
+        } else if (error.response.status === 500) {
+          errorMessage = language === 'nl'
+            ? 'Server fout. Controleer de backend logs.'
+            : 'Server error. Please check the backend logs.'
+        }
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
     },
   })
 

@@ -7,9 +7,12 @@
  */
 
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth'
 import { useCreateInitiative } from '../hooks/useCreateInitiative'
 import { useInitiativeSuggestions } from '../hooks/useInitiativeSuggestions'
+import { useAddKanbanItem } from '../hooks/useKanbanItems'
+import { getUserInitiativeInstances } from '../api/goalsOkrApi'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
@@ -36,7 +39,9 @@ export function CreateInitiativeDialog({
   onSuccess 
 }: CreateInitiativeDialogProps) {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const createInitiative = useCreateInitiative()
+  const addKanbanItem = useAddKanbanItem()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [targetDate, setTargetDate] = useState('')
@@ -73,7 +78,35 @@ export function CreateInitiativeDialog({
         learningFlowEnrollmentId: null, // Will be set when starting learning flow
       },
       {
-        onSuccess: () => {
+        onSuccess: async (createdInitiative) => {
+          // Add to kanban board after creating the initiative
+          // The backend creates a UserInitiativeInstance automatically, so we need to find it
+          if (user?.id) {
+            try {
+              // Get all initiative instances for this user key result instance
+              const instances = await getUserInitiativeInstances(user.id)
+              // Find the instance that matches this initiative
+              const instance = instances.find(
+                inst => inst.userKeyResultInstanceId === userKeyResultInstanceId &&
+                        // The initiativeId in the instance refers to the UserInitiative ID
+                        inst.initiativeId === createdInitiative.id
+              )
+              
+              if (instance?.id) {
+                await addKanbanItem.mutateAsync({
+                  userId: user.id,
+                  itemType: 'INITIATIVE',
+                  itemId: instance.id, // Use the UserInitiativeInstance ID
+                })
+                // Invalidate kanban items query
+                queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', user.id] })
+              }
+            } catch (error) {
+              console.error('Failed to add initiative to kanban board:', error)
+              // Don't fail the whole operation if kanban add fails
+            }
+          }
+          
           setTitle('')
           setDescription('')
           setTargetDate('')

@@ -617,6 +617,85 @@ public class GoalsOKRController {
         }
     }
 
+    // ========== User Initiative Instances ==========
+
+    /**
+     * Start a new user initiative instance
+     * POST /api/v2/goals-okr/user-initiative-instances
+     */
+    @PostMapping("/user-initiative-instances")
+    @Transactional
+    public ResponseEntity<?> startUserInitiativeInstance(@RequestBody Map<String, Long> request) {
+        try {
+            Long userId = request.get("userId");
+            Long userKeyResultInstanceId = request.get("userKeyResultInstanceId");
+            Long initiativeId = request.get("initiativeId");
+            
+            if (userId == null || userKeyResultInstanceId == null || initiativeId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User ID, User Key Result Instance ID, and Initiative ID are required"));
+            }
+            
+            UserInitiativeInstanceResult result = startUserInitiativeInstanceHandler.handle(
+                new StartUserInitiativeInstanceCommand(userId, userKeyResultInstanceId, initiativeId));
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Get a user initiative instance by ID
+     * GET /api/v2/goals-okr/user-initiative-instances/{id}
+     */
+    @GetMapping("/user-initiative-instances/{userInitiativeInstanceId}")
+    public ResponseEntity<?> getUserInitiativeInstance(@PathVariable Long userInitiativeInstanceId) {
+        try {
+            Optional<UserInitiativeInstanceResult> result = getUserInitiativeInstanceHandler.handle(
+                new GetUserInitiativeInstanceQuery(userInitiativeInstanceId));
+            return result.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Get all user initiative instances for a user
+     * GET /api/v2/goals-okr/users/{userId}/user-initiative-instances
+     */
+    @GetMapping("/users/{userId}/user-initiative-instances")
+    public ResponseEntity<List<UserInitiativeInstanceResult>> getUserInitiativeInstancesForUser(@PathVariable Long userId) {
+        List<UserInitiativeInstanceResult> results = getUserInitiativeInstancesHandler.handle(
+            new GetUserInitiativeInstancesQuery(userId));
+        return ResponseEntity.ok(results);
+    }
+
+    /**
+     * Complete a user initiative instance
+     * POST /api/v2/goals-okr/user-initiative-instances/{id}/complete
+     */
+    @PostMapping("/user-initiative-instances/{userInitiativeInstanceId}/complete")
+    @Transactional
+    public ResponseEntity<?> completeUserInitiativeInstance(@PathVariable Long userInitiativeInstanceId) {
+        try {
+            UserInitiativeInstanceResult result = completeUserInitiativeInstanceHandler.handle(
+                new CompleteUserInitiativeInstanceCommand(userInitiativeInstanceId));
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
     // ========== Initiatives ==========
 
     /**
@@ -624,7 +703,6 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/initiatives
      */
     @PostMapping("/initiatives")
-    @Transactional
     public ResponseEntity<?> createInitiative(@Valid @RequestBody CreateInitiativeRequest request) {
         try {
             CreateInitiativeCommand command = new CreateInitiativeCommand(
@@ -719,7 +797,6 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/initiatives/{id}/complete
      */
     @PostMapping("/initiatives/{initiativeId}/complete")
-    @Transactional
     public ResponseEntity<?> completeInitiative(@PathVariable Long initiativeId) {
         try {
             UserInitiativeResult result = completeInitiativeHandler.handle(

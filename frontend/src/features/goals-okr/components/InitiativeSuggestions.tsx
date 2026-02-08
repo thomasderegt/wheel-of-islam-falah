@@ -104,9 +104,9 @@ export function InitiativeSuggestions({
                     size="sm"
                     onClick={() => onSelectSuggestion(suggestion)}
                     className="gap-2"
+                    aria-label={language === 'nl' ? 'Maak Initiative' : 'Create Initiative'}
                   >
                     <Plus className="h-4 w-4" />
-                    {language === 'nl' ? 'Maak Initiative' : 'Create Initiative'}
                   </Button>
                 )}
               </div>
