@@ -8,8 +8,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
-import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance } from '../api/goalsOkrApi'
-import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO } from '../api/goalsOkrApi'
+import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult } from '../api/goalsOkrApi'
+import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO } from '../api/goalsOkrApi'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -141,15 +141,22 @@ function KanbanColumn({ columnId, label, items, itemTitles, onDelete, language =
                 No items
               </div>
             ) : (
-              sortedItems.map((item) => (
-                <KanbanCard
-                  key={item.id}
-                  item={item}
-                  title={itemTitles.get(item.itemId) || `${item.itemType} ${item.itemId}`}
-                  onDelete={() => onDelete(item.id)}
-                  language={language}
-                />
-              ))
+              sortedItems.map((item) => {
+                const compoundKey = `${item.itemType}-${item.itemId}`
+                const title = itemTitles.get(compoundKey) || `${item.itemType} ${item.itemId}`
+                if (itemTitles.size > 0) {
+                  console.log(`[KanbanBoard] Rendering ${item.itemType} ${item.itemId}: title="${title}", itemTitles.has("${compoundKey}")=${itemTitles.has(compoundKey)}`)
+                }
+                return (
+                  <KanbanCard
+                    key={item.id}
+                    item={item}
+                    title={title}
+                    onDelete={() => onDelete(item.id)}
+                    language={language}
+                  />
+                )
+              })
             )}
           </div>
         </SortableContext>
@@ -169,8 +176,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const updatePositionMutation = useUpdateKanbanItemPosition()
   const deleteMutation = useDeleteKanbanItem()
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [itemTitles, setItemTitles] = useState<Map<number, string>>(new Map())
-  const [itemLifeDomainIds, setItemLifeDomainIds] = useState<Map<number, number>>(new Map())
+  const [itemTitles, setItemTitles] = useState<Map<string, string>>(new Map()) // Use compound key: "itemType-itemId"
+  const [itemLifeDomainIds, setItemLifeDomainIds] = useState<Map<string, number>>(new Map()) // Use compound key: "itemType-itemId"
 
   // Filter items based on filters
   const filteredItems = useMemo(() => {
@@ -200,7 +207,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     // Only filter if we have loaded life domain IDs, otherwise show all items
     if (filters.lifeDomainId && itemLifeDomainIds.size > 0) {
       filtered = filtered.filter(item => {
-        const lifeDomainId = itemLifeDomainIds.get(item.itemId)
+        const compoundKey = `${item.itemType}-${item.itemId}`
+        const lifeDomainId = itemLifeDomainIds.get(compoundKey)
         return lifeDomainId === filters.lifeDomainId
       })
     }
@@ -231,38 +239,49 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     if (!kanbanItems || kanbanItems.length === 0) return
 
     const loadTitlesAndLifeDomains = async () => {
-      const titles = new Map<number, string>()
-      const lifeDomainIds = new Map<number, number>()
+      const titles = new Map<string, string>() // Use compound key: "itemType-itemId"
+      const lifeDomainIds = new Map<string, number>() // Use compound key: "itemType-itemId"
       
+      // Process items sequentially (one at a time) to avoid race conditions
       for (const item of kanbanItems) {
         try {
           let title = ''
           let lifeDomainId: number | undefined
           
+          console.log(`[KanbanBoard] Loading ${item.itemType} with itemId: ${item.itemId}`)
+          
           switch (item.itemType) {
-            case 'GOAL':
+            case 'GOAL': {
               // item.itemId is a userGoalInstanceId, not a goalId
               const userGoalInstance = await getUserGoalInstance(item.itemId)
+              console.log(`[KanbanBoard] GOAL: userGoalInstance.goalId = ${userGoalInstance.goalId}`)
               const goal = await getGoal(userGoalInstance.goalId)
-              title = language === 'nl' ? goal.titleNl : goal.titleEn
+              title = language === 'nl' ? (goal.titleNl || goal.titleEn) : (goal.titleEn || goal.titleNl)
               lifeDomainId = goal.lifeDomainId
+              console.log(`[KanbanBoard] GOAL: title = "${title}"`)
               break
-            case 'OBJECTIVE':
+            }
+            case 'OBJECTIVE': {
               // item.itemId is a userObjectiveInstanceId, not an objectiveId
               const userObjectiveInstance = await getUserObjectiveInstance(item.itemId)
+              console.log(`[KanbanBoard] OBJECTIVE: userObjectiveInstance.objectiveId = ${userObjectiveInstance.objectiveId}`)
               const objective = await getObjective(userObjectiveInstance.objectiveId)
-              title = language === 'nl' ? objective.titleNl : objective.titleEn
+              title = language === 'nl' ? (objective.titleNl || objective.titleEn) : (objective.titleEn || objective.titleNl)
+              console.log(`[KanbanBoard] OBJECTIVE: title = "${title}"`)
               // Get goal to find lifeDomainId
               if (objective.goalId) {
                 const goal = await getGoal(objective.goalId)
                 lifeDomainId = goal.lifeDomainId
               }
               break
-            case 'KEY_RESULT':
+            }
+            case 'KEY_RESULT': {
               // item.itemId is a userKeyResultInstanceId, not a keyResultId
               const userKeyResultInstance = await getUserKeyResultInstance(item.itemId)
+              console.log(`[KanbanBoard] KEY_RESULT: userKeyResultInstance.keyResultId = ${userKeyResultInstance.keyResultId}`)
               const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
-              title = language === 'nl' ? keyResult.titleNl : keyResult.titleEn
+              title = language === 'nl' ? (keyResult.titleNl || keyResult.titleEn) : (keyResult.titleEn || keyResult.titleNl)
+              console.log(`[KanbanBoard] KEY_RESULT: title = "${title}"`)
               // Get objective -> goal to find lifeDomainId
               if (keyResult.objectiveId) {
                 const objective = await getObjective(keyResult.objectiveId)
@@ -272,33 +291,89 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                 }
               }
               break
-            case 'INITIATIVE':
-              // item.itemId is a userInitiativeId (user-created initiative)
-              const initiative = await getInitiative(item.itemId)
-              title = initiative.title
-              // Get keyResult -> objective -> goal to find lifeDomainId
-              if (initiative.keyResultId) {
-                const keyResult = await getKeyResult(initiative.keyResultId)
-                if (keyResult.objectiveId) {
-                  const objective = await getObjective(keyResult.objectiveId)
-                  if (objective.goalId) {
-                    const goal = await getGoal(objective.goalId)
-                    lifeDomainId = goal.lifeDomainId
+            }
+            case 'INITIATIVE': {
+              // item.itemId is a UserInitiativeInstance.id, not an Initiative.id or UserInitiative.id
+              // Follow the same pattern as GOAL/OBJECTIVE/KEY_RESULT: get instance first
+              const userInitiativeInstance = await getUserInitiativeInstance(item.itemId)
+              
+              // The initiativeId in UserInitiativeInstance can refer to:
+              // 1. Initiative (template) - if it's a template initiative
+              // 2. UserInitiative (user-created) - if it's a user-created initiative
+              
+              // Try to get as UserInitiative first (user-created)
+              // If it fails with 404, it's a template Initiative, which is expected
+              try {
+                const userInitiative = await getInitiative(userInitiativeInstance.initiativeId)
+                title = userInitiative.title
+                // Get keyResult -> objective -> goal to find lifeDomainId
+                if (userInitiative.keyResultId) {
+                  const keyResult = await getKeyResult(userInitiative.keyResultId)
+                  if (keyResult.objectiveId) {
+                    const objective = await getObjective(keyResult.objectiveId)
+                    if (objective.goalId) {
+                      const goal = await getGoal(objective.goalId)
+                      lifeDomainId = goal.lifeDomainId
+                    }
                   }
+                }
+              } catch (userInitiativeError: any) {
+                // If not found as UserInitiative (404), it's a template Initiative - this is expected
+                // Only log if it's not a 404 error
+                if (userInitiativeError?.response?.status !== 404) {
+                  console.warn(`[KanbanBoard] Error checking UserInitiative ${userInitiativeInstance.initiativeId}:`, userInitiativeError)
+                }
+                
+                // Get the key result from the userInitiativeInstance to find the template Initiative
+                const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
+                const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
+                const templateInitiatives = await getInitiativesByKeyResult(keyResult.id)
+                const templateInitiative = templateInitiatives.find(i => i.id === userInitiativeInstance.initiativeId)
+                
+                if (templateInitiative) {
+                  title = language === 'nl' 
+                    ? (templateInitiative.titleNl || templateInitiative.titleEn)
+                    : (templateInitiative.titleEn || templateInitiative.titleNl)
+                  
+                  // Get keyResult -> objective -> goal to find lifeDomainId
+                  if (keyResult.objectiveId) {
+                    const objective = await getObjective(keyResult.objectiveId)
+                    if (objective.goalId) {
+                      const goal = await getGoal(objective.goalId)
+                      lifeDomainId = goal.lifeDomainId
+                    }
+                  }
+                } else {
+                  throw new Error(`Template Initiative ${userInitiativeInstance.initiativeId} not found for key result ${keyResult.id}`)
                 }
               }
               break
+            }
           }
-          titles.set(item.itemId, title)
+          
+          // Use compound key to avoid collisions (itemId can be the same for different itemTypes)
+          const compoundKey = `${item.itemType}-${item.itemId}`
+          
+          // Only set title if we got a valid one
+          if (title) {
+            titles.set(compoundKey, title)
+            console.log(`[KanbanBoard] Set title for ${item.itemType} ${item.itemId}: "${title}", Map size now: ${titles.size}`)
+          } else {
+            console.warn(`[KanbanBoard] No title found for ${item.itemType} ${item.itemId}`)
+            titles.set(compoundKey, `${item.itemType} ${item.itemId}`)
+          }
           if (lifeDomainId) {
-            lifeDomainIds.set(item.itemId, lifeDomainId)
+            lifeDomainIds.set(compoundKey, lifeDomainId)
           }
         } catch (error) {
-          console.error(`Failed to load data for ${item.itemType} ${item.itemId}:`, error)
-          titles.set(item.itemId, `${item.itemType} ${item.itemId}`)
+          console.error(`[KanbanBoard] Failed to load data for ${item.itemType} ${item.itemId}:`, error)
+          const compoundKey = `${item.itemType}-${item.itemId}`
+          titles.set(compoundKey, `${item.itemType} ${item.itemId}`)
         }
       }
       
+      console.log(`[KanbanBoard] Final titles:`, Array.from(titles.entries()))
+      console.log(`[KanbanBoard] Setting ${titles.size} titles and ${lifeDomainIds.size} life domain IDs`)
       setItemTitles(titles)
       setItemLifeDomainIds(lifeDomainIds)
     }

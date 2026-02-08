@@ -47,23 +47,33 @@ apiClient.interceptors.response.use(
       // Also skip 404s for /public endpoints (temporary until backend is fixed)
       const url = error.config?.url || 'unknown'
       const isPublicEndpoint = url.includes('/public/')
-      if (error.response && error.response.status !== 404 && !isPublicEndpoint) {
-        console.error('API Error Response:', {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data,
-          headers: error.response.headers,
-          url: error.config?.url,
-          method: error.config?.method,
-          requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : undefined
-        })
+      const is404Error = error.response?.status === 404
+      
+      // Suppress 404 errors for initiatives endpoint (expected when checking if initiative is user-created or template)
+      const shouldSuppress404 = is404Error && url.includes('/goals-okr/initiatives/')
+      
+      if (error.response) {
+        // We have a response from the server
+        if (error.response.status !== 404 && !isPublicEndpoint && !shouldSuppress404) {
+          console.error('API Error Response:', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            data: error.response.data,
+            headers: error.response.headers,
+            url: error.config?.url,
+            method: error.config?.method,
+            requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : undefined
+          })
+        }
+        // 404 errors are silently ignored (expected for missing resources)
     } else if (error.request) {
       // Network errors (no response) - backend is likely not available
       // Log first few errors, then suppress to avoid console spam
-      const url = error.config?.url || 'unknown'
       
       // Always suppress these endpoints (expected to fail gracefully)
-      const shouldSuppress = url.includes('/versions/current') || 
+      // Also suppress 404 errors for initiatives (expected when checking user-created vs template)
+      const shouldSuppress = shouldSuppress404 ||
+                            url.includes('/versions/current') || 
                             url.includes('/public/') || 
                             url.includes('/key-result-progress') ||
                             url.includes('/key-results') ||
