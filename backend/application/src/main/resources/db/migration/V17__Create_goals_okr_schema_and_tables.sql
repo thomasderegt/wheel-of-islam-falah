@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS goals_okr.key_results (
     CONSTRAINT fk_key_result_objective FOREIGN KEY (objective_id)
         REFERENCES goals_okr.objectives(id) ON DELETE CASCADE,
     CONSTRAINT uk_key_result_objective_order UNIQUE (objective_id, order_index),
-    CONSTRAINT chk_key_result_target_value CHECK (target_value > 0)
+    CONSTRAINT chk_key_result_target_value CHECK (target_value >= 0)
 );
 
 -- Indexes for key_results

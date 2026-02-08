@@ -190,6 +190,25 @@ export async function getGoal(goalId: number): Promise<GoalDTO> {
   return response.data
 }
 
+/**
+ * Create a new goal (template)
+ * POST /api/v2/goals-okr/goals
+ */
+export async function createGoal(request: {
+  lifeDomainId: number
+  titleNl?: string
+  titleEn?: string
+  descriptionNl?: string
+  descriptionEn?: string
+  orderIndex: number
+}): Promise<GoalDTO> {
+  const response = await apiClient.post<GoalDTO>(
+    '/api/v2/goals-okr/goals',
+    request
+  )
+  return response.data
+}
+
 // ========== Objectives ==========
 
 /**
@@ -209,6 +228,25 @@ export async function getObjectivesByGoal(goalId: number): Promise<ObjectiveDTO[
  */
 export async function getObjective(objectiveId: number): Promise<ObjectiveDTO> {
   const response = await apiClient.get<ObjectiveDTO>(`/api/v2/goals-okr/objectives/${objectiveId}`)
+  return response.data
+}
+
+/**
+ * Create a new objective (template)
+ * POST /api/v2/goals-okr/objectives
+ */
+export async function createObjective(request: {
+  goalId: number
+  titleNl?: string
+  titleEn?: string
+  descriptionNl?: string
+  descriptionEn?: string
+  orderIndex: number
+}): Promise<ObjectiveDTO> {
+  const response = await apiClient.post<ObjectiveDTO>(
+    '/api/v2/goals-okr/objectives',
+    request
+  )
   return response.data
 }
 
