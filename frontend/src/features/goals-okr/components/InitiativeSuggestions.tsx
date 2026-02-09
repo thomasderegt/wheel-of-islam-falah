@@ -69,9 +69,16 @@ export function InitiativeSuggestions({
           <Card key={suggestion.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-base">
-                  {getTitle(suggestion)}
-                </CardTitle>
+                <div className="flex-1 min-w-0">
+                  {suggestion.number && (
+                    <span className="text-xs font-mono text-muted-foreground mb-1 block">
+                      {suggestion.number}
+                    </span>
+                  )}
+                  <CardTitle className="text-base">
+                    {getTitle(suggestion)}
+                  </CardTitle>
+                </div>
                 {suggestion.learningFlowTemplateId && (
                   <Badge variant="outline" className="gap-1">
                     <BookOpen className="h-3 w-3" />

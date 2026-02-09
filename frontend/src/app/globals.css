@@ -454,7 +454,12 @@
   /* Bottom navigation bar padding for all screen sizes */
   /* When body has has-bottom-nav class, add padding to main content */
   body.has-bottom-nav main {
-    padding-bottom: 80px; /* Space for bottom nav bar */
+    padding-bottom: 100px; /* Space for bottom nav bar */
+  }
+  
+  /* Also add padding to divs that act as main content areas */
+  body.has-bottom-nav > div > div.flex-1 {
+    padding-bottom: 100px; /* Space for bottom nav bar */
   }
 }
 

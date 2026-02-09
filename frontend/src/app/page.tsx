@@ -32,7 +32,9 @@ import {
   Repeat,
   Home,
   Sparkles,
-  BookOpen
+  BookOpen,
+  Trophy,
+  Scale
 } from 'lucide-react'
 
 export default function LandingPage() {
@@ -77,25 +79,36 @@ export default function LandingPage() {
       <Navbar variant="landing" />
 
       {/* SECTION 1 — Hero Section */}
-      <section className="relative px-4 py-20 md:py-32 min-h-[80vh] flex items-center">
+      <section className="relative py-20 px-4 border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">1</div>
         <Container className="max-w-7xl mx-auto">
-          <div className="max-w-3xl mx-auto">
+          <div className="flex flex-col gap-12">
             {/* Text Content */}
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-foreground">
-                  Hey Gen Z!<br />
-                  Looking for success in this life and the next?<br />
-                  <span className="text-primary">Check!</span><br />
-                  Looking for a life with meaning and direction?<br />
-                  <span className="text-primary">Check!</span>
-                </h1>
-                
-                <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl">
-                  Welcome to <span className="font-bold">Qalbsalim</span> (Soundheart).<br />
-                  A platform designed to help you flourish and achieve true success (Falah) in this life and the next.<br />
-                  <br />
-                  Experience sustainable growth through Tazkiyyah — the purification and development of the heart — as taught in the Qur'an and Sunnah.
+            <div className="space-y-6">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-foreground">
+                Hey Gen Z!<br />
+                Looking for success in this life and the next?<br />
+                <span className="text-primary">Check!</span><br />
+                Looking for a life with meaning and direction?<br />
+                <span className="text-primary">Check!</span>
+              </h1>
+              
+              <div className="text-xl md:text-2xl text-muted-foreground leading-relaxed space-y-4">
+                <p>
+                  Welcome to <span className="font-bold">Qalbsalim</span> (Soundheart).
+                </p>
+                <p className="font-bold">
+                  A platform designed to help you flourish and achieve true success (Falah) in this life and the next.
+                </p>
+                <div>
+                  Experience sustainable growth through:
+                  <ul className="list-disc list-inside mt-2 space-y-1">
+                    <li>Tazkiyyah, the purification and development of the heart, and</li>
+                    <li>Fiqh, the understanding and application of divine guidelines.</li>
+                  </ul>
+                </div>
+                <p>
+                  Learn modern day proven techniques in Goal Management & Execution
                 </p>
               </div>
 
@@ -118,15 +131,21 @@ export default function LandingPage() {
                 </Button>
               </div>
             </div>
+          </div>
+        </Container>
+      </section>
 
-            {/* Why Tazkiyyah Section */}
-            <div className="space-y-6 mt-12 max-w-2xl">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                Authenticity check:
-              </h2>
-              
+      {/* SECTION 2 — Success as taught in the Quran, Sunnah */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">2</div>
+        <Container className="max-w-6xl mx-auto">
+          <div className="space-y-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              Succes as taught in the Quran & Sunnah
+            </h2>
+            <div className="space-y-6">
               <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
-                "The Day when neither wealth nor children will benefit anyone — except one who comes to Allah with a sound heart."<br />
+                "The Day when neither wealth nor children will benefit anyone, except one who comes to Allah with a sound heart."<br />
                 <span className="text-base not-italic mt-2 block">Qur'an 26:88–89</span>
               </blockquote>
                 
@@ -159,90 +178,259 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 2 — Lifestyle Vision (Dunya Success) */}
-      <section className="py-20 px-4 bg-background">
-        <Container className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left: Text Content */}
+      {/* SECTION 3 — Goal Management & Execution */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">3</div>
+        <Container className="max-w-6xl mx-auto">
+          <div className="space-y-8">
             <div className="space-y-6">
               <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-                The Good Life
+                Succes, Goal- Management & Execution
               </h2>
-              <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
-                <p>
-                  Imagine waking up in your own place — clean, modern, peaceful.
-                </p>
-                <p>
-                  A space that feels vibrant, where you begin the day with purpose and gratitude.
-                </p>
-                <p>
-                  Your outfit fits, the sunlight hits just right, and you can sense barakah in the way your life is moving forward.
-                </p>
-                <p>
-                  You have the freedom to take weekend trips, to sit in your favourite café, and to buy the things you need without too much stress or hesitation.
-                </p>
-                <p>
-                  Your routine supports you: morning workouts that strengthen you, food that fuels you, and habits that bring energy into your day.
-                </p>
-                <p>
-                  When you step into school or the workplace, you feel focused, capable, and prepared.
-                </p>
-                <p className="font-medium text-foreground">
-                  You want progress. You want success. So let's build it together.
-                </p>
-              </div>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Wanna learn how to be good at goal management and execution, in order to be succesfull?<br />
+                Just login and lets grow together. You wil learn thinks like:
+              </p>
             </div>
 
-            {/* Right: Image Carousel */}
-            <div className="relative">
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-                plugins={[autoplayPlugin]}
-                className="w-full"
-              >
-                <CarouselContent>
-                  {lifestyleImages.map((image, index) => (
-                    <CarouselItem key={image}>
-                      <div className="relative rounded-xl overflow-hidden shadow-lg w-full h-[320px] sm:h-[360px] md:h-[420px] lg:h-[480px] max-h-[60vh]">
-                        <img
-                          src={image}
-                          alt={`Lifestyle scene ${index + 1}`}
-                          className={`w-full h-full object-cover ${
-                            image.includes('/Lifestyle1.png') || image.includes('/Lifestyle2.png')
-                              ? 'object-top'
-                              : 'object-center'
-                          }`}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent" />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-4" />
-                <CarouselNext className="right-4" />
-              </Carousel>
+            <div className="grid md:grid-cols-2 gap-8 mt-8">
+              <div className="space-y-4">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Radical Focus
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Less distractions, more results. Focus on what moves the needle, drop the rest.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Measure Your Success
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  You dont need to guess. Know exactly what's working and what's not with clear metrics and feedbackloops.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Achieving goals
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Dream big and set big goals. Learn how to break them down and why this is needed. Execute and track your progress.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Consistency & High Performance
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  What happens when motivation gets low? Qalbsalim helps you to stay consistent and focus on (ultimate) success
+                </p>
+              </div>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* SECTION 3 — Why Success Needs Inner Strength */}
-      <section className="py-20 px-4 bg-muted/30">
+      {/* SECTION 4 — Wheel of Life */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">4</div>
+        <Container className="max-w-6xl mx-auto">
+          <div className="space-y-6">
+            <div className="flex justify-center">
+              <img 
+                src="/WheelOfLife.png" 
+                alt="Wheel of Life" 
+                className="max-w-full h-auto"
+              />
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 5 — Imam Ibn al-Qayyim on Tazkiyah */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">5</div>
+        <Container className="max-w-7xl mx-auto">
+          <div className="flex flex-col gap-12">
+            {/* Text Content */}
+            <div className="space-y-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                Imam Ibn al-Qayyim on Tazkiyah and the heart
+              </h2>
+              <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
+                <blockquote className="text-lg italic leading-relaxed border-l-4 border-primary pl-6">
+                  "…tazkiyat al-nafs is more difficult and severe than treating the body. 
+                  <br /><br />
+                  Whoever purifies his ego-self through spiritual training (Ryada), disciplining (Mujahada) and retreat (Khalwa), (but mix it) with what was not brought by the Messenger of Allah (himself), then he (someone) is like the sick person who attempts to treat himself with his own opinion, but how does his opinion compare to that of the knowledge of a physician? 
+                  <br /><br />
+                  The Messengers of Allah are the physicians of the heart, and as such there is no way of purifying them nor augmenting them except through their method; putting yourself in their hands and with absolute compliance and submission to them…"
+                </blockquote>
+                <p className="text-sm opacity-75">
+                  [1]
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 6 — Wheel of Islam Model */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">6</div>
+        <Container className="max-w-6xl mx-auto">
+          <div className="space-y-6">
+            <div className="flex justify-center">
+              <img 
+                src="/WheelOfIslamModel.png" 
+                alt="Wheel of Islam Model" 
+                className="max-w-full h-auto"
+              />
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 7 — Core Concepts of Success */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">7</div>
+        <Container className="max-w-6xl mx-auto">
+          <div className="space-y-8 mb-8">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              Core concepts of succes
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
+            {/* Step 0 - Falah */}
+            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
+              <div className="p-4 rounded-full bg-primary/10">
+                <Trophy className="w-8 h-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Falah
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Ultimate Success
+                </p>
+              </div>
+            </div>
+
+            {/* Step 1 - Tazkiyyah */}
+            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
+              <div className="p-4 rounded-full bg-primary/10">
+                <Sparkles className="w-8 h-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Tazkiyyah
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  The interior path to success
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 - Fiqh */}
+            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
+              <div className="p-4 rounded-full bg-primary/10">
+                <Scale className="w-8 h-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Fiqh
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  The exterior path to success
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 - Dunya */}
+            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
+              <div className="p-4 rounded-full bg-primary/10">
+                <Home className="w-8 h-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Dunya
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Gift & Test
+                </p>
+              </div>
+            </div>
+
+            {/* Step 4 - Ākhirah */}
+            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
+              <div className="p-4 rounded-full bg-primary/10">
+                <BookOpen className="w-8 h-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Ākhirah
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Final Return
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 8 — Image Carousel */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">8</div>
+        <Container className="max-w-7xl mx-auto">
+          <div className="relative">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              plugins={[autoplayPlugin]}
+              className="w-full"
+            >
+              <CarouselContent>
+                {lifestyleImages.map((image, index) => (
+                  <CarouselItem key={image}>
+                    <div className="relative rounded-xl overflow-hidden shadow-lg w-full h-[320px] sm:h-[360px] md:h-[420px] lg:h-[480px] max-h-[60vh]">
+                      <img
+                        src={image}
+                        alt={`Lifestyle scene ${index + 1}`}
+                        className={`w-full h-full object-cover ${
+                          image.includes('/Lifestyle1.png') || image.includes('/Lifestyle2.png')
+                            ? 'object-top'
+                            : 'object-center'
+                        }`}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent" />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-4" />
+              <CarouselNext className="right-4" />
+            </Carousel>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 9 — Why Success Needs Inner Strength */}
+      <section className="relative py-20 px-4 bg-muted/30 border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">9</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-12">
             {/* Header */}
             <div className="text-center space-y-4 max-w-3xl mx-auto">
               <h2 className="text-4xl md:text-5xl font-bold text-foreground">
-                Why Success Needs Inner Strength
+                Why success needs inner strength
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Wanting success is easy. Building it — and keeping it — is something else entirely.
-              </p>
-              <p className="text-lg text-muted-foreground">
-                Anyone can picture the good life. But living it requires qualities that don't come from luck or motivation alone.
+                Wanting success is easy. Building it and keeping it, is something else.
               </p>
             </div>
 
@@ -271,58 +459,6 @@ export default function LandingPage() {
               <p className="text-xl font-medium text-foreground">
                 Real success — the kind that lasts — needs a strong inner foundation.
               </p>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* SECTION 4 — How It Works (Steps Section) */}
-      <section className="py-20 px-4 bg-background">
-        <Container className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
-              <div className="p-4 rounded-full bg-primary/10">
-                <Home className="w-8 h-8 text-primary" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-foreground">
-                  1. Build Your Dunya
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Set goals, habits, routines, and projects that move your life forward.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
-              <div className="p-4 rounded-full bg-primary/10">
-                <Sparkles className="w-8 h-8 text-primary" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-foreground">
-                  2. Strengthen Your Inner World
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Develop focus, clarity, patience, emotional discipline, and spiritual depth.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="flex flex-col items-start space-y-4 p-8 rounded-lg border border-border/50 hover:border-primary/50 transition-colors">
-              <div className="p-4 rounded-full bg-primary/10">
-                <BookOpen className="w-8 h-8 text-primary" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-foreground">
-                  3. Prepare for the Akhirah
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Align your intentions and actions with a heart ready for the next life.
-                </p>
-              </div>
             </div>
           </div>
         </Container>

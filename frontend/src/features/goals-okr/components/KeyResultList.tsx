@@ -210,10 +210,17 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
       >
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              {getKeyResultTitle()}
-            </span>
+            <div className="flex-1 min-w-0">
+              {keyResult.number && (
+                <span className="text-xs font-mono text-muted-foreground mb-1 block">
+                  {keyResult.number}
+                </span>
+              )}
+              <span className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                {getKeyResultTitle()}
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               {user?.id && (
                 <Button

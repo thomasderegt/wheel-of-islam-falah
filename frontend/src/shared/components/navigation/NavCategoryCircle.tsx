@@ -252,6 +252,16 @@ export function NavCategoryCircle() {
             })}
           </defs>
           
+          {/* Outer wrapper circle - border around the entire wheel */}
+          <circle
+            cx="200"
+            cy="200"
+            r="160"
+            fill="none"
+            stroke="red"
+            strokeWidth="2"
+          />
+          
           {/* Vier sectoren */}
           <g>
             {orderedCategories.map((sector, index) => {

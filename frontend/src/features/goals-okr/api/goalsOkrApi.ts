@@ -14,6 +14,7 @@ export interface GoalDTO {
   descriptionNl?: string | null
   descriptionEn?: string | null
   orderIndex: number
+  number?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -26,6 +27,7 @@ export interface ObjectiveDTO {
   descriptionNl?: string | null
   descriptionEn?: string | null
   orderIndex: number
+  number?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -40,6 +42,7 @@ export interface KeyResultDTO {
   targetValue: number
   unit: string
   orderIndex: number
+  number?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -48,6 +51,7 @@ export interface UserGoalInstanceDTO {
   id: number
   userId: number
   goalId: number
+  number?: string | null
   startedAt: string
   completedAt?: string | null
 }
@@ -56,6 +60,7 @@ export interface UserObjectiveInstanceDTO {
   id: number
   userGoalInstanceId: number
   objectiveId: number
+  number?: string | null
   startedAt: string
   completedAt?: string | null
 }
@@ -64,6 +69,7 @@ export interface UserKeyResultInstanceDTO {
   id: number
   userObjectiveInstanceId: number
   keyResultId: number
+  number?: string | null
   startedAt: string
   completedAt?: string | null
 }
@@ -72,6 +78,7 @@ export interface UserInitiativeInstanceDTO {
   id: number
   userKeyResultInstanceId: number
   initiativeId: number
+  number?: string | null
   startedAt: string
   completedAt?: string | null
 }
@@ -86,6 +93,7 @@ export interface InitiativeDTO {
   descriptionEn?: string | null
   learningFlowTemplateId?: number | null
   displayOrder: number
+  number?: string | null
 }
 
 // User-created initiative (voorheen Initiative)
@@ -99,6 +107,7 @@ export interface UserInitiativeDTO {
   status: 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
   targetDate?: string | null
   learningFlowEnrollmentId?: number | null
+  number?: string | null
   createdAt: string
   updatedAt: string
   completedAt?: string | null
@@ -132,6 +141,7 @@ export interface KanbanItemDTO {
   columnName: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'
   position: number
   notes?: string | null
+  number?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -815,6 +825,7 @@ export interface UserGoalDTO {
   lifeDomainId?: number | null
   title: string
   description?: string | null
+  number?: string | null
   createdAt: string
   updatedAt: string
   completedAt?: string | null
@@ -858,6 +869,7 @@ export interface UserObjectiveDTO {
   userGoalId: number
   title: string
   description?: string | null
+  number?: string | null
   createdAt: string
   updatedAt: string
   completedAt?: string | null
@@ -906,6 +918,7 @@ export interface UserKeyResultDTO {
   targetValue?: number | null
   unit?: string | null
   currentValue: number
+  number?: string | null
   createdAt: string
   updatedAt: string
   completedAt?: string | null

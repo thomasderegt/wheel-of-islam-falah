@@ -88,9 +88,16 @@ export function InitiativeListForKeyResult({ userKeyResultInstanceId, language =
           >
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>
-                  {initiative.title}
-                </CardTitle>
+                <div className="flex-1 min-w-0">
+                  {initiative.number && (
+                    <span className="text-xs font-mono text-muted-foreground mb-1 block">
+                      {initiative.number}
+                    </span>
+                  )}
+                  <CardTitle>
+                    {initiative.title}
+                  </CardTitle>
+                </div>
                 {getStatusBadge(initiative.status)}
               </div>
             </CardHeader>

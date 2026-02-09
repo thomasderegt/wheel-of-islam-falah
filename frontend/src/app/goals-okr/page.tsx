@@ -23,20 +23,7 @@ export default function GoalsOKRNavigatorPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
-            <div className="space-y-8">
-              {/* Header */}
-              <div className="space-y-4">
-                <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                  Goal-Mode
-                </h1>
-                <p className="text-muted-foreground text-lg max-w-2xl">
-                  Navigate through your life domains to set your goals.
-                </p>
-                <p className="text-sm text-muted-foreground mt-4">
-                  Structure: Life Domain → Goal → Objective → Key Result
-                </p>
-              </div>
-
+            <div className="space-y-4">
               {/* Hierarchical Navigation */}
               <AutoHierarchicalNavigation />
 

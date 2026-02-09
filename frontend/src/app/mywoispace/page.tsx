@@ -64,7 +64,7 @@ export default function MySpacePage() {
                     <CardTitle className={`font-medium transition-all ${
                       isQuoteMinimized ? 'text-xs text-muted-foreground' : 'text-sm'
                     }`}>
-                      {isQuoteMinimized ? 'Ibn al-Qayyim' : 'Ibn al-Qayyim'}
+                      {isQuoteMinimized ? 'Ibn al-Qayyim (ra)' : 'Ibn al-Qayyim (ra)'}
                     </CardTitle>
                   </div>
                   <Button
@@ -91,10 +91,12 @@ export default function MySpacePage() {
                   <blockquote className="text-sm text-foreground/90 italic leading-relaxed border-l-2 border-primary/30 pl-4">
                     "So the Qur'aan is a complete cure from all of the diseases pertaining to the heart and body, as well as the disorders of the world and the Hereafter, and it is not that every individual is worthy for or is granted ability to be cured by way of it, and so if the one who is sick does well in the (course of) treatment with it, and places it upon his ailment with truthfulness and Eemaan and complete acceptance and definitive belief, together with the fulfillment of its conditions, the ailment can never resist it.
                     <br /><br />
-                    How can the ailments resist the Speech of the Lord of the earth and the heavens which is such that – had it been revealed upon the mountains – it would have cleft them asunder, or (revealed) upon the earth – it would have sundered it. So there is no sickness from the sicknesses of the hearts and the bodies except that in the Qur'aan is a means to the guiding direction of its remedy and its cause, as well as the protection from it – for whosoever Allaah has bestowed an understanding into His Book."
+                    How can the ailments resist the Speech of the Lord of the earth and the heavens which is such that – had it been revealed upon the mountains, it would have cleft them asunder, or (revealed) upon the earth, it would have sundered it. 
+                    <br /><br />
+                    So there is no sickness from the sicknesses of the hearts and the bodies except that in the Qur'aan is a means to the guiding direction of its remedy and its cause, as well as the protection from it, for whosoever Allaah has bestowed an understanding into His Book."
                   </blockquote>
                   <p className="text-xs text-muted-foreground mt-2 text-right">
-                    — Ibn al-Qayyim (rahimahullaah)
+                    — Ibn al-Qayyim (ra)
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 text-right opacity-75">
                     Zaad al-Ma'aad vol 4 p.352

@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useRouter } from 'next/navigation'
-import { Home, Target, LayoutGrid, User, LogOut, UserCircle } from 'lucide-react'
+import { Star, Target, TrendingUp, LayoutGrid, User, LogOut, UserCircle } from 'lucide-react'
 
 export function BottomNav() {
   const router = useRouter()
@@ -33,15 +33,19 @@ export function BottomNav() {
     if (path === '/user/settings') {
       return pathname === '/user/settings'
     }
+    if (path === '/goals-okr/kanban/dashboard') {
+      return pathname === '/goals-okr/kanban/dashboard'
+    }
     return pathname.startsWith(path)
   }
 
   // Bottom navigation items
   const bottomNavItems = [
-    { href: '/home', label: 'Succes', icon: Home },
+    { href: '/home', label: 'Succes', icon: Star },
     { href: '/goals-okr', label: 'Goal', icon: Target },
-    { href: '/goals-okr/kanban', label: 'Focus', icon: LayoutGrid },
-    { href: '/mywoispace', label: 'My Space', icon: User },
+    { href: '/goals-okr/kanban', label: 'Focus', icon: TrendingUp },
+    { href: '/goals-okr/kanban/dashboard', label: 'Dashboard', icon: LayoutGrid },
+    { href: '/mywoispace', label: 'MySpace', icon: User },
   ]
 
   // Add/remove class to body when bottom nav is visible
@@ -62,7 +66,7 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="flex items-center justify-around px-2 py-2 max-w-7xl mx-auto">
+      <div className="flex items-center justify-around px-2 py-2 max-w-6xl mx-auto">
         {bottomNavItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)

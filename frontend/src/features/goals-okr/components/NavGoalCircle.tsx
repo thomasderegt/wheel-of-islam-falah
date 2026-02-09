@@ -199,9 +199,16 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
               `}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="text-xl font-bold flex-1">
-                  {getGoalTitle(goal)}
-                </h3>
+                <div className="flex-1 min-w-0">
+                  {goal.number && (
+                    <span className="text-xs font-mono text-muted-foreground mb-1 block">
+                      {goal.number}
+                    </span>
+                  )}
+                  <h3 className="text-xl font-bold">
+                    {getGoalTitle(goal)}
+                  </h3>
+                </div>
                 {user?.id && (
                   <Button
                     variant="ghost"

@@ -9,7 +9,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
 import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult } from '../api/goalsOkrApi'
-import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO } from '../api/goalsOkrApi'
+import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO, LifeDomainDTO } from '../api/goalsOkrApi'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -34,13 +34,15 @@ const COLUMNS: Array<{ id: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'; label:
 interface KanbanCardProps {
   item: KanbanItemDTO
   title: string
+  instanceNumber?: string | null
+  domainTitle?: string | null
   onDelete: () => void
   language?: 'nl' | 'en'
   onNavigate?: () => void
   onNavigateToInstance?: () => void
 }
 
-function KanbanCard({ item, title, onDelete, language = 'en', onNavigate, onNavigateToInstance }: KanbanCardProps) {
+function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, language = 'en', onNavigate, onNavigateToInstance }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id.toString(),
   })
@@ -97,10 +99,25 @@ function KanbanCard({ item, title, onDelete, language = 'en', onNavigate, onNavi
               >
                 {title}
               </CardTitle>
-              <div className="mt-1 flex items-center gap-2">
-                <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted">
-                  {getItemTypeLabel(item.itemType)}
-                </span>
+              <div className="mt-2 space-y-1 text-xs">
+                {domainTitle && (
+                  <div className="text-muted-foreground">
+                    Domain: <span className="font-medium text-foreground">{domainTitle}</span>
+                  </div>
+                )}
+                <div className="text-muted-foreground">
+                  Item Type: <span className="font-medium text-foreground">{getItemTypeLabel(item.itemType)}</span>
+                </div>
+                {instanceNumber && (
+                  <div className="text-muted-foreground">
+                    {getItemTypeLabel(item.itemType)} nr: <span className="font-mono font-medium text-foreground">{instanceNumber}</span>
+                  </div>
+                )}
+                {item.number && (
+                  <div className="text-muted-foreground">
+                    Kanban Item nr: <span className="font-mono font-medium text-foreground">{item.number}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -143,6 +160,9 @@ interface KanbanColumnProps {
   label: string
   items: KanbanItemDTO[]
   itemTitles: Map<string, string>
+  itemNumbers: Map<string, string>
+  itemLifeDomainIds: Map<string, number>
+  lifeDomains?: LifeDomainDTO[]
   onDelete: (itemId: number) => void
   language?: 'nl' | 'en'
   onNavigate?: (item: KanbanItemDTO) => void
@@ -150,7 +170,7 @@ interface KanbanColumnProps {
   isLoadingTitles?: boolean
 }
 
-function KanbanColumn({ columnId, label, items, itemTitles, onDelete, language = 'en', onNavigate, onNavigateToInstance, isLoadingTitles = false }: KanbanColumnProps) {
+function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLifeDomainIds, lifeDomains, onDelete, language = 'en', onNavigate, onNavigateToInstance, isLoadingTitles = false }: KanbanColumnProps) {
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
 
@@ -194,11 +214,19 @@ function KanbanColumn({ columnId, label, items, itemTitles, onDelete, language =
               sortedItems.map((item) => {
                 const compoundKey = `${item.itemType}-${item.itemId}`
                 const title = itemTitles.get(compoundKey) || `${item.itemType} ${item.itemId}`
+                const instanceNumber = itemNumbers.get(compoundKey)
+                const lifeDomainId = itemLifeDomainIds.get(compoundKey)
+                const domain = lifeDomains?.find(d => d.id === lifeDomainId)
+                const domainTitle = domain 
+                  ? (language === 'nl' ? (domain.titleNl || domain.titleEn) : (domain.titleEn || domain.titleNl))
+                  : null
                 return (
                   <KanbanCard
                     key={item.id}
                     item={item}
                     title={title}
+                    instanceNumber={instanceNumber}
+                    domainTitle={domainTitle}
                     onDelete={() => onDelete(item.id)}
                     onNavigate={onNavigate ? () => onNavigate(item) : undefined}
                     onNavigateToInstance={onNavigateToInstance ? () => onNavigateToInstance(item) : undefined}
@@ -231,6 +259,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const [activeItem, setActiveItem] = useState<KanbanItemDTO | null>(null)
   const [itemTitles, setItemTitles] = useState<Map<string, string>>(new Map()) // Use compound key: "itemType-itemId"
   const [itemLifeDomainIds, setItemLifeDomainIds] = useState<Map<string, number>>(new Map()) // Use compound key: "itemType-itemId"
+  const [itemNumbers, setItemNumbers] = useState<Map<string, string>>(new Map()) // Use compound key: "itemType-itemId" - User instance numbers
   const [isLoadingTitles, setIsLoadingTitles] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<{ id: number; title: string } | null>(null)
@@ -335,6 +364,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     if (!kanbanItems || kanbanItems.length === 0) {
       setItemTitles(new Map())
       setItemLifeDomainIds(new Map())
+      setItemNumbers(new Map())
       setIsLoadingTitles(false)
       return
     }
@@ -344,6 +374,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     const loadTitlesAndLifeDomains = async () => {
       const titles = new Map<string, string>() // Use compound key: "itemType-itemId"
       const lifeDomainIds = new Map<string, number>() // Use compound key: "itemType-itemId"
+      const numbers = new Map<string, string>() // Use compound key: "itemType-itemId" - User instance numbers
       
       // Process items sequentially (one at a time) to avoid race conditions
       // This prevents multiple parallel requests from interfering with each other
@@ -366,6 +397,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
               if (isCancelled) return
               title = language === 'nl' ? (goal.titleNl || goal.titleEn) : (goal.titleEn || goal.titleNl)
               lifeDomainId = goal.lifeDomainId
+              // Store user instance number
+              if (userGoalInstance.number) {
+                numbers.set(`${item.itemType}-${item.itemId}`, userGoalInstance.number)
+              }
               break
             }
             case 'OBJECTIVE': {
@@ -380,6 +415,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                 const goal = await getGoal(objective.goalId)
                 if (isCancelled) return
                 lifeDomainId = goal.lifeDomainId
+              }
+              // Store user instance number
+              if (userObjectiveInstance.number) {
+                numbers.set(`${item.itemType}-${item.itemId}`, userObjectiveInstance.number)
               }
               break
             }
@@ -399,6 +438,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                   if (isCancelled) return
                   lifeDomainId = goal.lifeDomainId
                 }
+              }
+              // Store user instance number
+              if (userKeyResultInstance.number) {
+                numbers.set(`${item.itemType}-${item.itemId}`, userKeyResultInstance.number)
               }
               break
             }
@@ -468,6 +511,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                   throw new Error(`Template Initiative ${userInitiativeInstance.initiativeId} not found for key result ${keyResult.id}`)
                 }
               }
+              // Store user instance number
+              if (userInitiativeInstance.number) {
+                numbers.set(`${item.itemType}-${item.itemId}`, userInitiativeInstance.number)
+              }
               break
             }
           }
@@ -498,6 +545,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       if (!isCancelled) {
         setItemTitles(titles)
         setItemLifeDomainIds(lifeDomainIds)
+        setItemNumbers(numbers)
         setIsLoadingTitles(false)
       }
     }
@@ -637,6 +685,9 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                 label={column.label}
                 items={itemsByColumn[column.id]}
                 itemTitles={itemTitles}
+                itemNumbers={itemNumbers}
+                itemLifeDomainIds={itemLifeDomainIds}
+                lifeDomains={lifeDomains}
                 onDelete={handleDeleteClick}
                 onNavigate={handleNavigate}
                 onNavigateToInstance={handleNavigateToInstance}

@@ -44,16 +44,6 @@ export default function KanbanPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-8 relative z-0">
           <Container className="max-w-7xl mx-auto w-full">
-            {/* Header */}
-            <div className="mb-8 space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                Progress Board
-              </h1>
-              <p className="text-muted-foreground text-lg max-w-2xl">
-                Organize and track your goals, objectives, key results, and initiatives.
-              </p>
-            </div>
-
             {/* Filter Panel */}
             <div className="mb-6">
               <KanbanFilterPanel value={filters} onChange={setFilters} language={language} />

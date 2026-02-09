@@ -69,13 +69,6 @@ export default function CategoryPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
-            {/* Category Header */}
-            <div className="mb-8 space-y-4">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                {categoryTitle || `Category ${categoryId}`}
-              </h1>
-            </div>
-
             {/* BookSwitcher */}
             {books && books.length > 0 ? (
               <BookSwitcher

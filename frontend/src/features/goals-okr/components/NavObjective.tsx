@@ -98,9 +98,16 @@ export function NavObjective({ goalId, language = 'en' }: NavObjectiveProps) {
               `}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className="text-xl font-bold flex-1">
-                  {getObjectiveTitle(objective)}
-                </h3>
+                <div className="flex-1 min-w-0">
+                  {objective.number && (
+                    <span className="text-xs font-mono text-muted-foreground mb-1 block">
+                      {objective.number}
+                    </span>
+                  )}
+                  <h3 className="text-xl font-bold">
+                    {getObjectiveTitle(objective)}
+                  </h3>
+                </div>
                 {user?.id && (
                   <Button
                     variant="ghost"
