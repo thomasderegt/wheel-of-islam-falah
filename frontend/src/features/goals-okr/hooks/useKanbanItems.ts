@@ -3,7 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getKanbanItems, addKanbanItem, updateKanbanItemPosition, deleteKanbanItem } from '../api/goalsOkrApi'
+import { getKanbanItems, addKanbanItem, updateKanbanItemPosition, updateKanbanItemNotes, deleteKanbanItem } from '../api/goalsOkrApi'
 import type { KanbanItemDTO } from '../api/goalsOkrApi'
 
 /**
@@ -43,6 +43,22 @@ export function useUpdateKanbanItemPosition() {
       updateKanbanItemPosition(itemId, columnName, position),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', data.userId] })
+    },
+  })
+}
+
+/**
+ * Hook for updating kanban item notes
+ */
+export function useUpdateKanbanItemNotes() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ itemId, notes }: { itemId: number; notes: string | null }) =>
+      updateKanbanItemNotes(itemId, notes),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', data.userId] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-item', data.id] })
     },
   })
 }

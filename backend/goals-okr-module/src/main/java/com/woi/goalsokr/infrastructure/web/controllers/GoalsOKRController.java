@@ -5,6 +5,8 @@ import com.woi.goalsokr.application.handlers.commands.*;
 import com.woi.goalsokr.application.handlers.queries.*;
 import com.woi.goalsokr.application.queries.*;
 import com.woi.goalsokr.application.results.*;
+import com.woi.goalsokr.domain.repositories.KanbanItemRepository;
+import com.woi.goalsokr.domain.entities.KanbanItem;
 import com.woi.goalsokr.infrastructure.web.dtos.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -66,8 +68,10 @@ public class GoalsOKRController {
     private final GetInitiativesByKeyResultQueryHandler getInitiativesByKeyResultHandler;
     private final AddKanbanItemCommandHandler addKanbanItemHandler;
     private final UpdateKanbanItemPositionCommandHandler updateKanbanItemPositionHandler;
+    private final UpdateKanbanItemNotesCommandHandler updateKanbanItemNotesHandler;
     private final DeleteKanbanItemCommandHandler deleteKanbanItemHandler;
     private final GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler;
+    private final KanbanItemRepository kanbanItemRepository;
     
     // User-specific command handlers
     private final CreateUserGoalCommandHandler createUserGoalHandler;
@@ -119,8 +123,10 @@ public class GoalsOKRController {
             GetInitiativesByKeyResultQueryHandler getInitiativesByKeyResultHandler,
             AddKanbanItemCommandHandler addKanbanItemHandler,
             UpdateKanbanItemPositionCommandHandler updateKanbanItemPositionHandler,
+            UpdateKanbanItemNotesCommandHandler updateKanbanItemNotesHandler,
             DeleteKanbanItemCommandHandler deleteKanbanItemHandler,
             GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler,
+            KanbanItemRepository kanbanItemRepository,
             CreateUserGoalCommandHandler createUserGoalHandler,
             CreateUserObjectiveCommandHandler createUserObjectiveHandler,
             CreateUserKeyResultCommandHandler createUserKeyResultHandler,
@@ -166,8 +172,10 @@ public class GoalsOKRController {
         this.getInitiativesByKeyResultHandler = getInitiativesByKeyResultHandler;
         this.addKanbanItemHandler = addKanbanItemHandler;
         this.updateKanbanItemPositionHandler = updateKanbanItemPositionHandler;
+        this.updateKanbanItemNotesHandler = updateKanbanItemNotesHandler;
         this.deleteKanbanItemHandler = deleteKanbanItemHandler;
         this.getKanbanItemsByUserHandler = getKanbanItemsByUserHandler;
+        this.kanbanItemRepository = kanbanItemRepository;
         this.createUserGoalHandler = createUserGoalHandler;
         this.createUserObjectiveHandler = createUserObjectiveHandler;
         this.createUserKeyResultHandler = createUserKeyResultHandler;
@@ -893,6 +901,30 @@ public class GoalsOKRController {
     }
 
     /**
+     * Get a single kanban item by ID
+     * GET /api/v2/goals-okr/kanban-items/{itemId}
+     */
+    @GetMapping("/kanban-items/{itemId}")
+    public ResponseEntity<?> getKanbanItemById(@PathVariable Long itemId) {
+        try {
+            // Use the repository directly for single item lookup
+            Optional<KanbanItem> item = kanbanItemRepository.findById(itemId);
+            if (item.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "KanbanItem not found with id: " + itemId));
+            }
+            KanbanItemResult result = KanbanItemResult.from(item.get());
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Add a kanban item
      * POST /api/v2/goals-okr/kanban-items
      */
@@ -932,6 +964,31 @@ public class GoalsOKRController {
                 request.position()
             );
             KanbanItemResult result = updateKanbanItemPositionHandler.handle(command);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Update kanban item notes
+     * PUT /api/v2/goals-okr/kanban-items/{itemId}/notes
+     */
+    @PutMapping("/kanban-items/{itemId}/notes")
+    @Transactional
+    public ResponseEntity<?> updateKanbanItemNotes(
+            @PathVariable Long itemId,
+            @Valid @RequestBody UpdateKanbanItemNotesRequest request) {
+        try {
+            UpdateKanbanItemNotesCommand command = new UpdateKanbanItemNotesCommand(
+                itemId,
+                request.notes()
+            );
+            KanbanItemResult result = updateKanbanItemNotesHandler.handle(command);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

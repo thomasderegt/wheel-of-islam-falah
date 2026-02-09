@@ -54,14 +54,21 @@ apiClient.interceptors.response.use(
       
       if (error.response) {
         // We have a response from the server
-        if (error.response.status !== 404 && !isPublicEndpoint && !shouldSuppress404) {
+        const status = error.response.status
+        const statusText = error.response.statusText
+        const errorData = error.response.data
+        
+        if (status !== 404 && !isPublicEndpoint && !shouldSuppress404) {
           console.error('API Error Response:', {
-            status: error.response.status,
-            statusText: error.response.statusText,
-            data: error.response.data,
+            status: status,
+            statusText: statusText || '(no status text)',
+            data: errorData,
+            dataType: typeof errorData,
+            dataString: errorData ? (typeof errorData === 'string' ? errorData : JSON.stringify(errorData)) : '(null/undefined/empty)',
+            dataLength: errorData ? (typeof errorData === 'string' ? errorData.length : JSON.stringify(errorData).length) : 0,
             headers: error.response.headers,
-            url: error.config?.url,
-            method: error.config?.method,
+            url: error.config?.url || url,
+            method: error.config?.method || 'GET',
             requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : undefined
           })
         }

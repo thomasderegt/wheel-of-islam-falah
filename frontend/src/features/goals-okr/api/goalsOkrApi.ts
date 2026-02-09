@@ -663,6 +663,40 @@ export async function getKanbanItems(userId: number): Promise<KanbanItemDTO[]> {
 }
 
 /**
+ * Get a single kanban item by ID
+ * GET /api/v2/goals-okr/kanban-items/{itemId}
+ */
+export async function getKanbanItem(itemId: number): Promise<KanbanItemDTO> {
+  try {
+    const response = await apiClient.get<KanbanItemDTO>(
+      `/api/v2/goals-okr/kanban-items/${itemId}`
+    )
+    return response.data
+  } catch (error: any) {
+    // Log more details for debugging
+    if (error.response) {
+      console.error('getKanbanItem error:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        dataString: JSON.stringify(error.response.data),
+        headers: error.response.headers,
+        url: `/api/v2/goals-okr/kanban-items/${itemId}`,
+        fullError: error
+      })
+    } else if (error.request) {
+      console.error('getKanbanItem network error:', {
+        message: error.message,
+        url: `/api/v2/goals-okr/kanban-items/${itemId}`
+      })
+    } else {
+      console.error('getKanbanItem unknown error:', error)
+    }
+    throw error
+  }
+}
+
+/**
  * Add a kanban item
  * POST /api/v2/goals-okr/kanban-items
  */
@@ -690,6 +724,21 @@ export async function updateKanbanItemPosition(
   const response = await apiClient.put<KanbanItemDTO>(
     `/api/v2/goals-okr/kanban-items/${itemId}/position`,
     { columnName, position }
+  )
+  return response.data
+}
+
+/**
+ * Update kanban item notes
+ * PUT /api/v2/goals-okr/kanban-items/{itemId}/notes
+ */
+export async function updateKanbanItemNotes(
+  itemId: number,
+  notes: string | null
+): Promise<KanbanItemDTO> {
+  const response = await apiClient.put<KanbanItemDTO>(
+    `/api/v2/goals-okr/kanban-items/${itemId}/notes`,
+    { notes }
   )
   return response.data
 }
