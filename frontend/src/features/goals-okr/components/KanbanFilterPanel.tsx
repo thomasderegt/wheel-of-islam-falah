@@ -25,7 +25,7 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
   const { data: lifeDomains } = useLifeDomains()
-  const hasActiveFilters = !!value.itemType || !!value.lifeDomainId
+  const hasActiveFilters = !!value.itemType || !!value.lifeDomainId || !!value.wheelType
   const [isOpen, setIsOpen] = useState(false)
 
   const handleItemTypeChange = (itemType: string) => {
@@ -34,6 +34,10 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
 
   const handleLifeDomainChange = (lifeDomainId: string) => {
     onChange({ ...value, lifeDomainId: lifeDomainId === 'ALL' ? undefined : parseInt(lifeDomainId) })
+  }
+
+  const handleWheelTypeChange = (wheelType: string) => {
+    onChange({ ...value, wheelType: wheelType === 'ALL' ? undefined : wheelType as 'life' | 'business' })
   }
 
   const getLifeDomainTitle = (domain: { titleNl: string; titleEn: string }) => {
@@ -84,7 +88,7 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
           </div>
         </CollapsibleTrigger>
         
-        <CollapsibleContent className="relative z-[60]">
+        <CollapsibleContent className="relative overflow-visible">
           <div className="px-4 pb-4 space-y-4">
             <div className="flex items-center justify-between">
               {hasActiveFilters && (
@@ -95,7 +99,7 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
               )}
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="item-type-filter">Item Type</Label>
                   <Select
@@ -111,6 +115,22 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                       <SelectItem value="OBJECTIVE">Objective</SelectItem>
                       <SelectItem value="KEY_RESULT">Key Result</SelectItem>
                       <SelectItem value="INITIATIVE">Initiative</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wheel-type-filter">{language === 'nl' ? 'Type' : 'Type'}</Label>
+                  <Select
+                    value={value.wheelType || 'ALL'}
+                    onValueChange={handleWheelTypeChange}
+                  >
+                    <SelectTrigger id="wheel-type-filter">
+                      <SelectValue placeholder={language === 'nl' ? 'Alle Types' : 'All Types'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">{language === 'nl' ? 'Alle Types' : 'All Types'}</SelectItem>
+                      <SelectItem value="life">{language === 'nl' ? 'Leven' : 'Life'}</SelectItem>
+                      <SelectItem value="business">{language === 'nl' ? 'Zakelijk' : 'Business'}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

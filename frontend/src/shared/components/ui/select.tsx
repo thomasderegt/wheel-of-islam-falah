@@ -200,7 +200,7 @@ function SelectContent({ children }: SelectContentProps) {
     <div
       ref={contentRef}
       data-select-content={context.selectId}
-      className="fixed z-[100] min-w-[8rem] overflow-hidden rounded-md border bg-background border-border shadow-lg"
+      className="fixed z-[9999] min-w-[8rem] overflow-hidden rounded-md border bg-background border-border shadow-lg"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,

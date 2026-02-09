@@ -19,6 +19,8 @@ import { Trash2, GripVertical } from 'lucide-react'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import type { KanbanFilters } from '../hooks/useKanbanFilters'
+import { useWheels } from '../hooks/useWheels'
+import { useLifeDomains } from '../hooks/useLifeDomains'
 
 const COLUMNS: Array<{ id: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'; label: string }> = [
   { id: 'TODO', label: 'To Do' },
@@ -173,11 +175,38 @@ interface KanbanBoardProps {
 export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const { user } = useAuth()
   const { data: kanbanItems, isLoading } = useKanbanItems(user?.id || null)
+  const { data: wheels } = useWheels()
+  const { data: lifeDomains } = useLifeDomains()
   const updatePositionMutation = useUpdateKanbanItemPosition()
   const deleteMutation = useDeleteKanbanItem()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [itemTitles, setItemTitles] = useState<Map<string, string>>(new Map()) // Use compound key: "itemType-itemId"
   const [itemLifeDomainIds, setItemLifeDomainIds] = useState<Map<string, number>>(new Map()) // Use compound key: "itemType-itemId"
+  
+  // Create maps for wheel type filtering
+  const wheelIdToType = useMemo(() => {
+    if (!wheels) return new Map<number, 'life' | 'business'>()
+    const map = new Map<number, 'life' | 'business'>()
+    wheels.forEach(wheel => {
+      if (wheel.wheelKey === 'WHEEL_OF_LIFE') {
+        map.set(wheel.id, 'life')
+      } else if (wheel.wheelKey === 'WHEEL_OF_BUSINESS') {
+        map.set(wheel.id, 'business')
+      }
+    })
+    return map
+  }, [wheels])
+  
+  const lifeDomainIdToWheelId = useMemo(() => {
+    if (!lifeDomains) return new Map<number, number>()
+    const map = new Map<number, number>()
+    lifeDomains.forEach(domain => {
+      if (domain.wheelId) {
+        map.set(domain.id, domain.wheelId)
+      }
+    })
+    return map
+  }, [lifeDomains])
 
   // Filter items based on filters
   const filteredItems = useMemo(() => {
@@ -213,8 +242,23 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       })
     }
     
+    // Filter by wheelType (life or business)
+    if (filters.wheelType && itemLifeDomainIds.size > 0 && wheelIdToType.size > 0 && lifeDomainIdToWheelId.size > 0) {
+      filtered = filtered.filter(item => {
+        const compoundKey = `${item.itemType}-${item.itemId}`
+        const lifeDomainId = itemLifeDomainIds.get(compoundKey)
+        if (!lifeDomainId) return false
+        
+        const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
+        if (!wheelId) return false
+        
+        const wheelType = wheelIdToType.get(wheelId)
+        return wheelType === filters.wheelType
+      })
+    }
+    
     return filtered
-  }, [kanbanItems, filters, itemLifeDomainIds])
+  }, [kanbanItems, filters, itemLifeDomainIds, wheelIdToType, lifeDomainIdToWheelId])
 
   // Group items by column
   const itemsByColumn = useMemo(() => {
