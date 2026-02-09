@@ -26,6 +26,7 @@ public class UserKeyResult {
     private BigDecimal targetValue; // Optional - Target value for tracking
     private String unit; // Optional - Unit of measurement (e.g., "dagen", "uren", "euro")
     private BigDecimal currentValue; // Current progress value (defaults to 0)
+    private String number; // Unique human-readable number (e.g., "MY-KR-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime completedAt;
@@ -181,6 +182,7 @@ public class UserKeyResult {
     public BigDecimal getTargetValue() { return targetValue; }
     public String getUnit() { return unit; }
     public BigDecimal getCurrentValue() { return currentValue; }
+    public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
@@ -230,6 +232,7 @@ public class UserKeyResult {
         }
         this.currentValue = currentValue;
     }
+    public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }

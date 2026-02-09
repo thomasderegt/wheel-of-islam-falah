@@ -15,6 +15,7 @@ public record InitiativeSummary(
     String description,
     String status, // ACTIVE, COMPLETED, ARCHIVED
     LocalDate targetDate,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

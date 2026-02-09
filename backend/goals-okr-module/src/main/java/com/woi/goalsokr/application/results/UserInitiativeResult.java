@@ -16,6 +16,7 @@ public record UserInitiativeResult(
     String status,
     LocalDate targetDate,
     Long learningFlowEnrollmentId,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     LocalDateTime completedAt
@@ -37,6 +38,7 @@ public record UserInitiativeResult(
             initiative.getStatus().name(),
             initiative.getTargetDate(),
             initiative.getLearningFlowEnrollmentId(),
+            initiative.getNumber(),
             initiative.getCreatedAt(),
             initiative.getUpdatedAt(),
             initiative.getCompletedAt()

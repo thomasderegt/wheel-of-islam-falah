@@ -17,6 +17,7 @@ public class UserGoalInstanceEntityMapper {
         domain.setId(jpaEntity.getId());
         domain.setUserId(jpaEntity.getUserId());
         domain.setGoalId(jpaEntity.getGoalId());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setStartedAt(jpaEntity.getStartedAt());
         domain.setCompletedAt(jpaEntity.getCompletedAt());
 
@@ -32,6 +33,7 @@ public class UserGoalInstanceEntityMapper {
         jpaEntity.setId(domain.getId());
         jpaEntity.setUserId(domain.getUserId());
         jpaEntity.setGoalId(domain.getGoalId());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setStartedAt(domain.getStartedAt());
         jpaEntity.setCompletedAt(domain.getCompletedAt());
 

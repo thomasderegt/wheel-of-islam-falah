@@ -16,6 +16,7 @@ public record KeyResultResult(
     BigDecimal targetValue,
     String unit,
     Integer orderIndex,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -30,6 +31,7 @@ public record KeyResultResult(
             keyResult.getTargetValue(),
             keyResult.getUnit(),
             keyResult.getOrderIndex(),
+            keyResult.getNumber(),
             keyResult.getCreatedAt(),
             keyResult.getUpdatedAt()
         );

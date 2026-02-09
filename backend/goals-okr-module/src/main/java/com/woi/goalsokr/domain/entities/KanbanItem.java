@@ -26,6 +26,7 @@ public class KanbanItem {
     private KanbanColumn columnName; // Default: TODO
     private Integer position; // Default: 0 - Order within the column
     private String notes; // Optional notes
+    private String number; // Unique human-readable number (e.g., "KANBAN-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -94,6 +95,7 @@ public class KanbanItem {
     public KanbanColumn getColumnName() { return columnName; }
     public Integer getPosition() { return position; }
     public String getNotes() { return notes; }
+    public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -105,6 +107,7 @@ public class KanbanItem {
     public void setColumnName(KanbanColumn columnName) { this.columnName = columnName; }
     public void setPosition(Integer position) { this.position = position; }
     public void setNotes(String notes) { this.notes = notes; }
+    public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

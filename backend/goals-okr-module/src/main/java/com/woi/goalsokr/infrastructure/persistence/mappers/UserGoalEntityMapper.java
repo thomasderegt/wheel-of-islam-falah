@@ -19,6 +19,7 @@ public class UserGoalEntityMapper {
         domain.setLifeDomainId(jpaEntity.getLifeDomainId());
         domain.setTitle(jpaEntity.getTitle());
         domain.setDescription(jpaEntity.getDescription());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
         domain.setCompletedAt(jpaEntity.getCompletedAt());
@@ -37,6 +38,7 @@ public class UserGoalEntityMapper {
         jpaEntity.setLifeDomainId(domain.getLifeDomainId());
         jpaEntity.setTitle(domain.getTitle());
         jpaEntity.setDescription(domain.getDescription());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
         jpaEntity.setCompletedAt(domain.getCompletedAt());

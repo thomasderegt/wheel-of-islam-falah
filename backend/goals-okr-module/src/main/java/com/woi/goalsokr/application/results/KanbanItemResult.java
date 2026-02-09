@@ -13,6 +13,7 @@ public record KanbanItemResult(
     String columnName, // TODO, IN_PROGRESS, IN_REVIEW, DONE
     Integer position,
     String notes,
+    String number,
     String createdAt,
     String updatedAt
 ) {
@@ -25,6 +26,7 @@ public record KanbanItemResult(
             item.getColumnName().name(),
             item.getPosition(),
             item.getNotes(),
+            item.getNumber(),
             item.getCreatedAt() != null ? item.getCreatedAt().toString() : null,
             item.getUpdatedAt() != null ? item.getUpdatedAt().toString() : null
         );

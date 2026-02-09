@@ -22,6 +22,7 @@ public class InitiativeEntityMapper {
         domain.setDescriptionEn(jpaEntity.getDescriptionEn());
         domain.setLearningFlowTemplateId(jpaEntity.getLearningFlowTemplateId());
         domain.setDisplayOrder(jpaEntity.getDisplayOrder());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
 
         return domain;
@@ -41,6 +42,7 @@ public class InitiativeEntityMapper {
         jpaEntity.setDescriptionEn(domain.getDescriptionEn());
         jpaEntity.setLearningFlowTemplateId(domain.getLearningFlowTemplateId());
         jpaEntity.setDisplayOrder(domain.getDisplayOrder());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
 
         return jpaEntity;

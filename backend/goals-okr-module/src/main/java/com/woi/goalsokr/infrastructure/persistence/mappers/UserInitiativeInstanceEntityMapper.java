@@ -17,6 +17,7 @@ public class UserInitiativeInstanceEntityMapper {
         domain.setId(jpaEntity.getId());
         domain.setUserKeyResultInstanceId(jpaEntity.getUserKeyResultInstanceId());
         domain.setInitiativeId(jpaEntity.getInitiativeId());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setStartedAt(jpaEntity.getStartedAt());
         domain.setCompletedAt(jpaEntity.getCompletedAt());
 
@@ -32,6 +33,7 @@ public class UserInitiativeInstanceEntityMapper {
         jpaEntity.setId(domain.getId());
         jpaEntity.setUserKeyResultInstanceId(domain.getUserKeyResultInstanceId());
         jpaEntity.setInitiativeId(domain.getInitiativeId());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setStartedAt(domain.getStartedAt());
         jpaEntity.setCompletedAt(domain.getCompletedAt());
 

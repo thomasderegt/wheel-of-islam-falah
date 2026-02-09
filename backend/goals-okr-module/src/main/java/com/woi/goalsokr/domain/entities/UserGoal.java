@@ -20,6 +20,7 @@ public class UserGoal {
     private Long lifeDomainId; // Optional - FK to LifeDomain for categorization
     private String title; // Required
     private String description; // Optional
+    private String number; // Unique human-readable number (e.g., "MY-GOAL-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime completedAt;
@@ -114,6 +115,7 @@ public class UserGoal {
     public Long getLifeDomainId() { return lifeDomainId; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
+    public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
@@ -136,6 +138,7 @@ public class UserGoal {
         this.title = title.trim();
     }
     public void setDescription(String description) { this.description = description; }
+    public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }

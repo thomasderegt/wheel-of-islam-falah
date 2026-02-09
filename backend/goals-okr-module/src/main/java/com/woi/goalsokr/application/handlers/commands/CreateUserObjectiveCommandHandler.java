@@ -4,8 +4,10 @@ import com.woi.goalsokr.application.commands.CreateUserObjectiveCommand;
 import com.woi.goalsokr.application.results.UserObjectiveResult;
 import com.woi.goalsokr.domain.entities.UserGoal;
 import com.woi.goalsokr.domain.entities.UserObjective;
+import com.woi.goalsokr.domain.enums.EntityType;
 import com.woi.goalsokr.domain.repositories.UserGoalRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveRepository;
+import com.woi.goalsokr.domain.services.EntityNumberGenerator;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +20,18 @@ public class CreateUserObjectiveCommandHandler {
     private final UserObjectiveRepository userObjectiveRepository;
     private final UserGoalRepository userGoalRepository;
     private final UserModuleInterface userModule;
+    private final EntityNumberGenerator numberGenerator;
 
     public CreateUserObjectiveCommandHandler(
         UserObjectiveRepository userObjectiveRepository,
         UserGoalRepository userGoalRepository,
-        UserModuleInterface userModule
+        UserModuleInterface userModule,
+        EntityNumberGenerator numberGenerator
     ) {
         this.userObjectiveRepository = userObjectiveRepository;
         this.userGoalRepository = userGoalRepository;
         this.userModule = userModule;
+        this.numberGenerator = numberGenerator;
     }
 
     @Transactional
@@ -55,6 +60,10 @@ public class CreateUserObjectiveCommandHandler {
         if (command.description() != null) {
             userObjective.updateDescription(command.description());
         }
+
+        // Generate unique number
+        String number = numberGenerator.generateNextNumber(EntityType.USER_OBJECTIVE);
+        userObjective.setNumber(number);
 
         // Save user objective
         UserObjective savedUserObjective = userObjectiveRepository.save(userObjective);

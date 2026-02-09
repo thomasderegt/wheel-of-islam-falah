@@ -21,6 +21,9 @@ public class UserObjectiveInstanceJpaEntity {
     @Column(name = "objective_id", nullable = false)
     private Long objectiveId; // FK to goals_okr.objectives
 
+    @Column(name = "number", length = 50)
+    private String number;
+
     @Column(name = "started_at", nullable = false)
     private LocalDateTime startedAt;
 
@@ -39,6 +42,9 @@ public class UserObjectiveInstanceJpaEntity {
 
     public Long getObjectiveId() { return objectiveId; }
     public void setObjectiveId(Long objectiveId) { this.objectiveId = objectiveId; }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
 
     public LocalDateTime getStartedAt() { return startedAt; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }

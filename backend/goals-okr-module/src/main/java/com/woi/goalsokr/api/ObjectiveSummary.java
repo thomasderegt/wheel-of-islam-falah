@@ -14,6 +14,7 @@ public record ObjectiveSummary(
     String descriptionNl,
     String descriptionEn,
     Integer orderIndex,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

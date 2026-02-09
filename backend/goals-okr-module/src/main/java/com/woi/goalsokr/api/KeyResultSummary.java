@@ -17,6 +17,7 @@ public record KeyResultSummary(
     BigDecimal targetValue,
     String unit,
     Integer orderIndex,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

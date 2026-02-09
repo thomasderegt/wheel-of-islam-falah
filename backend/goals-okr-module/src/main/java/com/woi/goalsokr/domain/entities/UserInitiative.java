@@ -28,6 +28,7 @@ public class UserInitiative {
     private GoalStatus status;
     private LocalDate targetDate;
     private Long learningFlowEnrollmentId; // Optional - Soft reference to learning.learning_flow_enrollments
+    private String number; // Unique human-readable number (e.g., "MY-INIT-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime completedAt;
@@ -158,6 +159,7 @@ public class UserInitiative {
     public GoalStatus getStatus() { return status; }
     public LocalDate getTargetDate() { return targetDate; }
     public Long getLearningFlowEnrollmentId() { return learningFlowEnrollmentId; }
+    public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
@@ -190,6 +192,7 @@ public class UserInitiative {
     }
     public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
     public void setLearningFlowEnrollmentId(Long learningFlowEnrollmentId) { this.learningFlowEnrollmentId = learningFlowEnrollmentId; }
+    public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }

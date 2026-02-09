@@ -3,8 +3,10 @@ package com.woi.goalsokr.application.handlers.commands;
 import com.woi.goalsokr.application.commands.CreateKeyResultCommand;
 import com.woi.goalsokr.application.results.KeyResultResult;
 import com.woi.goalsokr.domain.entities.KeyResult;
+import com.woi.goalsokr.domain.enums.EntityType;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.ObjectiveRepository;
+import com.woi.goalsokr.domain.services.EntityNumberGenerator;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,12 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateKeyResultCommandHandler {
     private final KeyResultRepository keyResultRepository;
     private final ObjectiveRepository objectiveRepository;
+    private final EntityNumberGenerator numberGenerator;
 
     public CreateKeyResultCommandHandler(
             KeyResultRepository keyResultRepository,
-            ObjectiveRepository objectiveRepository) {
+            ObjectiveRepository objectiveRepository,
+            EntityNumberGenerator numberGenerator) {
         this.keyResultRepository = keyResultRepository;
         this.objectiveRepository = objectiveRepository;
+        this.numberGenerator = numberGenerator;
     }
 
     @Transactional
@@ -46,6 +51,10 @@ public class CreateKeyResultCommandHandler {
         if (command.descriptionEn() != null) {
             keyResult.setDescriptionEn(command.descriptionEn());
         }
+
+        // Generate unique number
+        String number = numberGenerator.generateNextNumber(EntityType.KEY_RESULT);
+        keyResult.setNumber(number);
 
         // Save key result
         KeyResult savedKeyResult = keyResultRepository.save(keyResult);

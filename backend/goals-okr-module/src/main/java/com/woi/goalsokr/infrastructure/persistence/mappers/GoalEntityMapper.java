@@ -21,6 +21,7 @@ public class GoalEntityMapper {
         domain.setDescriptionNl(jpaEntity.getDescriptionNl());
         domain.setDescriptionEn(jpaEntity.getDescriptionEn());
         domain.setOrderIndex(jpaEntity.getOrderIndex());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
 
@@ -40,6 +41,7 @@ public class GoalEntityMapper {
         jpaEntity.setDescriptionNl(domain.getDescriptionNl());
         jpaEntity.setDescriptionEn(domain.getDescriptionEn());
         jpaEntity.setOrderIndex(domain.getOrderIndex());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
 

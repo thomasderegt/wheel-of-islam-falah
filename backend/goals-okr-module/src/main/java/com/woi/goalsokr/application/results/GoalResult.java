@@ -13,6 +13,7 @@ public record GoalResult(
     String descriptionNl,
     String descriptionEn,
     Integer orderIndex,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -25,6 +26,7 @@ public record GoalResult(
             goal.getDescriptionNl(),
             goal.getDescriptionEn(),
             goal.getOrderIndex(),
+            goal.getNumber(),
             goal.getCreatedAt(),
             goal.getUpdatedAt()
         );

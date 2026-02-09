@@ -36,6 +36,9 @@ public class InitiativeJpaEntity {
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
 
+    @Column(name = "number", length = 50)
+    private String number;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -66,6 +69,9 @@ public class InitiativeJpaEntity {
 
     public Integer getDisplayOrder() { return displayOrder; }
     public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

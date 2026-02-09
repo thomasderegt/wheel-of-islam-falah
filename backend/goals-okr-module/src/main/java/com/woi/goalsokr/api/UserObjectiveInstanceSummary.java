@@ -10,6 +10,7 @@ public record UserObjectiveInstanceSummary(
     Long id,
     Long userGoalInstanceId,
     Long objectiveId,
+    String number,
     LocalDateTime startedAt,
     LocalDateTime completedAt
 ) {}

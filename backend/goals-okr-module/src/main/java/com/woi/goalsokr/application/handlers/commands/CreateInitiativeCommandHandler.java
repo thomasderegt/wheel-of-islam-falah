@@ -3,11 +3,13 @@ package com.woi.goalsokr.application.handlers.commands;
 import com.woi.goalsokr.application.commands.CreateInitiativeCommand;
 import com.woi.goalsokr.application.results.UserInitiativeResult;
 import com.woi.goalsokr.domain.entities.UserInitiative;
+import com.woi.goalsokr.domain.enums.EntityType;
 import com.woi.goalsokr.domain.repositories.UserInitiativeRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository;
 import com.woi.goalsokr.domain.entities.UserInitiativeInstance;
+import com.woi.goalsokr.domain.services.EntityNumberGenerator;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,18 +24,21 @@ public class CreateInitiativeCommandHandler {
     private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
     private final UserInitiativeInstanceRepository userInitiativeInstanceRepository;
     private final UserModuleInterface userModule;
+    private final EntityNumberGenerator numberGenerator;
 
     public CreateInitiativeCommandHandler(
             UserInitiativeRepository userInitiativeRepository,
             KeyResultRepository keyResultRepository,
             UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             UserInitiativeInstanceRepository userInitiativeInstanceRepository,
-            UserModuleInterface userModule) {
+            UserModuleInterface userModule,
+            EntityNumberGenerator numberGenerator) {
         this.userInitiativeRepository = userInitiativeRepository;
         this.keyResultRepository = keyResultRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
         this.userModule = userModule;
+        this.numberGenerator = numberGenerator;
     }
 
     @Transactional
@@ -67,6 +72,10 @@ public class CreateInitiativeCommandHandler {
         if (command.targetDate() != null) {
             initiative.updateTargetDate(command.targetDate());
         }
+        
+        // Generate unique number
+        String number = numberGenerator.generateNextNumber(EntityType.USER_INITIATIVE);
+        initiative.setNumber(number);
         
         // Save initiative first to get ID
         UserInitiative savedInitiative = userInitiativeRepository.save(initiative);

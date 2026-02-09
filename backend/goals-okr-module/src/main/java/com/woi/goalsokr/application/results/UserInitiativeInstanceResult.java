@@ -9,6 +9,7 @@ public record UserInitiativeInstanceResult(
     Long id,
     Long userKeyResultInstanceId,
     Long initiativeId,
+    String number,
     LocalDateTime startedAt,
     LocalDateTime completedAt
 ) {
@@ -17,6 +18,7 @@ public record UserInitiativeInstanceResult(
             instance.getId(),
             instance.getUserKeyResultInstanceId(),
             instance.getInitiativeId(),
+            instance.getNumber(),
             instance.getStartedAt(),
             instance.getCompletedAt()
         );

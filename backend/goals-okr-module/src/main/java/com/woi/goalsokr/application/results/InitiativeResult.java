@@ -11,7 +11,8 @@ public record InitiativeResult(
     String descriptionNl,
     String descriptionEn,
     Long learningFlowTemplateId,
-    Integer displayOrder
+    Integer displayOrder,
+    String number
 ) {
     public static InitiativeResult from(com.woi.goalsokr.domain.entities.Initiative initiative) {
         if (initiative == null) {
@@ -25,7 +26,8 @@ public record InitiativeResult(
             initiative.getDescriptionNl(),
             initiative.getDescriptionEn(),
             initiative.getLearningFlowTemplateId(),
-            initiative.getDisplayOrder()
+            initiative.getDisplayOrder(),
+            initiative.getNumber()
         );
     }
 }

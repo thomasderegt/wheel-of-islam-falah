@@ -21,6 +21,7 @@ public class Goal {
     private String descriptionNl;
     private String descriptionEn;
     private Integer orderIndex; // Order within the life domain
+    private String number; // Unique human-readable number (e.g., "GOAL-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -77,6 +78,7 @@ public class Goal {
     public String getDescriptionNl() { return descriptionNl; }
     public String getDescriptionEn() { return descriptionEn; }
     public Integer getOrderIndex() { return orderIndex; }
+    public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -88,6 +90,7 @@ public class Goal {
     public void setDescriptionNl(String descriptionNl) { this.descriptionNl = descriptionNl; }
     public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
     public void setOrderIndex(Integer orderIndex) { this.orderIndex = orderIndex; }
+    public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

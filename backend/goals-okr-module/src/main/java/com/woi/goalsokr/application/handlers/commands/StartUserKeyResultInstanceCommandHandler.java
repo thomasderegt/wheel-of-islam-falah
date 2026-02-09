@@ -3,9 +3,11 @@ package com.woi.goalsokr.application.handlers.commands;
 import com.woi.goalsokr.application.commands.StartUserKeyResultInstanceCommand;
 import com.woi.goalsokr.application.results.UserKeyResultInstanceResult;
 import com.woi.goalsokr.domain.entities.UserKeyResultInstance;
+import com.woi.goalsokr.domain.enums.EntityType;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository;
+import com.woi.goalsokr.domain.services.EntityNumberGenerator;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,16 +21,19 @@ public class StartUserKeyResultInstanceCommandHandler {
     private final KeyResultRepository keyResultRepository;
     private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
     private final UserModuleInterface userModule;
+    private final EntityNumberGenerator numberGenerator;
 
     public StartUserKeyResultInstanceCommandHandler(
             UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             KeyResultRepository keyResultRepository,
             UserObjectiveInstanceRepository userObjectiveInstanceRepository,
-            UserModuleInterface userModule) {
+            UserModuleInterface userModule,
+            EntityNumberGenerator numberGenerator) {
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.keyResultRepository = keyResultRepository;
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userModule = userModule;
+        this.numberGenerator = numberGenerator;
     }
 
     @Transactional
@@ -63,6 +68,10 @@ public class StartUserKeyResultInstanceCommandHandler {
             command.userObjectiveInstanceId(),
             command.keyResultId()
         );
+
+        // Generate unique number
+        String number = numberGenerator.generateNextNumber(EntityType.USER_KEY_RESULT_INSTANCE);
+        instance.setNumber(number);
 
         // Save instance
         UserKeyResultInstance savedInstance = userKeyResultInstanceRepository.save(instance);

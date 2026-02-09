@@ -36,6 +36,7 @@ public class UserInitiativeEntityMapper {
         
         domain.setTargetDate(jpaEntity.getTargetDate());
         domain.setLearningFlowEnrollmentId(jpaEntity.getLearningFlowEnrollmentId());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
         domain.setCompletedAt(jpaEntity.getCompletedAt());
@@ -58,6 +59,7 @@ public class UserInitiativeEntityMapper {
         jpaEntity.setStatus(domain.getStatus() != null ? domain.getStatus().name() : null);
         jpaEntity.setTargetDate(domain.getTargetDate());
         jpaEntity.setLearningFlowEnrollmentId(domain.getLearningFlowEnrollmentId());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
         jpaEntity.setCompletedAt(domain.getCompletedAt());

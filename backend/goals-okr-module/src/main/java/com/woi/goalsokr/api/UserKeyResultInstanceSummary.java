@@ -10,6 +10,7 @@ public record UserKeyResultInstanceSummary(
     Long id,
     Long userObjectiveInstanceId,
     Long keyResultId,
+    String number,
     LocalDateTime startedAt,
     LocalDateTime completedAt
 ) {}

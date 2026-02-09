@@ -17,6 +17,7 @@ public class UserInitiativeInstance {
     private Long id;
     private Long userKeyResultInstanceId; // Required - FK to UserKeyResultInstance
     private Long initiativeId; // Required - FK to Initiative (template) OR UserInitiative (user-created) - soft reference
+    private String number; // Unique human-readable number (e.g., "INIT-SUB-123")
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
 
@@ -69,6 +70,7 @@ public class UserInitiativeInstance {
     public Long getId() { return id; }
     public Long getUserKeyResultInstanceId() { return userKeyResultInstanceId; }
     public Long getInitiativeId() { return initiativeId; }
+    public String getNumber() { return number; }
     public LocalDateTime getStartedAt() { return startedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
 
@@ -76,6 +78,7 @@ public class UserInitiativeInstance {
     public void setId(Long id) { this.id = id; }
     public void setUserKeyResultInstanceId(Long userKeyResultInstanceId) { this.userKeyResultInstanceId = userKeyResultInstanceId; }
     public void setInitiativeId(Long initiativeId) { this.initiativeId = initiativeId; }
+    public void setNumber(String number) { this.number = number; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
 }

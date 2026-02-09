@@ -6,7 +6,7 @@ import com.woi.goalsokr.application.handlers.commands.*;
 import com.woi.goalsokr.application.handlers.queries.*;
 import com.woi.goalsokr.application.queries.*;
 import com.woi.goalsokr.application.results.*;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * Implementation of GoalsOKRModuleInterface
  * This is the public API that other modules can use
  */
-@Component
+@Service
 public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
 
     // Command handlers
@@ -427,6 +427,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.descriptionNl(),
             result.descriptionEn(),
             result.orderIndex(),
+            result.number(),
             result.createdAt(),
             result.updatedAt()
         );
@@ -441,6 +442,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.descriptionNl(),
             result.descriptionEn(),
             result.orderIndex(),
+            result.number(),
             result.createdAt(),
             result.updatedAt()
         );
@@ -457,6 +459,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.targetValue(),
             result.unit(),
             result.orderIndex(),
+            result.number(),
             result.createdAt(),
             result.updatedAt()
         );
@@ -467,6 +470,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.id(),
             result.userObjectiveInstanceId(),
             result.keyResultId(),
+            result.number(),
             result.startedAt(),
             result.completedAt()
         );
@@ -477,6 +481,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.id(),
             result.userKeyResultInstanceId(),
             result.initiativeId(),
+            result.number(),
             result.startedAt(),
             result.completedAt()
         );
@@ -494,6 +499,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.description(),
             result.status(),
             result.targetDate(),
+            result.number(),
             result.createdAt(),
             result.updatedAt()
         );
@@ -504,6 +510,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.id(),
             result.userId(),
             result.goalId(),
+            result.number(),
             result.startedAt(),
             result.completedAt()
         );
@@ -514,6 +521,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.id(),
             result.userGoalInstanceId(),
             result.objectiveId(),
+            result.number(),
             result.startedAt(),
             result.completedAt()
         );
@@ -568,6 +576,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             result.columnName(),
             result.position(),
             result.notes(),
+            result.number(),
             result.createdAt() != null ? java.time.LocalDateTime.parse(result.createdAt()) : null,
             result.updatedAt() != null ? java.time.LocalDateTime.parse(result.updatedAt()) : null
         );

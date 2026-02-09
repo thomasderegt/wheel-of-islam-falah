@@ -40,6 +40,9 @@ public class UserInitiativeJpaEntity {
     @Column(name = "learning_flow_enrollment_id")
     private Long learningFlowEnrollmentId; // Optional - Soft reference to learning.learning_flow_enrollments
 
+    @Column(name = "number", length = 50)
+    private String number;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -79,6 +82,9 @@ public class UserInitiativeJpaEntity {
 
     public Long getLearningFlowEnrollmentId() { return learningFlowEnrollmentId; }
     public void setLearningFlowEnrollmentId(Long learningFlowEnrollmentId) { this.learningFlowEnrollmentId = learningFlowEnrollmentId; }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -13,6 +13,7 @@ public record ObjectiveResult(
     String descriptionNl,
     String descriptionEn,
     Integer orderIndex,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -25,6 +26,7 @@ public record ObjectiveResult(
             objective.getDescriptionNl(),
             objective.getDescriptionEn(),
             objective.getOrderIndex(),
+            objective.getNumber(),
             objective.getCreatedAt(),
             objective.getUpdatedAt()
         );

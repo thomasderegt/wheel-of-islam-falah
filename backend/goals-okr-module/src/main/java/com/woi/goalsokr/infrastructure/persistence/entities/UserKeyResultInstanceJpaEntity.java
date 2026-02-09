@@ -21,6 +21,9 @@ public class UserKeyResultInstanceJpaEntity {
     @Column(name = "key_result_id", nullable = false)
     private Long keyResultId; // FK to goals_okr.key_results
 
+    @Column(name = "number", length = 50)
+    private String number;
+
     @Column(name = "started_at", nullable = false)
     private LocalDateTime startedAt;
 
@@ -39,6 +42,9 @@ public class UserKeyResultInstanceJpaEntity {
 
     public Long getKeyResultId() { return keyResultId; }
     public void setKeyResultId(Long keyResultId) { this.keyResultId = keyResultId; }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
 
     public LocalDateTime getStartedAt() { return startedAt; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }

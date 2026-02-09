@@ -27,6 +27,9 @@ public class UserGoalJpaEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "number", length = 50)
+    private String number;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -54,6 +57,9 @@ public class UserGoalJpaEntity {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -23,6 +23,7 @@ public class KanbanItemEntityMapper {
         domain.setColumnName(KanbanColumn.valueOf(jpaEntity.getColumnName()));
         domain.setPosition(jpaEntity.getPosition());
         domain.setNotes(jpaEntity.getNotes());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
 
@@ -42,6 +43,7 @@ public class KanbanItemEntityMapper {
         jpaEntity.setColumnName(domain.getColumnName().name());
         jpaEntity.setPosition(domain.getPosition());
         jpaEntity.setNotes(domain.getNotes());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
 

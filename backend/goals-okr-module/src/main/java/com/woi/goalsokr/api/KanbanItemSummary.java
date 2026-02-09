@@ -14,6 +14,7 @@ public record KanbanItemSummary(
     String columnName, // TODO, IN_PROGRESS, IN_REVIEW, DONE
     Integer position,
     String notes,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

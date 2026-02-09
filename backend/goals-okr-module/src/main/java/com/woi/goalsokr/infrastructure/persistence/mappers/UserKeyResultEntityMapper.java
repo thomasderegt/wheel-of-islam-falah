@@ -22,6 +22,7 @@ public class UserKeyResultEntityMapper {
         domain.setTargetValue(jpaEntity.getTargetValue());
         domain.setUnit(jpaEntity.getUnit());
         domain.setCurrentValue(jpaEntity.getCurrentValue());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
         domain.setCompletedAt(jpaEntity.getCompletedAt());
@@ -43,6 +44,7 @@ public class UserKeyResultEntityMapper {
         jpaEntity.setTargetValue(domain.getTargetValue());
         jpaEntity.setUnit(domain.getUnit());
         jpaEntity.setCurrentValue(domain.getCurrentValue());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
         jpaEntity.setCompletedAt(domain.getCompletedAt());

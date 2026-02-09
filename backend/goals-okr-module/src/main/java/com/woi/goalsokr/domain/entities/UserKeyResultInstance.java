@@ -17,6 +17,7 @@ public class UserKeyResultInstance {
     private Long id;
     private Long userObjectiveInstanceId; // Required - FK to UserObjectiveInstance
     private Long keyResultId; // Required - FK to KeyResult (template)
+    private String number; // Unique human-readable number (e.g., "KR-SUB-123")
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
 
@@ -69,6 +70,7 @@ public class UserKeyResultInstance {
     public Long getId() { return id; }
     public Long getUserObjectiveInstanceId() { return userObjectiveInstanceId; }
     public Long getKeyResultId() { return keyResultId; }
+    public String getNumber() { return number; }
     public LocalDateTime getStartedAt() { return startedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
 
@@ -76,6 +78,7 @@ public class UserKeyResultInstance {
     public void setId(Long id) { this.id = id; }
     public void setUserObjectiveInstanceId(Long userObjectiveInstanceId) { this.userObjectiveInstanceId = userObjectiveInstanceId; }
     public void setKeyResultId(Long keyResultId) { this.keyResultId = keyResultId; }
+    public void setNumber(String number) { this.number = number; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
 }

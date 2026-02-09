@@ -18,6 +18,7 @@ public class UserGoalInstance {
     private Long id;
     private Long userId; // ⭐ ALLEEN hier in de aggregate!
     private Long goalId; // Required - FK to Goal (template)
+    private String number; // Unique human-readable number (e.g., "GOAL-SUB-123")
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
 
@@ -70,6 +71,7 @@ public class UserGoalInstance {
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
     public Long getGoalId() { return goalId; }
+    public String getNumber() { return number; }
     public LocalDateTime getStartedAt() { return startedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
 
@@ -77,6 +79,7 @@ public class UserGoalInstance {
     public void setId(Long id) { this.id = id; }
     public void setUserId(Long userId) { this.userId = userId; }
     public void setGoalId(Long goalId) { this.goalId = goalId; }
+    public void setNumber(String number) { this.number = number; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
 }

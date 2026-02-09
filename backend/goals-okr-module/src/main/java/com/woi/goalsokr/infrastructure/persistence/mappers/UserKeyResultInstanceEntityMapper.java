@@ -17,6 +17,7 @@ public class UserKeyResultInstanceEntityMapper {
         domain.setId(jpaEntity.getId());
         domain.setUserObjectiveInstanceId(jpaEntity.getUserObjectiveInstanceId());
         domain.setKeyResultId(jpaEntity.getKeyResultId());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setStartedAt(jpaEntity.getStartedAt());
         domain.setCompletedAt(jpaEntity.getCompletedAt());
 
@@ -32,6 +33,7 @@ public class UserKeyResultInstanceEntityMapper {
         jpaEntity.setId(domain.getId());
         jpaEntity.setUserObjectiveInstanceId(domain.getUserObjectiveInstanceId());
         jpaEntity.setKeyResultId(domain.getKeyResultId());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setStartedAt(domain.getStartedAt());
         jpaEntity.setCompletedAt(domain.getCompletedAt());
 

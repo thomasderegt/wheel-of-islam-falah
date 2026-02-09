@@ -9,6 +9,7 @@ public record UserObjectiveInstanceResult(
     Long id,
     Long userGoalInstanceId,
     Long objectiveId,
+    String number,
     LocalDateTime startedAt,
     LocalDateTime completedAt
 ) {
@@ -17,6 +18,7 @@ public record UserObjectiveInstanceResult(
             instance.getId(),
             instance.getUserGoalInstanceId(),
             instance.getObjectiveId(),
+            instance.getNumber(),
             instance.getStartedAt(),
             instance.getCompletedAt()
         );

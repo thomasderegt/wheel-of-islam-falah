@@ -23,6 +23,7 @@ public class KeyResultEntityMapper {
         domain.setTargetValue(jpaEntity.getTargetValue());
         domain.setUnit(jpaEntity.getUnit());
         domain.setOrderIndex(jpaEntity.getOrderIndex());
+        domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
 
@@ -44,6 +45,7 @@ public class KeyResultEntityMapper {
         jpaEntity.setTargetValue(domain.getTargetValue());
         jpaEntity.setUnit(domain.getUnit());
         jpaEntity.setOrderIndex(domain.getOrderIndex());
+        jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
 

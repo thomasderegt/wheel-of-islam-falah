@@ -37,6 +37,9 @@ public class UserKeyResultJpaEntity {
     @Column(name = "current_value", precision = 10, scale = 2, nullable = false)
     private BigDecimal currentValue;
 
+    @Column(name = "number", length = 50)
+    private String number;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -73,6 +76,9 @@ public class UserKeyResultJpaEntity {
 
     public BigDecimal getCurrentValue() { return currentValue; }
     public void setCurrentValue(BigDecimal currentValue) { this.currentValue = currentValue; }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -26,6 +26,7 @@ public class KeyResult {
     private BigDecimal targetValue; // Required - target value (e.g., 30, 7, 100.00)
     private String unit; // Required - unit of measurement (e.g., "dagen", "uren", "euro", "percentage", "keren")
     private Integer orderIndex; // Order within the objective
+    private String number; // Unique human-readable number (e.g., "KR-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -123,6 +124,7 @@ public class KeyResult {
     public BigDecimal getTargetValue() { return targetValue; }
     public String getUnit() { return unit; }
     public Integer getOrderIndex() { return orderIndex; }
+    public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -136,6 +138,7 @@ public class KeyResult {
     public void setTargetValue(BigDecimal targetValue) { this.targetValue = targetValue; }
     public void setUnit(String unit) { this.unit = unit; }
     public void setOrderIndex(Integer orderIndex) { this.orderIndex = orderIndex; }
+    public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

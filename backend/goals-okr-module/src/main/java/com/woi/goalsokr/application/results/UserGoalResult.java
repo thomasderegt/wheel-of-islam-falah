@@ -11,6 +11,7 @@ public record UserGoalResult(
     Long lifeDomainId,
     String title,
     String description,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     LocalDateTime completedAt
@@ -22,6 +23,7 @@ public record UserGoalResult(
             userGoal.getLifeDomainId(),
             userGoal.getTitle(),
             userGoal.getDescription(),
+            userGoal.getNumber(),
             userGoal.getCreatedAt(),
             userGoal.getUpdatedAt(),
             userGoal.getCompletedAt()

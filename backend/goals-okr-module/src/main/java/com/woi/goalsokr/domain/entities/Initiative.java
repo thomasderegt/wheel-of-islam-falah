@@ -23,6 +23,7 @@ public class Initiative {
     private String descriptionEn;
     private Long learningFlowTemplateId; // Optional - Soft reference to learning.learning_flow_templates
     private Integer displayOrder;
+    private String number; // Unique human-readable number (e.g., "INIT-123")
     private LocalDateTime createdAt;
 
     // Public constructor for mappers (infrastructure layer)
@@ -78,6 +79,7 @@ public class Initiative {
     public String getDescriptionEn() { return descriptionEn; }
     public Long getLearningFlowTemplateId() { return learningFlowTemplateId; }
     public Integer getDisplayOrder() { return displayOrder; }
+    public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
     // Setters for entity mapping (infrastructure layer only)
@@ -89,5 +91,6 @@ public class Initiative {
     public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
     public void setLearningFlowTemplateId(Long learningFlowTemplateId) { this.learningFlowTemplateId = learningFlowTemplateId; }
     public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
+    public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

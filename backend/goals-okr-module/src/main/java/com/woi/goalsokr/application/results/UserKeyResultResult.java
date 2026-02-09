@@ -15,6 +15,7 @@ public record UserKeyResultResult(
     BigDecimal targetValue,
     String unit,
     BigDecimal currentValue,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     LocalDateTime completedAt
@@ -29,6 +30,7 @@ public record UserKeyResultResult(
             userKeyResult.getTargetValue(),
             userKeyResult.getUnit(),
             userKeyResult.getCurrentValue(),
+            userKeyResult.getNumber(),
             userKeyResult.getCreatedAt(),
             userKeyResult.getUpdatedAt(),
             userKeyResult.getCompletedAt()

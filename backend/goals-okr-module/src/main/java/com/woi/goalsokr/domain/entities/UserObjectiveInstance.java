@@ -17,6 +17,7 @@ public class UserObjectiveInstance {
     private Long id;
     private Long userGoalInstanceId; // Required - FK to UserGoalInstance (aggregate root)
     private Long objectiveId; // Required - FK to Objective (template)
+    private String number; // Unique human-readable number (e.g., "OBJ-SUB-123")
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
 
@@ -69,6 +70,7 @@ public class UserObjectiveInstance {
     public Long getId() { return id; }
     public Long getUserGoalInstanceId() { return userGoalInstanceId; }
     public Long getObjectiveId() { return objectiveId; }
+    public String getNumber() { return number; }
     public LocalDateTime getStartedAt() { return startedAt; }
     public LocalDateTime getCompletedAt() { return completedAt; }
 
@@ -76,6 +78,7 @@ public class UserObjectiveInstance {
     public void setId(Long id) { this.id = id; }
     public void setUserGoalInstanceId(Long userGoalInstanceId) { this.userGoalInstanceId = userGoalInstanceId; }
     public void setObjectiveId(Long objectiveId) { this.objectiveId = objectiveId; }
+    public void setNumber(String number) { this.number = number; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
 }

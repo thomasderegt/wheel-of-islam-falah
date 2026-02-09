@@ -11,6 +11,7 @@ public record UserObjectiveResult(
     Long userGoalId,
     String title,
     String description,
+    String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     LocalDateTime completedAt
@@ -22,6 +23,7 @@ public record UserObjectiveResult(
             userObjective.getUserGoalId(),
             userObjective.getTitle(),
             userObjective.getDescription(),
+            userObjective.getNumber(),
             userObjective.getCreatedAt(),
             userObjective.getUpdatedAt(),
             userObjective.getCompletedAt()

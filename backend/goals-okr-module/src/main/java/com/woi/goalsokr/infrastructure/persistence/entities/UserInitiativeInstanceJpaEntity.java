@@ -21,6 +21,9 @@ public class UserInitiativeInstanceJpaEntity {
     @Column(name = "initiative_id", nullable = false)
     private Long initiativeId; // Soft reference to goals_okr.initiatives (template) OR goals_okr.user_initiatives (user-created)
 
+    @Column(name = "number", length = 50)
+    private String number;
+
     @Column(name = "started_at", nullable = false)
     private LocalDateTime startedAt;
 
@@ -39,6 +42,9 @@ public class UserInitiativeInstanceJpaEntity {
 
     public Long getInitiativeId() { return initiativeId; }
     public void setInitiativeId(Long initiativeId) { this.initiativeId = initiativeId; }
+
+    public String getNumber() { return number; }
+    public void setNumber(String number) { this.number = number; }
 
     public LocalDateTime getStartedAt() { return startedAt; }
     public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }

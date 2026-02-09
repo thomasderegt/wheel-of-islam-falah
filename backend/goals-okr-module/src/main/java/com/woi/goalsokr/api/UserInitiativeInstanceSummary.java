@@ -10,6 +10,7 @@ public record UserInitiativeInstanceSummary(
     Long id,
     Long userKeyResultInstanceId,
     Long initiativeId,
+    String number,
     LocalDateTime startedAt,
     LocalDateTime completedAt
 ) {}

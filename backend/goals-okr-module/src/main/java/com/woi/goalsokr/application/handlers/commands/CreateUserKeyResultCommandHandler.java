@@ -4,8 +4,10 @@ import com.woi.goalsokr.application.commands.CreateUserKeyResultCommand;
 import com.woi.goalsokr.application.results.UserKeyResultResult;
 import com.woi.goalsokr.domain.entities.UserKeyResult;
 import com.woi.goalsokr.domain.entities.UserObjective;
+import com.woi.goalsokr.domain.enums.EntityType;
 import com.woi.goalsokr.domain.repositories.UserKeyResultRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveRepository;
+import com.woi.goalsokr.domain.services.EntityNumberGenerator;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +20,18 @@ public class CreateUserKeyResultCommandHandler {
     private final UserKeyResultRepository userKeyResultRepository;
     private final UserObjectiveRepository userObjectiveRepository;
     private final UserModuleInterface userModule;
+    private final EntityNumberGenerator numberGenerator;
 
     public CreateUserKeyResultCommandHandler(
         UserKeyResultRepository userKeyResultRepository,
         UserObjectiveRepository userObjectiveRepository,
-        UserModuleInterface userModule
+        UserModuleInterface userModule,
+        EntityNumberGenerator numberGenerator
     ) {
         this.userKeyResultRepository = userKeyResultRepository;
         this.userObjectiveRepository = userObjectiveRepository;
         this.userModule = userModule;
+        this.numberGenerator = numberGenerator;
     }
 
     @Transactional
@@ -58,6 +63,10 @@ public class CreateUserKeyResultCommandHandler {
         if (command.targetValue() != null) {
             userKeyResult.setTarget(command.targetValue(), command.unit());
         }
+
+        // Generate unique number
+        String number = numberGenerator.generateNextNumber(EntityType.USER_KEY_RESULT);
+        userKeyResult.setNumber(number);
 
         // Save user key result
         UserKeyResult savedUserKeyResult = userKeyResultRepository.save(userKeyResult);
