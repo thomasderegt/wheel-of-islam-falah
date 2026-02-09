@@ -20,7 +20,7 @@ import { getKanbanItem } from '@/features/goals-okr/api/goalsOkrApi'
 import { useUpdateKanbanItemNotes, useKanbanItems } from '@/features/goals-okr/hooks/useKanbanItems'
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/features/auth'
-import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getObjectivesByGoal, getKeyResultsByObjective, type ObjectiveDTO, type KeyResultDTO, type InitiativeDTO } from '@/features/goals-okr/api/goalsOkrApi'
+import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getObjectivesByGoal, getKeyResultsByObjective, getUserObjectiveInstancesByUserGoalInstance, getUserKeyResultInstancesByUserObjectiveInstance, getUserInitiativeInstancesByUserKeyResultInstance, type ObjectiveDTO, type KeyResultDTO, type InitiativeDTO } from '@/features/goals-okr/api/goalsOkrApi'
 
 export default function KanbanItemDetailPage() {
   const params = useParams()
@@ -33,6 +33,7 @@ export default function KanbanItemDetailPage() {
   const [itemTitle, setItemTitle] = useState<string>('')
   const [isLoadingTitle, setIsLoadingTitle] = useState(true)
   const [children, setChildren] = useState<Array<ObjectiveDTO | KeyResultDTO | InitiativeDTO>>([])
+  const [childrenInstances, setChildrenInstances] = useState<Array<{ id: number; instanceId: number }>>([])
   const [isLoadingChildren, setIsLoadingChildren] = useState(false)
   const [childrenType, setChildrenType] = useState<'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE' | null>(null)
   
@@ -137,29 +138,59 @@ export default function KanbanItemDetailPage() {
       try {
         switch (kanbanItem.itemType) {
           case 'GOAL': {
-            // Get UserGoalInstance → Goal → Objectives
-            const userGoalInstance = await getUserGoalInstance(kanbanItem.itemId)
-            const goal = await getGoal(userGoalInstance.goalId)
-            const objectives = await getObjectivesByGoal(goal.id)
+            // Get only UserObjectiveInstances that the user has started for this UserGoalInstance
+            const userObjectiveInstances = await getUserObjectiveInstancesByUserGoalInstance(kanbanItem.itemId)
+            // Get Objective templates for these instances
+            const objectives = await Promise.all(
+              userObjectiveInstances.map(instance => getObjective(instance.objectiveId))
+            )
             setChildren(objectives)
+            setChildrenInstances(userObjectiveInstances.map(instance => ({ id: instance.objectiveId, instanceId: instance.id })))
             setChildrenType('OBJECTIVE')
             break
           }
           case 'OBJECTIVE': {
-            // Get UserObjectiveInstance → Objective → KeyResults
-            const userObjectiveInstance = await getUserObjectiveInstance(kanbanItem.itemId)
-            const objective = await getObjective(userObjectiveInstance.objectiveId)
-            const keyResults = await getKeyResultsByObjective(objective.id)
+            // Get only UserKeyResultInstances that the user has started for this UserObjectiveInstance
+            const userKeyResultInstances = await getUserKeyResultInstancesByUserObjectiveInstance(kanbanItem.itemId)
+            // Get KeyResult templates for these instances
+            const keyResults = await Promise.all(
+              userKeyResultInstances.map(instance => getKeyResult(instance.keyResultId))
+            )
             setChildren(keyResults)
+            setChildrenInstances(userKeyResultInstances.map(instance => ({ id: instance.keyResultId, instanceId: instance.id })))
             setChildrenType('KEY_RESULT')
             break
           }
           case 'KEY_RESULT': {
-            // Get UserKeyResultInstance → KeyResult → Initiatives
-            const userKeyResultInstance = await getUserKeyResultInstance(kanbanItem.itemId)
-            const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
-            const initiatives = await getInitiativesByKeyResult(keyResult.id)
+            // Get only UserInitiativeInstances that the user has started for this UserKeyResultInstance
+            const userInitiativeInstances = await getUserInitiativeInstancesByUserKeyResultInstance(kanbanItem.itemId)
+            // Get Initiative templates for these instances
+            const initiatives = await Promise.all(
+              userInitiativeInstances.map(async (instance) => {
+                try {
+                  // Try to get user-created initiative first
+                  const userInitiative = await getInitiative(instance.initiativeId)
+                  return {
+                    id: userInitiative.id,
+                    title: userInitiative.title,
+                    description: userInitiative.description,
+                    keyResultId: userInitiative.userKeyResultInstanceId
+                  } as InitiativeDTO
+                } catch {
+                  // If not found, try template initiative
+                  const userKeyResultInstance = await getUserKeyResultInstance(instance.userKeyResultInstanceId)
+                  const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
+                  const templateInitiatives = await getInitiativesByKeyResult(keyResult.id)
+                  const templateInitiative = templateInitiatives.find(i => i.id === instance.initiativeId)
+                  if (templateInitiative) {
+                    return templateInitiative
+                  }
+                  throw new Error(`Initiative ${instance.initiativeId} not found`)
+                }
+              })
+            )
             setChildren(initiatives)
+            setChildrenInstances(userInitiativeInstances.map(instance => ({ id: instance.initiativeId, instanceId: instance.id })))
             setChildrenType('INITIATIVE')
             break
           }
@@ -183,80 +214,24 @@ export default function KanbanItemDetailPage() {
   }, [kanbanItem])
 
   // Helper function to navigate to child detail page
-  // We'll try to find the kanban item by checking all kanban items and their instances
-  const handleChildClick = async (childType: 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE', childTemplateId: number) => {
-    if (!allKanbanItems || !kanbanItem) return
+  // We use the instance IDs we already have from loading children
+  const handleChildClick = (childIndex: number) => {
+    if (!childrenInstances[childIndex]) return
     
-    try {
-      // Get parent instance to match against
-      let parentInstanceId: number | null = null
-      if (kanbanItem.itemType === 'GOAL') {
-        const userGoalInstance = await getUserGoalInstance(kanbanItem.itemId)
-        parentInstanceId = userGoalInstance.id
-      } else if (kanbanItem.itemType === 'OBJECTIVE') {
-        const userObjectiveInstance = await getUserObjectiveInstance(kanbanItem.itemId)
-        parentInstanceId = userObjectiveInstance.id
-      } else if (kanbanItem.itemType === 'KEY_RESULT') {
-        const userKeyResultInstance = await getUserKeyResultInstance(kanbanItem.itemId)
-        parentInstanceId = userKeyResultInstance.id
-      }
-      
-      if (!parentInstanceId) return
-      
-      // Find matching kanban item by checking instances
-      let foundKanbanItemId: number | null = null
-      
-      if (childType === 'OBJECTIVE') {
-        // Check all OBJECTIVE kanban items
-        for (const item of allKanbanItems.filter(i => i.itemType === 'OBJECTIVE')) {
-          try {
-            const instance = await getUserObjectiveInstance(item.itemId)
-            if (instance.objectiveId === childTemplateId && instance.userGoalInstanceId === parentInstanceId) {
-              foundKanbanItemId = item.id
-              break
-            }
-          } catch {
-            // Continue to next item
-          }
-        }
-      } else if (childType === 'KEY_RESULT') {
-        // Check all KEY_RESULT kanban items
-        for (const item of allKanbanItems.filter(i => i.itemType === 'KEY_RESULT')) {
-          try {
-            const instance = await getUserKeyResultInstance(item.itemId)
-            if (instance.keyResultId === childTemplateId && instance.userObjectiveInstanceId === parentInstanceId) {
-              foundKanbanItemId = item.id
-              break
-            }
-          } catch {
-            // Continue to next item
-          }
-        }
-      } else if (childType === 'INITIATIVE') {
-        // Check all INITIATIVE kanban items
-        for (const item of allKanbanItems.filter(i => i.itemType === 'INITIATIVE')) {
-          try {
-            const instance = await getUserInitiativeInstance(item.itemId)
-            if (instance.initiativeId === childTemplateId && instance.userKeyResultInstanceId === parentInstanceId) {
-              foundKanbanItemId = item.id
-              break
-            }
-          } catch {
-            // Continue to next item
-          }
-        }
-      }
-      
-      if (foundKanbanItemId) {
-        router.push(`/goals-okr/kanban/items/${foundKanbanItemId}`)
-      } else {
-        // If no kanban item exists, show a message
-        alert(language === 'nl' 
-          ? 'Dit item staat nog niet op je Progress Board. Voeg het toe om de details te bekijken.'
-          : 'This item is not yet on your Progress Board. Add it to view details.')
-      }
-    } catch (error) {
-      console.error('Error navigating to child:', error)
+    const childInstance = childrenInstances[childIndex]
+    
+    // Find kanban item for this instance
+    const kanbanItem = allKanbanItems?.find(
+      item => item.itemType === childrenType && item.itemId === childInstance.instanceId
+    )
+    
+    if (kanbanItem) {
+      router.push(`/goals-okr/kanban/items/${kanbanItem.id}`)
+    } else {
+      // If no kanban item exists, show a message
+      alert(language === 'nl' 
+        ? 'Dit item staat nog niet op je Progress Board. Voeg het toe om de details te bekijken.'
+        : 'This item is not yet on your Progress Board. Add it to view details.')
     }
   }
 
@@ -431,19 +406,24 @@ export default function KanbanItemDetailPage() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {children.map((child) => {
+                        {children.map((child, index) => {
                           const title = language === 'nl' 
                             ? ('titleNl' in child ? child.titleNl || child.titleEn : child.title)
                             : ('titleEn' in child ? child.titleEn || child.titleNl : child.title)
                           const description = language === 'nl'
                             ? ('descriptionNl' in child ? child.descriptionNl : child.description)
                             : ('descriptionEn' in child ? child.descriptionEn : child.description)
+                          const hasKanbanItem = childrenInstances[index] && allKanbanItems?.some(
+                            item => item.itemType === childrenType && item.itemId === childrenInstances[index].instanceId
+                          )
                           
                           return (
                             <div
                               key={child.id}
-                              className="p-4 border rounded-lg transition-colors hover:bg-accent cursor-pointer"
-                              onClick={() => handleChildClick(childrenType!, child.id)}
+                              className={`p-4 border rounded-lg transition-colors ${
+                                hasKanbanItem ? 'hover:bg-accent cursor-pointer' : 'opacity-75'
+                              }`}
+                              onClick={() => hasKanbanItem && handleChildClick(index)}
                             >
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1 min-w-0">
@@ -459,7 +439,9 @@ export default function KanbanItemDetailPage() {
                                     </div>
                                   )}
                                 </div>
-                                <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                                {hasKanbanItem && (
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                                )}
                               </div>
                             </div>
                           )

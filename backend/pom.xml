@@ -19,6 +19,8 @@
     <name>backend-v2-tazkiyyah</name>
     <description>Wheel of Islam Tazkiyyah App Backend V2 (Clean Architecture + Modular Monolith - Maven Multi-Module)</description>
     
+    <!-- Build configuration updated for better dependency management -->
+    
     <modules>
         <module>user-module</module>
         <module>content-module</module>
@@ -55,6 +57,54 @@
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jjwt.version}</version>
             </dependency>
+            
+            <!-- Internal modules - versies beheren via parent version -->
+            <dependency>
+                <groupId>com.woi</groupId>
+                <artifactId>user-module</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woi</groupId>
+                <artifactId>content-module</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woi</groupId>
+                <artifactId>learning-module</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woi</groupId>
+                <artifactId>assessment-module</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.woi</groupId>
+                <artifactId>goals-okr-module</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

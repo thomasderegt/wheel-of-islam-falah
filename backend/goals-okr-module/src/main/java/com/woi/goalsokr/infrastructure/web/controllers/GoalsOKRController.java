@@ -73,6 +73,11 @@ public class GoalsOKRController {
     private final GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler;
     private final KanbanItemRepository kanbanItemRepository;
     
+    // Repositories for children endpoints
+    private final com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository;
+    private final com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository;
+    private final com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository;
+    
     // User-specific command handlers
     private final CreateUserGoalCommandHandler createUserGoalHandler;
     private final CreateUserObjectiveCommandHandler createUserObjectiveHandler;
@@ -127,6 +132,9 @@ public class GoalsOKRController {
             DeleteKanbanItemCommandHandler deleteKanbanItemHandler,
             GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler,
             KanbanItemRepository kanbanItemRepository,
+            com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository,
+            com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository,
+            com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository,
             CreateUserGoalCommandHandler createUserGoalHandler,
             CreateUserObjectiveCommandHandler createUserObjectiveHandler,
             CreateUserKeyResultCommandHandler createUserKeyResultHandler,
@@ -176,6 +184,9 @@ public class GoalsOKRController {
         this.deleteKanbanItemHandler = deleteKanbanItemHandler;
         this.getKanbanItemsByUserHandler = getKanbanItemsByUserHandler;
         this.kanbanItemRepository = kanbanItemRepository;
+        this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
+        this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
+        this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
         this.createUserGoalHandler = createUserGoalHandler;
         this.createUserObjectiveHandler = createUserObjectiveHandler;
         this.createUserKeyResultHandler = createUserKeyResultHandler;
@@ -450,6 +461,26 @@ public class GoalsOKRController {
     }
 
     /**
+     * Get all user objective instances for a user goal instance
+     * GET /api/v2/goals-okr/user-goal-instances/{userGoalInstanceId}/user-objective-instances
+     */
+    @GetMapping("/user-goal-instances/{userGoalInstanceId}/user-objective-instances")
+    public ResponseEntity<List<UserObjectiveInstanceResult>> getUserObjectiveInstancesByUserGoalInstance(
+            @PathVariable Long userGoalInstanceId) {
+        try {
+            List<UserObjectiveInstanceResult> results = userObjectiveInstanceRepository
+                .findByUserGoalInstanceId(userGoalInstanceId).stream()
+                .map(UserObjectiveInstanceResult::from)
+                .toList();
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(List.of());
+        }
+    }
+
+    /**
      * Complete a user goal instance
      * POST /api/v2/goals-okr/user-goal-instances/{id}/complete
      */
@@ -528,6 +559,26 @@ public class GoalsOKRController {
     }
 
     /**
+     * Get all user key result instances for a user objective instance
+     * GET /api/v2/goals-okr/user-objective-instances/{userObjectiveInstanceId}/user-key-result-instances
+     */
+    @GetMapping("/user-objective-instances/{userObjectiveInstanceId}/user-key-result-instances")
+    public ResponseEntity<List<UserKeyResultInstanceResult>> getUserKeyResultInstancesByUserObjectiveInstance(
+            @PathVariable Long userObjectiveInstanceId) {
+        try {
+            List<UserKeyResultInstanceResult> results = userKeyResultInstanceRepository
+                .findByUserObjectiveInstanceId(userObjectiveInstanceId).stream()
+                .map(UserKeyResultInstanceResult::from)
+                .toList();
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(List.of());
+        }
+    }
+
+    /**
      * Complete a user objective instance
      * POST /api/v2/goals-okr/user-objective-instances/{id}/complete
      */
@@ -603,6 +654,26 @@ public class GoalsOKRController {
         List<UserKeyResultInstanceResult> results = getUserKeyResultInstancesHandler.handle(
             new GetUserKeyResultInstancesQuery(userId));
         return ResponseEntity.ok(results);
+    }
+
+    /**
+     * Get all user initiative instances for a user key result instance
+     * GET /api/v2/goals-okr/user-key-result-instances/{userKeyResultInstanceId}/user-initiative-instances
+     */
+    @GetMapping("/user-key-result-instances/{userKeyResultInstanceId}/user-initiative-instances")
+    public ResponseEntity<List<UserInitiativeInstanceResult>> getUserInitiativeInstancesByUserKeyResultInstance(
+            @PathVariable Long userKeyResultInstanceId) {
+        try {
+            List<UserInitiativeInstanceResult> results = userInitiativeInstanceRepository
+                .findByUserKeyResultInstanceId(userKeyResultInstanceId).stream()
+                .map(UserInitiativeInstanceResult::from)
+                .toList();
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(List.of());
+        }
     }
 
     /**

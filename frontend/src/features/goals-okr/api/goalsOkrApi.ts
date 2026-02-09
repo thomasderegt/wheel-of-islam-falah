@@ -362,6 +362,19 @@ export async function getUserObjectiveInstances(userId: number): Promise<UserObj
 }
 
 /**
+ * Get user objective instances for a user goal instance
+ * GET /api/v2/goals-okr/user-goal-instances/{userGoalInstanceId}/user-objective-instances
+ */
+export async function getUserObjectiveInstancesByUserGoalInstance(
+  userGoalInstanceId: number
+): Promise<UserObjectiveInstanceDTO[]> {
+  const response = await apiClient.get<UserObjectiveInstanceDTO[]>(
+    `/api/v2/goals-okr/user-goal-instances/${userGoalInstanceId}/user-objective-instances`
+  )
+  return response.data
+}
+
+/**
  * Get a user objective instance by ID
  * GET /api/v2/goals-okr/user-objective-instances/{id}
  */
@@ -417,6 +430,19 @@ export async function getUserKeyResultInstances(userId: number): Promise<UserKey
 }
 
 /**
+ * Get user key result instances for a user objective instance
+ * GET /api/v2/goals-okr/user-objective-instances/{userObjectiveInstanceId}/user-key-result-instances
+ */
+export async function getUserKeyResultInstancesByUserObjectiveInstance(
+  userObjectiveInstanceId: number
+): Promise<UserKeyResultInstanceDTO[]> {
+  const response = await apiClient.get<UserKeyResultInstanceDTO[]>(
+    `/api/v2/goals-okr/user-objective-instances/${userObjectiveInstanceId}/user-key-result-instances`
+  )
+  return response.data
+}
+
+/**
  * Get a user key result instance by ID
  * GET /api/v2/goals-okr/user-key-result-instances/{id}
  */
@@ -467,6 +493,19 @@ export async function startUserInitiativeInstance(
 export async function getUserInitiativeInstances(userId: number): Promise<UserInitiativeInstanceDTO[]> {
   const response = await apiClient.get<UserInitiativeInstanceDTO[]>(
     `/api/v2/goals-okr/users/${userId}/user-initiative-instances`
+  )
+  return response.data
+}
+
+/**
+ * Get user initiative instances for a user key result instance
+ * GET /api/v2/goals-okr/user-key-result-instances/{userKeyResultInstanceId}/user-initiative-instances
+ */
+export async function getUserInitiativeInstancesByUserKeyResultInstance(
+  userKeyResultInstanceId: number
+): Promise<UserInitiativeInstanceDTO[]> {
+  const response = await apiClient.get<UserInitiativeInstanceDTO[]>(
+    `/api/v2/goals-okr/user-key-result-instances/${userKeyResultInstanceId}/user-initiative-instances`
   )
   return response.data
 }
