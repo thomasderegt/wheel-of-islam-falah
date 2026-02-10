@@ -882,6 +882,30 @@ export async function createPersonalGoal(
 }
 
 /**
+ * Create a personal objective (Objective template + UserObjectiveInstance + Kanban item)
+ * POST /api/v2/goals-okr/users/{userId}/personal-objectives
+ * 
+ * This follows the same pattern as createPersonalGoal: creates an Objective template,
+ * starts a UserObjectiveInstance, and adds it to the kanban board automatically.
+ * 
+ * Returns: UserObjectiveInstanceDTO
+ */
+export async function createPersonalObjective(
+  userId: number,
+  request: {
+    userGoalInstanceId: number
+    title: string
+    description?: string
+  }
+): Promise<UserObjectiveInstanceDTO> {
+  const response = await apiClient.post<UserObjectiveInstanceDTO>(
+    `/api/v2/goals-okr/users/${userId}/personal-objectives`,
+    request
+  )
+  return response.data
+}
+
+/**
  * Create a user-specific goal (OLD APPROACH - kept for backward compatibility)
  * POST /api/v2/goals-okr/users/{userId}/user-goals
  * 

@@ -7,13 +7,14 @@
  * Vereenvoudigde versie die werkt met v2's auth setup.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
+import { useModeContext } from '@/shared/hooks/useModeContext'
 import { Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
 
 interface NavbarProps {
@@ -28,6 +29,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
   const pathname = usePathname()
   const { isAuthenticated, user } = useAuth()
   const logout = useLogout()
+  const { goalsOkrContext } = useModeContext()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
@@ -66,14 +68,28 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
     return pathname.startsWith(path)
   }
 
-  // Bottom navigation items
-  const bottomNavItems = [
-    { href: '/home', label: 'Succes', icon: Star },
-    { href: '/goals-okr', label: 'Goal', icon: Target },
-    { href: '/goals-okr/execute', label: 'Execute', icon: TrendingUp },
-    { href: '/goals-okr/insight', label: 'Insight', icon: Lightbulb },
-    { href: '/mywoispace', label: 'MySpace', icon: User },
-  ]
+  // Bottom navigation items - filtered based on Goals-OKR context
+  const bottomNavItems = useMemo(() => {
+    const items = [
+      { href: '/home', label: 'Succes', icon: Star },
+    ]
+
+    // Only add Goal, Execute, Insight if Goals-OKR context is not NONE
+    if (goalsOkrContext !== 'NONE') {
+      items.push(
+        { href: '/goals-okr', label: 'Goal', icon: Target },
+        { href: '/goals-okr/execute', label: 'Execute', icon: TrendingUp },
+        { href: '/goals-okr/insight', label: 'Insight', icon: Lightbulb }
+      )
+    }
+
+    // MySpace is always shown
+    items.push(
+      { href: '/mywoispace', label: 'MySpace', icon: User },
+    )
+
+    return items
+  }, [goalsOkrContext])
 
   // Add/remove class to body when bottom nav is visible
   useEffect(() => {

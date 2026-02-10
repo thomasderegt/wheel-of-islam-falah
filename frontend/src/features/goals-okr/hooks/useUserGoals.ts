@@ -3,7 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUserGoals, createUserGoal, createPersonalGoal } from '../api/goalsOkrApi'
+import { getUserGoals, createUserGoal, createPersonalGoal, createPersonalObjective } from '../api/goalsOkrApi'
 import type { UserGoalDTO } from '../api/goalsOkrApi'
 
 /**
@@ -32,6 +32,24 @@ export function useCreatePersonalGoal() {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', variables.userId] })
       // Invalidate user goal instances
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-goal-instances', 'user', variables.userId] })
+    },
+  })
+}
+
+/**
+ * Hook for creating a personal objective (NEW APPROACH: Objective template + UserObjectiveInstance + Kanban item)
+ */
+export function useCreatePersonalObjective() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ userId, ...request }: { userId: number; userGoalInstanceId: number; title: string; description?: string }) =>
+      createPersonalObjective(userId, request),
+    onSuccess: (_, variables) => {
+      // Invalidate kanban items since a new item is automatically added
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', variables.userId] })
+      // Invalidate user objective instances
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-objective-instances'] })
     },
   })
 }

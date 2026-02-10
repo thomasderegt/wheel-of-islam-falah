@@ -59,15 +59,15 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
       // Only set default if no wheelId in URL and no wheel selected yet
       // But wait until searchParams is definitely available (not undefined)
       if (hasSearchParams && selectedWheelId === null) {
-        // Default to Wheel of Life
-        const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
-        if (wheelOfLife) {
-          setSelectedWheelId(wheelOfLife.id)
-        } else if (wheels.length > 0) {
-          // Fallback to first wheel if WHEEL_OF_LIFE not found
-          setSelectedWheelId(wheels[0].id)
-        }
+      // Default to Wheel of Life
+      const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
+      if (wheelOfLife) {
+        setSelectedWheelId(wheelOfLife.id)
+      } else if (wheels.length > 0) {
+        // Fallback to first wheel if WHEEL_OF_LIFE not found
+        setSelectedWheelId(wheels[0].id)
       }
+    }
     }
   }, [wheels, wheelIdFromUrl, hasSearchParams, selectedWheelId])
 

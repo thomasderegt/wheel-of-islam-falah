@@ -81,6 +81,7 @@ public class GoalsOKRController {
     
     // User-specific command handlers
     private final CreatePersonalGoalCommandHandler createPersonalGoalHandler;
+    private final CreatePersonalObjectiveCommandHandler createPersonalObjectiveHandler;
 
     public GoalsOKRController(
             CreateGoalCommandHandler createGoalHandler,
@@ -130,7 +131,8 @@ public class GoalsOKRController {
             com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository,
-            CreatePersonalGoalCommandHandler createPersonalGoalHandler
+            CreatePersonalGoalCommandHandler createPersonalGoalHandler,
+            CreatePersonalObjectiveCommandHandler createPersonalObjectiveHandler
 ) {
         this.createGoalHandler = createGoalHandler;
         this.updateGoalHandler = updateGoalHandler;
@@ -180,6 +182,7 @@ public class GoalsOKRController {
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
         this.createPersonalGoalHandler = createPersonalGoalHandler;
+        this.createPersonalObjectiveHandler = createPersonalObjectiveHandler;
     }
 
     // ========== Wheels ==========
@@ -1134,6 +1137,36 @@ public class GoalsOKRController {
                 request.description()
             );
             UserGoalInstanceResult result = createPersonalGoalHandler.handle(command);
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Create a new personal objective (Objective template + UserObjectiveInstance + Kanban item)
+     * POST /api/v2/goals-okr/users/{userId}/personal-objectives
+     * 
+     * This follows the same pattern as createPersonalGoal: creates an Objective template,
+     * starts a UserObjectiveInstance, and adds it to the kanban board automatically.
+     */
+    @PostMapping("/users/{userId}/personal-objectives")
+    @Transactional
+    public ResponseEntity<?> createPersonalObjective(
+            @PathVariable Long userId,
+            @Valid @RequestBody CreatePersonalObjectiveRequest request) {
+        try {
+            CreatePersonalObjectiveCommand command = new CreatePersonalObjectiveCommand(
+                userId,
+                request.userGoalInstanceId(),
+                request.title(),
+                request.description()
+            );
+            UserObjectiveInstanceResult result = createPersonalObjectiveHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

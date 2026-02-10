@@ -15,7 +15,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Trash2, GripVertical, ExternalLink, Loader2 } from 'lucide-react'
+import { Trash2, GripVertical, Loader2 } from 'lucide-react'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import type { KanbanFilters } from '../hooks/useKanbanFilters'
@@ -73,83 +73,70 @@ function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, langua
       ref={setNodeRef}
       style={style}
       className={`
-        mb-3 cursor-move transition-all duration-200
+        cursor-move transition-all duration-200
+        w-[calc(100%-0.5rem)] self-center
         ${isDragging ? 'opacity-50 shadow-lg scale-105' : 'opacity-100'}
         ${isWireframeTheme 
           ? 'border-border hover:border-foreground hover:shadow-md' 
           : 'border-primary/20 hover:border-primary hover:shadow-md'}
       `}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 flex-1 min-w-0">
-            <div
-              {...attributes}
-              {...listeners}
-              data-drag-handle
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="cursor-grab active:cursor-grabbing mt-1 flex-shrink-0"
-            >
-              <GripVertical className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <CardTitle 
-                className="text-sm font-medium line-clamp-2 hover:text-primary transition-colors"
-                onClick={onNavigate}
-                style={{ cursor: onNavigate ? 'pointer' : 'default' }}
-              >
-                {title}
-              </CardTitle>
-              <div className="mt-2 space-y-1 text-xs">
-                {domainTitle && (
-                  <div className="text-muted-foreground">
-                    Domain: <span className="font-medium text-foreground">{domainTitle}</span>
-                  </div>
-                )}
-                <div className="text-muted-foreground">
-                  Item Type: <span className="font-medium text-foreground">{getItemTypeLabel(item.itemType)}</span>
-                </div>
-                {instanceNumber && (
-                  <div className="text-muted-foreground">
-                    {getItemTypeLabel(item.itemType)} nr: <span className="font-mono font-medium text-foreground">{instanceNumber}</span>
-                  </div>
-                )}
-                {item.number && (
-                  <div className="text-muted-foreground">
-                    Kanban Item nr: <span className="font-mono font-medium text-foreground">{item.number}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+      <CardHeader className="p-3 pb-3 flex flex-col">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div
+            {...attributes}
+            {...listeners}
+            data-drag-handle
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="cursor-grab active:cursor-grabbing flex-shrink-0"
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {onNavigateToInstance && (
+        </div>
+        <div className="flex flex-col min-w-0">
+          <CardTitle 
+            className="text-sm font-medium line-clamp-2 hover:text-primary transition-colors mb-2"
+            onClick={onNavigate}
+            style={{ cursor: onNavigate ? 'pointer' : 'default' }}
+          >
+            {title}
+          </CardTitle>
+          <div className="space-y-0.5 text-xs">
+            {domainTitle && (
+              <div className="text-muted-foreground truncate text-xs">
+                Domain: <span className="font-medium text-foreground">{domainTitle}</span>
+              </div>
+            )}
+            {instanceNumber && (
+              <div className="text-muted-foreground text-xs">
+                {getItemTypeLabel(item.itemType)}: <span className="font-medium text-foreground">{instanceNumber}</span>
+              </div>
+            )}
+            {!instanceNumber && (
+              <div className="text-muted-foreground text-xs">
+                <span className="font-medium text-foreground">{getItemTypeLabel(item.itemType)}</span>
+              </div>
+            )}
+            {item.number && (
+              <div className="text-muted-foreground text-xs">
+                Kanban Item: <span className="font-medium text-foreground">{item.number}</span>
+              </div>
+            )}
+            <div className="flex justify-start mt-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
-                  onNavigateToInstance()
+                  onDelete()
                 }}
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-                title={language === 'nl' ? 'Bekijk instance' : 'View instance'}
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                title={language === 'nl' ? 'Verwijderen' : 'Delete'}
               >
-                <ExternalLink className="h-3 w-3" />
+                <Trash2 className="h-3 w-3" />
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-              }}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-              title={language === 'nl' ? 'Verwijderen' : 'Delete'}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -260,7 +247,7 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
           </div>
         )}
         <SortableContext items={sortedItems.map(item => item.id.toString())} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 min-h-[200px]">
+          <div className="flex flex-col gap-2 min-h-[200px]">
             {isLoadingTitles && sortedItems.length > 0 ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

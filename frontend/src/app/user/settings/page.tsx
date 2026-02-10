@@ -106,72 +106,74 @@ export default function UserSettingsPage() {
 
               {/* Cards Grid - 2x2 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* User Info Card */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Information</CardTitle>
-                    <CardDescription>
-                      Your account details
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Email
-                      </label>
-                      <p className="text-foreground mt-1">
-                        {user?.email || 'Not available'}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* User Info Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Account Information</CardTitle>
+                  <CardDescription>
+                    Your account details
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Email
+                    </label>
+                    <p className="text-foreground mt-1">
+                      {user?.email || 'Not available'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Theme Settings Card */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Theme Settings</CardTitle>
-                    <CardDescription>
-                      Choose your preferred theme
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="theme">Theme</Label>
-                      <Select
-                        value={userGroup || 'universal'}
-                        onValueChange={(value) => setUserGroup(value)}
-                      >
-                        <SelectTrigger id="theme" className="w-full">
-                          <SelectValue placeholder="Select theme">
-                            {userGroup === 'adult-woman' ? 'Adult Woman' :
-                             userGroup === 'adult-man' ? 'Adult Man' :
-                             userGroup === 'young-adult-male' ? 'Young Adult Male' :
-                             userGroup === 'young-adult-female' ? 'Young Adult Female' :
+              {/* Theme Settings Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Theme Settings</CardTitle>
+                  <CardDescription>
+                    Choose your preferred theme
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="theme">Theme</Label>
+                    <Select
+                      value={userGroup || 'universal'}
+                      onValueChange={(value) => setUserGroup(value)}
+                    >
+                      <SelectTrigger id="theme" className="w-full">
+                        <SelectValue placeholder="Select theme">
+                          {userGroup === 'adult-woman' ? 'Adult Woman' :
+                           userGroup === 'adult-man' ? 'Adult Man' :
+                           userGroup === 'young-adult-male' ? 'Young Adult Male' :
+                           userGroup === 'young-adult-female' ? 'Young Adult Female' :
+                           'Universal'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableGroups.map((group) => (
+                          <SelectItem key={group} value={group}>
+                            {group === 'adult-woman' ? 'Adult Woman' :
+                             group === 'adult-man' ? 'Adult Man' :
+                             group === 'young-adult-male' ? 'Young Adult Male' :
+                             group === 'young-adult-female' ? 'Young Adult Female' :
                              'Universal'}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableGroups.map((group) => (
-                            <SelectItem key={group} value={group}>
-                              {group === 'adult-woman' ? 'Adult Woman' :
-                               group === 'adult-man' ? 'Adult Man' :
-                               group === 'young-adult-male' ? 'Young Adult Male' :
-                               group === 'young-adult-female' ? 'Young Adult Female' :
-                               'Universal'}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Navigation Settings Card */}
+                {/* Context Settings Card */}
                 <Card className="md:col-span-2">
                   <CardHeader>
-                    <CardTitle>Navigation Settings</CardTitle>
-                    <CardDescription>
-                      Configure your default Goals-OKR context
+                    <CardTitle>Context Settings</CardTitle>
+                    <CardDescription className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Set a specific Context, to have full focus on the area (Life, Biz, Work)</div>
+                      <div className="text-sm text-muted-foreground">Set the Context to &quot;All&quot;, in order to have overview of all areas</div>
+                      <div className="text-sm text-muted-foreground">Set the Context to &quot;None&quot;, to have full focus on the area True Succes</div>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -180,13 +182,13 @@ export default function UserSettingsPage() {
                     ) : (
                       <>
                         <div className="space-y-2">
-                          <Label htmlFor="goalsOkrContext">Goals-OKR Context</Label>
+                          <Label htmlFor="goalsOkrContext">Choose Context</Label>
                           <Select
                             value={selectedGoalsOkrContext || 'NONE'}
                             onValueChange={(value) => setSelectedGoalsOkrContext(value as GoalsOkrContext)}
                           >
                             <SelectTrigger id="goalsOkrContext" className="w-full">
-                              <SelectValue placeholder="Select Goals-OKR context">
+                              <SelectValue placeholder="Select Goals context">
                                 {getGoalsOkrContextLabel(selectedGoalsOkrContext || 'NONE')}
                               </SelectValue>
                             </SelectTrigger>
@@ -198,9 +200,6 @@ export default function UserSettingsPage() {
                             <SelectItem value="ALL">All Wheels</SelectItem>
                           </SelectContent>
                           </Select>
-                          <p className="text-sm text-muted-foreground">
-                            Determines which navigation items are shown in the bottom navigation. Content Context is always SUCCESS (Wheel of Islam).
-                          </p>
                         </div>
 
                         {hasChanges && (
