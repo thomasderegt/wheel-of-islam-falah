@@ -14,7 +14,7 @@ import Image from 'next/image'
 import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
-import { Star, Target, TrendingUp, LayoutGrid, User, LogOut, UserCircle } from 'lucide-react'
+import { Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
 
 interface NavbarProps {
   variant?: 'default' | 'landing'
@@ -36,6 +36,19 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
     setMobileMenuOpen(false)
   }
 
+
+  // Get page title based on pathname
+  const getPageTitle = () => {
+    if (pathname === '/home') return 'Success-Mode'
+    if (pathname.startsWith('/goals-okr/insight')) return 'Insight-Mode'
+    if (pathname.startsWith('/goals-okr/execute')) return 'Execute-Mode'
+    if (pathname.startsWith('/goals-okr/kanban')) return 'Progress-Mode'
+    if (pathname.startsWith('/goals-okr')) return 'Goal-Mode'
+    return null
+  }
+
+  const pageTitle = getPageTitle()
+
   // Check if a path is active (including sub-routes)
   const isActive = (path: string) => {
     if (path === '/home') {
@@ -44,29 +57,21 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
     if (path === '/user/settings') {
       return pathname === '/user/settings'
     }
-    if (path === '/goals-okr/kanban/dashboard') {
-      return pathname === '/goals-okr/kanban/dashboard'
+    if (path === '/goals-okr/insight') {
+      return pathname === '/goals-okr/insight'
+    }
+    if (path === '/goals-okr/execute') {
+      return pathname.startsWith('/goals-okr/execute') || pathname.startsWith('/goals-okr/kanban')
     }
     return pathname.startsWith(path)
   }
-
-  // Get page title based on pathname
-  const getPageTitle = () => {
-    if (pathname === '/home') return 'Success-Mode'
-    if (pathname.startsWith('/goals-okr/kanban/dashboard')) return 'Dashboard'
-    if (pathname.startsWith('/goals-okr/kanban')) return 'Progress-Mode'
-    if (pathname.startsWith('/goals-okr')) return 'Goal-Mode'
-    return null
-  }
-
-  const pageTitle = getPageTitle()
 
   // Bottom navigation items
   const bottomNavItems = [
     { href: '/home', label: 'Succes', icon: Star },
     { href: '/goals-okr', label: 'Goal', icon: Target },
-    { href: '/goals-okr/kanban', label: 'Progress', icon: TrendingUp },
-    { href: '/goals-okr/kanban/dashboard', label: 'Dashboard', icon: LayoutGrid },
+    { href: '/goals-okr/execute', label: 'Execute', icon: TrendingUp },
+    { href: '/goals-okr/insight', label: 'Insight', icon: Lightbulb },
     { href: '/mywoispace', label: 'MySpace', icon: User },
   ]
 
@@ -81,6 +86,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
       document.body.classList.remove('has-bottom-nav')
     }
   }, [isAuthenticated])
+
 
   return (
     <nav className="navbar w-full z-50">

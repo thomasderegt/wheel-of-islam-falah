@@ -14,6 +14,8 @@ export interface GoalDTO {
   descriptionNl?: string | null
   descriptionEn?: string | null
   orderIndex: number
+  quarter?: number | null // Program Increment quarter (1-4)
+  year?: number | null    // Program Increment year (e.g., 2025)
   number?: string | null
   createdAt: string
   updatedAt: string
@@ -211,9 +213,33 @@ export async function createGoal(request: {
   descriptionNl?: string
   descriptionEn?: string
   orderIndex: number
+  quarter?: number | null // Program Increment quarter (1-4, optional)
+  year?: number | null     // Program Increment year (e.g., 2025, optional)
 }): Promise<GoalDTO> {
   const response = await apiClient.post<GoalDTO>(
     '/api/v2/goals-okr/goals',
+    request
+  )
+  return response.data
+}
+
+/**
+ * Update a goal
+ * PUT /api/v2/goals-okr/goals/{goalId}
+ */
+export async function updateGoal(
+  goalId: number,
+  request: {
+    titleNl?: string
+    titleEn?: string
+    descriptionNl?: string
+    descriptionEn?: string
+    quarter?: number | null
+    year?: number | null
+  }
+): Promise<GoalDTO> {
+  const response = await apiClient.put<GoalDTO>(
+    `/api/v2/goals-okr/goals/${goalId}`,
     request
   )
   return response.data

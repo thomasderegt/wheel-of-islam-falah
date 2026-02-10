@@ -17,5 +17,8 @@ public record CreateGoalRequest(
     
     @NotNull(message = "Order index is required")
     @Positive(message = "Order index must be positive")
-    Integer orderIndex
+    Integer orderIndex,
+    
+    Integer quarter, // Program Increment quarter (1-4, optional)
+    Integer year      // Program Increment year (e.g., 2025, optional)
 ) {}

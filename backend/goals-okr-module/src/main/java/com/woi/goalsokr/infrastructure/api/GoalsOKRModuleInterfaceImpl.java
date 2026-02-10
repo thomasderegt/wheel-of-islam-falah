@@ -146,9 +146,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
 
     @Override
     public GoalSummary createGoal(Long lifeDomainId, String titleNl, String titleEn,
-                                  String descriptionNl, String descriptionEn, Integer orderIndex) {
+                                  String descriptionNl, String descriptionEn, Integer orderIndex,
+                                  Integer quarter, Integer year) {
         GoalResult result = createGoalHandler.handle(
-            new CreateGoalCommand(lifeDomainId, titleNl, titleEn, descriptionNl, descriptionEn, orderIndex));
+            new CreateGoalCommand(lifeDomainId, titleNl, titleEn, descriptionNl, descriptionEn, orderIndex, quarter, year));
         return toGoalSummary(result);
     }
 

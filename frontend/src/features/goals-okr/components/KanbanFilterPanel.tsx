@@ -9,11 +9,19 @@ import { useState } from 'react'
 import { Button } from '@/shared/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Label } from '@/shared/components/ui/label'
+import { Input } from '@/shared/components/ui/input'
 import { X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/components/ui/collapsible'
 import type { KanbanFilters } from '../hooks/useKanbanFilters'
 import { useLifeDomains } from '../hooks/useLifeDomains'
+
+const COLUMNS: Array<{ id: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'; label: string }> = [
+  { id: 'TODO', label: 'To Do' },
+  { id: 'IN_PROGRESS', label: 'In Progress' },
+  { id: 'IN_REVIEW', label: 'In Review' },
+  { id: 'DONE', label: 'Done' },
+]
 
 interface KanbanFilterPanelProps {
   readonly value: KanbanFilters
@@ -45,7 +53,47 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
   }
 
   const clearFilters = () => {
-    onChange({})
+    onChange({ wipLimits: value.wipLimits }) // Preserve WIP limits when clearing filters
+  }
+
+  const handleWipLimitChange = (wheelType: 'life' | 'business', column: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE', limit: string) => {
+    const numLimit = limit === '' ? undefined : parseInt(limit)
+    if (numLimit !== undefined && (isNaN(numLimit) || numLimit < 0)) return
+    
+    const newWipLimits = {
+      ...value.wipLimits,
+      [wheelType]: {
+        ...value.wipLimits?.[wheelType],
+        [column]: numLimit
+      }
+    }
+    
+    // Remove undefined values from wheel type
+    if (newWipLimits[wheelType]) {
+      Object.keys(newWipLimits[wheelType]!).forEach(key => {
+        if (newWipLimits[wheelType]![key as keyof typeof newWipLimits[typeof wheelType]] === undefined) {
+          delete newWipLimits[wheelType]![key as keyof typeof newWipLimits[typeof wheelType]]
+        }
+      })
+      
+      // Remove wheel type if it has no limits
+      if (Object.keys(newWipLimits[wheelType]!).length === 0) {
+        delete newWipLimits[wheelType]
+      }
+    }
+    
+    // Remove wipLimits entirely if both wheel types are empty
+    if (Object.keys(newWipLimits).length === 0) {
+      onChange({
+        ...value,
+        wipLimits: undefined
+      })
+    } else {
+      onChange({
+        ...value,
+        wipLimits: newWipLimits
+      })
+    }
   }
 
   return (
@@ -64,7 +112,9 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
               ) : (
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               )}
-              <h3 className="text-lg font-semibold">Filters</h3>
+              <h3 className="text-lg font-semibold">
+                {language === 'nl' ? 'Filter en board settings' : 'Filter and board settings'}
+              </h3>
               {hasActiveFilters && (
                 <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
                   Active
@@ -153,6 +203,47 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              
+              {/* WIP Limits Section */}
+              <div className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-semibold mb-3">
+                  {language === 'nl' ? 'WIP Limits per wheel type' : 'WIP Limits per wheel type'}
+                </h4>
+                {(['life', 'business'] as const).map((wheelType) => (
+                  <div key={wheelType} className="mb-6">
+                    <h5 className="text-xs font-medium mb-2 text-muted-foreground uppercase">
+                      {wheelType === 'life' 
+                        ? (language === 'nl' ? 'Wheel of Life' : 'Wheel of Life')
+                        : (language === 'nl' ? 'Wheel of Business' : 'Wheel of Business')}
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {COLUMNS.map((column) => {
+                        const columnId = column.id
+                        const currentLimit = value.wipLimits?.[wheelType]?.[columnId]
+                        return (
+                          <div key={`${wheelType}-${columnId}`} className="space-y-2">
+                            <Label htmlFor={`wip-limit-${wheelType}-${columnId}`}>{column.label}</Label>
+                            <Input
+                              id={`wip-limit-${wheelType}-${columnId}`}
+                              type="number"
+                              min="0"
+                              placeholder={language === 'nl' ? 'Geen limit' : 'No limit'}
+                              value={currentLimit?.toString() || ''}
+                              onChange={(e) => handleWipLimitChange(wheelType, columnId, e.target.value)}
+                              className="w-full"
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground mt-2">
+                  {language === 'nl' 
+                    ? 'Stel een maximum aantal items per kolom per wheel type in. Laat leeg voor geen limit.'
+                    : 'Set a maximum number of items per column per wheel type. Leave empty for no limit.'}
+                </p>
               </div>
             </div>
           </div>

@@ -24,10 +24,13 @@ public interface GoalsOKRModuleInterface {
      * @param descriptionNl Dutch description (optional)
      * @param descriptionEn English description (optional)
      * @param orderIndex Order index within the life domain
+     * @param quarter Program Increment quarter (1-4, optional)
+     * @param year Program Increment year (e.g., 2025, optional)
      * @return The created goal summary
      */
     GoalSummary createGoal(Long lifeDomainId, String titleNl, String titleEn,
-                          String descriptionNl, String descriptionEn, Integer orderIndex);
+                          String descriptionNl, String descriptionEn, Integer orderIndex,
+                          Integer quarter, Integer year);
 
     /**
      * Get a goal by ID

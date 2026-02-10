@@ -59,9 +59,24 @@ apiClient.interceptors.response.use(
         const errorData = error.response.data
         
         if (status !== 404 && !isPublicEndpoint && !shouldSuppress404) {
+          // Try to extract error message from various possible formats
+          let errorMessage = 'Unknown error'
+          if (errorData) {
+            if (typeof errorData === 'string') {
+              errorMessage = errorData
+            } else if (typeof errorData === 'object') {
+              // Try common error message fields
+              errorMessage = (errorData as any).error || 
+                           (errorData as any).message || 
+                           (errorData as any).detail ||
+                           JSON.stringify(errorData)
+            }
+          }
+          
           console.error('API Error Response:', {
             status: status,
             statusText: statusText || '(no status text)',
+            errorMessage: errorMessage,
             data: errorData,
             dataType: typeof errorData,
             dataString: errorData ? (typeof errorData === 'string' ? errorData : JSON.stringify(errorData)) : '(null/undefined/empty)',

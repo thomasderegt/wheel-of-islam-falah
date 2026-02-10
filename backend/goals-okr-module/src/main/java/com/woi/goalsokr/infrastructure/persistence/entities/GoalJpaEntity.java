@@ -33,6 +33,12 @@ public class GoalJpaEntity {
     @Column(name = "order_index", nullable = false)
     private Integer orderIndex;
 
+    @Column(name = "quarter")
+    private Integer quarter; // Program Increment quarter (1-4)
+
+    @Column(name = "year")
+    private Integer year; // Program Increment year (e.g., 2025)
+
     @Column(name = "number", length = 50)
     private String number;
 
@@ -66,6 +72,12 @@ public class GoalJpaEntity {
 
     public Integer getOrderIndex() { return orderIndex; }
     public void setOrderIndex(Integer orderIndex) { this.orderIndex = orderIndex; }
+
+    public Integer getQuarter() { return quarter; }
+    public void setQuarter(Integer quarter) { this.quarter = quarter; }
+
+    public Integer getYear() { return year; }
+    public void setYear(Integer year) { this.year = year; }
 
     public String getNumber() { return number; }
     public void setNumber(String number) { this.number = number; }

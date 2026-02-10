@@ -28,6 +28,7 @@ public class GoalsOKRController {
 
     // Command handlers
     private final CreateGoalCommandHandler createGoalHandler;
+    private final UpdateGoalCommandHandler updateGoalHandler;
     private final CreateObjectiveCommandHandler createObjectiveHandler;
     private final CreateKeyResultCommandHandler createKeyResultHandler;
     private final StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler;
@@ -90,6 +91,7 @@ public class GoalsOKRController {
 
     public GoalsOKRController(
             CreateGoalCommandHandler createGoalHandler,
+            UpdateGoalCommandHandler updateGoalHandler,
             CreateObjectiveCommandHandler createObjectiveHandler,
             CreateKeyResultCommandHandler createKeyResultHandler,
             StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler,
@@ -142,6 +144,7 @@ public class GoalsOKRController {
             GetUserObjectivesByUserGoalQueryHandler getUserObjectivesByUserGoalHandler,
             GetUserKeyResultsByUserObjectiveQueryHandler getUserKeyResultsByUserObjectiveHandler) {
         this.createGoalHandler = createGoalHandler;
+        this.updateGoalHandler = updateGoalHandler;
         this.createObjectiveHandler = createObjectiveHandler;
         this.createKeyResultHandler = createKeyResultHandler;
         this.startUserGoalInstanceHandler = startUserGoalInstanceHandler;
@@ -235,7 +238,9 @@ public class GoalsOKRController {
                 request.titleEn(),
                 request.descriptionNl(),
                 request.descriptionEn(),
-                request.orderIndex()
+                request.orderIndex(),
+                request.quarter(),
+                request.year()
             );
             GoalResult result = createGoalHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -274,6 +279,37 @@ public class GoalsOKRController {
         List<GoalResult> results = getGoalsByLifeDomainHandler.handle(
             new GetGoalsByLifeDomainQuery(lifeDomainId));
         return ResponseEntity.ok(results);
+    }
+
+    /**
+     * Update a goal
+     * PUT /api/v2/goals-okr/goals/{goalId}
+     */
+    @PutMapping("/goals/{goalId}")
+    @Transactional
+    public ResponseEntity<?> updateGoal(
+        @PathVariable Long goalId,
+        @Valid @RequestBody UpdateGoalRequest request
+    ) {
+        try {
+            UpdateGoalCommand command = new UpdateGoalCommand(
+                goalId,
+                request.titleNl(),
+                request.titleEn(),
+                request.descriptionNl(),
+                request.descriptionEn(),
+                request.quarter(),
+                request.year()
+            );
+            GoalResult result = updateGoalHandler.handle(command);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
     }
 
     // ========== Objectives ==========
@@ -1012,10 +1048,13 @@ public class GoalsOKRController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
+            String errorMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
+                .body(Map.of("error", "An unexpected error occurred: " + errorMessage));
         }
     }
 

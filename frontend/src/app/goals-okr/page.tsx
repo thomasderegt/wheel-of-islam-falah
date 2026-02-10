@@ -21,7 +21,7 @@ export default function GoalsOKRNavigatorPage() {
         <Navbar variant="landing" />
         
         {/* Main Content */}
-        <main className="flex-1 flex flex-col p-8">
+        <main className="flex-1 flex flex-col p-4 pb-24">
           <Container className="max-w-6xl mx-auto">
             <div className="space-y-4">
               {/* Hierarchical Navigation */}

@@ -9,7 +9,9 @@ public record CreateGoalCommand(
     String titleEn,
     String descriptionNl,
     String descriptionEn,
-    Integer orderIndex
+    Integer orderIndex,
+    Integer quarter, // Program Increment quarter (1-4, optional)
+    Integer year     // Program Increment year (e.g., 2025, optional)
 ) {
     public CreateGoalCommand {
         if (lifeDomainId == null) {
@@ -21,6 +23,12 @@ public record CreateGoalCommand(
         }
         if (orderIndex == null || orderIndex < 1) {
             throw new IllegalArgumentException("Order index must be a positive integer");
+        }
+        if (quarter != null && (quarter < 1 || quarter > 4)) {
+            throw new IllegalArgumentException("Quarter must be between 1 and 4");
+        }
+        if (year != null && year < 2000) {
+            throw new IllegalArgumentException("Year must be 2000 or later");
         }
     }
 }

@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useRouter } from 'next/navigation'
-import { Star, Target, TrendingUp, LayoutGrid, User, LogOut, UserCircle } from 'lucide-react'
+import { Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
 
 export function BottomNav() {
   const router = useRouter()
@@ -33,8 +33,11 @@ export function BottomNav() {
     if (path === '/user/settings') {
       return pathname === '/user/settings'
     }
-    if (path === '/goals-okr/kanban/dashboard') {
-      return pathname === '/goals-okr/kanban/dashboard'
+    if (path === '/goals-okr/insight') {
+      return pathname === '/goals-okr/insight'
+    }
+    if (path === '/goals-okr/execute') {
+      return pathname.startsWith('/goals-okr/execute') || pathname.startsWith('/goals-okr/kanban')
     }
     return pathname.startsWith(path)
   }
@@ -43,8 +46,8 @@ export function BottomNav() {
   const bottomNavItems = [
     { href: '/home', label: 'Succes', icon: Star },
     { href: '/goals-okr', label: 'Goal', icon: Target },
-    { href: '/goals-okr/kanban', label: 'Focus', icon: TrendingUp },
-    { href: '/goals-okr/kanban/dashboard', label: 'Dashboard', icon: LayoutGrid },
+    { href: '/goals-okr/execute', label: 'Execute', icon: TrendingUp },
+    { href: '/goals-okr/insight', label: 'Insight', icon: Lightbulb },
     { href: '/mywoispace', label: 'MySpace', icon: User },
   ]
 

@@ -22,7 +22,7 @@ import type { KanbanFilters } from '../hooks/useKanbanFilters'
 import { useWheels } from '../hooks/useWheels'
 import { useLifeDomains } from '../hooks/useLifeDomains'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 const COLUMNS: Array<{ id: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'; label: string }> = [
   { id: 'TODO', label: 'To Do' },
@@ -168,19 +168,63 @@ interface KanbanColumnProps {
   onNavigate?: (item: KanbanItemDTO) => void
   onNavigateToInstance?: (item: KanbanItemDTO) => void
   isLoadingTitles?: boolean
+  wipLimits?: {
+    life?: number
+    business?: number
+  }
+  wheelIdToType?: Map<number, 'life' | 'business'>
+  lifeDomainIdToWheelId?: Map<number, number>
 }
 
-function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLifeDomainIds, lifeDomains, onDelete, language = 'en', onNavigate, onNavigateToInstance, isLoadingTitles = false }: KanbanColumnProps) {
+function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLifeDomainIds, lifeDomains, onDelete, language = 'en', onNavigate, onNavigateToInstance, isLoadingTitles = false, wipLimits, wheelIdToType, lifeDomainIdToWheelId }: KanbanColumnProps) {
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
 
+  // Calculate counts per wheel type
+  const countsByWheelType = useMemo(() => {
+    const counts: { life: number; business: number } = { life: 0, business: 0 }
+    
+    if (!wheelIdToType || !lifeDomainIdToWheelId) {
+      return counts
+    }
+    
+    items.forEach(item => {
+      const compoundKey = `${item.itemType}-${item.itemId}`
+      const lifeDomainId = itemLifeDomainIds.get(compoundKey)
+      if (!lifeDomainId) return
+      
+      const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
+      if (!wheelId) return
+      
+      const wheelType = wheelIdToType.get(wheelId)
+      if (wheelType === 'life' || wheelType === 'business') {
+        counts[wheelType]++
+      }
+    })
+    
+    return counts
+  }, [items, itemLifeDomainIds, wheelIdToType, lifeDomainIdToWheelId])
+
+  // Check if any WIP limit is reached
+  const isWipLimitReached = useMemo(() => {
+    if (!wipLimits) return false
+    return (
+      (wipLimits.life !== undefined && countsByWheelType.life >= wipLimits.life) ||
+      (wipLimits.business !== undefined && countsByWheelType.business >= wipLimits.business)
+    )
+  }, [wipLimits, countsByWheelType])
+
   const { setNodeRef, isOver } = useDroppable({
     id: columnId,
+    disabled: isWipLimitReached && columnId !== 'DONE', // Disable dropping when limit reached (except for DONE column)
   })
 
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => a.position - b.position)
   }, [items])
+
+  const itemCount = sortedItems.length
+  const showWipLimits = wipLimits && (wipLimits.life !== undefined || wipLimits.business !== undefined)
 
   return (
     <div className="flex-1 min-w-0">
@@ -189,6 +233,7 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
         className={`
           p-4 rounded-lg mb-4 transition-all duration-200
           ${isOver ? 'ring-2 ring-primary ring-offset-2 bg-primary/40' : ''}
+          ${isWipLimitReached ? 'ring-2 ring-destructive ring-offset-2 bg-destructive/10' : ''}
           ${isWireframeTheme 
             ? 'bg-muted border border-border' 
             : 'bg-primary/30 border border-primary/40'}
@@ -196,10 +241,55 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">{label}</h3>
-          <span className="text-sm text-muted-foreground bg-background/50 px-2 py-1 rounded-full">
-            {sortedItems.length}
-          </span>
+          <div className="flex items-center gap-2">
+            {showWipLimits && (
+              <div className="flex items-center gap-1">
+                {wipLimits.life !== undefined && (
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    countsByWheelType.life >= wipLimits.life
+                      ? 'bg-destructive/20 text-destructive font-semibold' 
+                      : 'bg-muted text-muted-foreground'
+                  }`} title={language === 'nl' ? 'Wheel of Life' : 'Wheel of Life'}>
+                    L: {countsByWheelType.life}/{wipLimits.life}
+                  </span>
+                )}
+                {wipLimits.business !== undefined && (
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    countsByWheelType.business >= wipLimits.business
+                      ? 'bg-destructive/20 text-destructive font-semibold' 
+                      : 'bg-muted text-muted-foreground'
+                  }`} title={language === 'nl' ? 'Wheel of Business' : 'Wheel of Business'}>
+                    B: {countsByWheelType.business}/{wipLimits.business}
+                  </span>
+                )}
+              </div>
+            )}
+            <span className={`text-sm px-2 py-1 rounded-full ${
+              isWipLimitReached 
+                ? 'bg-destructive/20 text-destructive' 
+                : 'text-muted-foreground bg-background/50'
+            }`}>
+              {itemCount}
+            </span>
+          </div>
         </div>
+        {isWipLimitReached && (
+          <div className="mb-2 text-xs text-destructive font-medium">
+            {language === 'nl' 
+              ? `WIP limit bereikt` 
+              : `WIP limit reached`}
+            {wipLimits.life !== undefined && countsByWheelType.life >= wipLimits.life && (
+              <span className="ml-1">
+                ({language === 'nl' ? 'Life' : 'Life'}: {countsByWheelType.life}/{wipLimits.life})
+              </span>
+            )}
+            {wipLimits.business !== undefined && countsByWheelType.business >= wipLimits.business && (
+              <span className="ml-1">
+                ({language === 'nl' ? 'Business' : 'Business'}: {countsByWheelType.business}/{wipLimits.business})
+              </span>
+            )}
+          </div>
+        )}
         <SortableContext items={sortedItems.map(item => item.id.toString())} strategy={verticalListSortingStrategy}>
           <div className="space-y-2 min-h-[200px]">
             {isLoadingTitles && sortedItems.length > 0 ? (
@@ -250,6 +340,7 @@ interface KanbanBoardProps {
 export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: kanbanItems, isLoading } = useKanbanItems(user?.id || null)
   const { data: wheels } = useWheels()
   const { data: lifeDomains } = useLifeDomains()
@@ -595,6 +686,55 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
 
     if (!targetColumn || targetColumn === item.columnName) return
 
+    // Determine wheel type of the item being moved
+    const compoundKey = `${item.itemType}-${item.itemId}`
+    const lifeDomainId = itemLifeDomainIds.get(compoundKey)
+    let itemWheelType: 'life' | 'business' | undefined = undefined
+    
+    if (lifeDomainId && lifeDomainIdToWheelId.size > 0 && wheelIdToType.size > 0) {
+      const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
+      if (wheelId) {
+        itemWheelType = wheelIdToType.get(wheelId)
+      }
+    }
+
+    // Check WIP limit for target column and wheel type
+    if (itemWheelType) {
+      const wipLimit = filters.wipLimits?.[itemWheelType]?.[targetColumn]
+      if (wipLimit !== undefined) {
+        // Count only items of the same wheel type in the target column
+        const targetColumnItems = itemsByColumn[targetColumn]
+        const itemsOfSameWheelType = targetColumnItems.filter(targetItem => {
+          const targetCompoundKey = `${targetItem.itemType}-${targetItem.itemId}`
+          const targetLifeDomainId = itemLifeDomainIds.get(targetCompoundKey)
+          if (!targetLifeDomainId) return false
+          
+          const targetWheelId = lifeDomainIdToWheelId.get(targetLifeDomainId)
+          if (!targetWheelId) return false
+          
+          const targetWheelType = wheelIdToType.get(targetWheelId)
+          return targetWheelType === itemWheelType
+        })
+        
+        const currentCount = itemsOfSameWheelType.length
+        
+        // If the item is already in the target column, we're just reordering, so allow it
+        // Otherwise, check if adding this item would exceed the limit
+        if (item.columnName !== targetColumn && currentCount >= wipLimit) {
+          // Show alert to user
+          const columnLabel = COLUMNS.find(c => c.id === targetColumn)?.label || targetColumn
+          const wheelLabel = itemWheelType === 'life' 
+            ? (language === 'nl' ? 'Wheel of Life' : 'Wheel of Life')
+            : (language === 'nl' ? 'Wheel of Business' : 'Wheel of Business')
+          alert(language === 'nl' 
+            ? `WIP limit bereikt voor ${wheelLabel}! Maximum ${wipLimit} items in "${columnLabel}". Verplaats eerst een item naar een andere kolom.`
+            : `WIP limit reached for ${wheelLabel}! Maximum ${wipLimit} items in "${columnLabel}". Please move an item to another column first.`
+          )
+          return // Block the drag operation
+        }
+      }
+    }
+
     // Calculate new position (append to end of target column)
     const targetItems = itemsByColumn[targetColumn]
     const newPosition = targetItems.length
@@ -624,8 +764,12 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   }
 
   const handleNavigate = (item: KanbanItemDTO) => {
-    // Navigate to kanban item detail page
-    router.push(`/goals-okr/kanban/items/${item.id}`)
+    // Navigate to kanban item detail page with current filter query parameters
+    const queryString = searchParams?.toString()
+    const url = queryString 
+      ? `/goals-okr/kanban/items/${item.id}?returnTo=${encodeURIComponent(`/goals-okr/kanban${queryString ? `?${queryString}` : ''}`)}`
+      : `/goals-okr/kanban/items/${item.id}?returnTo=${encodeURIComponent('/goals-okr/kanban')}`
+    router.push(url)
   }
 
   const handleNavigateToInstance = (item: KanbanItemDTO) => {
@@ -678,23 +822,34 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       >
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {COLUMNS.map((column) => (
-              <KanbanColumn
-                key={column.id}
-                columnId={column.id}
-                label={column.label}
-                items={itemsByColumn[column.id]}
-                itemTitles={itemTitles}
-                itemNumbers={itemNumbers}
-                itemLifeDomainIds={itemLifeDomainIds}
-                lifeDomains={lifeDomains}
-                onDelete={handleDeleteClick}
-                onNavigate={handleNavigate}
-                onNavigateToInstance={handleNavigateToInstance}
-                isLoadingTitles={isLoadingTitles}
-                language={language}
-              />
-            ))}
+            {COLUMNS.map((column) => {
+              const items = itemsByColumn[column.id]
+              const wipLimits = filters.wipLimits ? {
+                life: filters.wipLimits.life?.[column.id],
+                business: filters.wipLimits.business?.[column.id]
+              } : undefined
+              
+              return (
+                <KanbanColumn
+                  key={column.id}
+                  columnId={column.id}
+                  label={column.label}
+                  items={items}
+                  itemTitles={itemTitles}
+                  itemNumbers={itemNumbers}
+                  itemLifeDomainIds={itemLifeDomainIds}
+                  lifeDomains={lifeDomains}
+                  onDelete={handleDeleteClick}
+                  onNavigate={handleNavigate}
+                  onNavigateToInstance={handleNavigateToInstance}
+                  isLoadingTitles={isLoadingTitles}
+                  language={language}
+                  wipLimits={wipLimits}
+                  wheelIdToType={wheelIdToType}
+                  lifeDomainIdToWheelId={lifeDomainIdToWheelId}
+                />
+              )
+            })}
           </div>
         </div>
         <DragOverlay>

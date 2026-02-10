@@ -14,20 +14,53 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Textarea } from '@/shared/components/ui/textarea'
 import { Loading } from '@/shared/components/ui/Loading'
 import { ArrowLeft, Save, ChevronRight } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { getKanbanItem } from '@/features/goals-okr/api/goalsOkrApi'
 import { useUpdateKanbanItemNotes, useKanbanItems } from '@/features/goals-okr/hooks/useKanbanItems'
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/features/auth'
-import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getObjectivesByGoal, getKeyResultsByObjective, getUserObjectiveInstancesByUserGoalInstance, getUserKeyResultInstancesByUserObjectiveInstance, getUserInitiativeInstancesByUserKeyResultInstance, type ObjectiveDTO, type KeyResultDTO, type InitiativeDTO } from '@/features/goals-okr/api/goalsOkrApi'
+import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getObjectivesByGoal, getKeyResultsByObjective, getUserObjectiveInstancesByUserGoalInstance, getUserKeyResultInstancesByUserObjectiveInstance, getUserInitiativeInstancesByUserKeyResultInstance, updateGoal, type ObjectiveDTO, type KeyResultDTO, type InitiativeDTO, type GoalDTO } from '@/features/goals-okr/api/goalsOkrApi'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/components/ui/select'
+import { Label } from '@/shared/components/ui/label'
 
 export default function KanbanItemDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user } = useAuth()
   const itemId = Number(params.id)
   const language = 'en' as 'nl' | 'en'
+  
+  // Get back URL from query parameter or referrer
+  const getBackUrl = () => {
+    // First, try to get from returnTo query parameter
+    const returnTo = searchParams?.get('returnTo')
+    if (returnTo) {
+      try {
+        return decodeURIComponent(returnTo)
+      } catch {
+        // If decoding fails, fall back to default
+      }
+    }
+    
+    // Fallback: check referrer
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer
+      if (referrer.includes('/goals-okr/kanban')) {
+        try {
+          const referrerUrl = new URL(referrer)
+          const queryString = referrerUrl.search
+          return queryString ? `/goals-okr/kanban${queryString}` : '/goals-okr/kanban'
+        } catch {
+          return '/goals-okr/kanban'
+        }
+      }
+    }
+    
+    // Default fallback
+    return '/goals-okr/kanban'
+  }
   
   const [notes, setNotes] = useState('')
   const [itemTitle, setItemTitle] = useState<string>('')
@@ -36,6 +69,14 @@ export default function KanbanItemDetailPage() {
   const [childrenInstances, setChildrenInstances] = useState<Array<{ id: number; instanceId: number }>>([])
   const [isLoadingChildren, setIsLoadingChildren] = useState(false)
   const [childrenType, setChildrenType] = useState<'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE' | null>(null)
+  
+  // Program Increment state (for GOAL items)
+  const [goalData, setGoalData] = useState<GoalDTO | null>(null)
+  const [isLoadingGoalData, setIsLoadingGoalData] = useState(false)
+  const [goalDataError, setGoalDataError] = useState<string | null>(null)
+  const [selectedQuarter, setSelectedQuarter] = useState<number | null>(null)
+  const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const [isUpdatingPI, setIsUpdatingPI] = useState(false)
   
   // Get all kanban items to find children kanban items
   const { data: allKanbanItems } = useKanbanItems(user?.id || null)
@@ -128,6 +169,87 @@ export default function KanbanItemDetailPage() {
       setNotes(kanbanItem.notes || '')
     }
   }, [kanbanItem])
+
+  // Load Goal data when item is GOAL, OBJECTIVE, KEY_RESULT, or INITIATIVE
+  useEffect(() => {
+    if (!kanbanItem) return
+    
+    const loadGoalData = async () => {
+      setIsLoadingGoalData(true)
+      setGoalDataError(null)
+      try {
+        let goal: GoalDTO | null = null
+        
+        switch (kanbanItem.itemType) {
+          case 'GOAL': {
+            const userGoalInstance = await getUserGoalInstance(kanbanItem.itemId)
+            goal = await getGoal(userGoalInstance.goalId)
+            break
+          }
+          case 'OBJECTIVE': {
+            const userObjectiveInstance = await getUserObjectiveInstance(kanbanItem.itemId)
+            const objective = await getObjective(userObjectiveInstance.objectiveId)
+            goal = await getGoal(objective.goalId)
+            break
+          }
+          case 'KEY_RESULT': {
+            const userKeyResultInstance = await getUserKeyResultInstance(kanbanItem.itemId)
+            const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
+            const objective = await getObjective(keyResult.objectiveId)
+            goal = await getGoal(objective.goalId)
+            break
+          }
+          case 'INITIATIVE': {
+            const userInitiativeInstance = await getUserInitiativeInstance(kanbanItem.itemId)
+            const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
+            const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
+            const objective = await getObjective(keyResult.objectiveId)
+            goal = await getGoal(objective.goalId)
+            break
+          }
+        }
+        
+        if (goal) {
+          setGoalData(goal)
+          setSelectedQuarter(goal.quarter ?? null)
+          setSelectedYear(goal.year ?? null)
+        }
+      } catch (error: any) {
+        console.error('Failed to load goal data:', error)
+        console.error('Error details:', {
+          message: error?.message,
+          response: error?.response?.data,
+          status: error?.response?.status
+        })
+        const errorMessage = error?.response?.data?.error || error?.message || 'Failed to load goal data'
+        setGoalDataError(errorMessage)
+      } finally {
+        setIsLoadingGoalData(false)
+      }
+    }
+    
+    loadGoalData()
+  }, [kanbanItem])
+
+  // Update PI handler
+  const handleUpdatePI = async () => {
+    if (!goalData || !kanbanItem) return
+    
+    setIsUpdatingPI(true)
+    try {
+      // Use goalData.id directly (we already have it from loading)
+      const updatedGoal = await updateGoal(goalData.id, {
+        quarter: selectedQuarter,
+        year: selectedYear,
+      })
+      setGoalData(updatedGoal)
+    } catch (error) {
+      console.error('Failed to update PI:', error)
+      alert('Failed to update Quarter. Please try again.')
+    } finally {
+      setIsUpdatingPI(false)
+    }
+  }
 
   // Load children based on item type
   useEffect(() => {
@@ -291,11 +413,11 @@ export default function KanbanItemDetailPage() {
               <div className="space-y-4">
                 <Button
                   variant="ghost"
-                  onClick={() => router.push('/goals-okr/kanban')}
+                  onClick={() => router.push(getBackUrl())}
                   className="gap-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {language === 'nl' ? 'Terug naar Progress Board' : 'Back to Progress Board'}
+                  {language === 'nl' ? 'Terug naar Execute Board' : 'Back to Execute Board'}
                 </Button>
                 <div className="text-center py-12 space-y-4">
                   <p className="text-lg font-medium text-destructive">
@@ -330,11 +452,11 @@ export default function KanbanItemDetailPage() {
               <div className="space-y-4">
                 <Button
                   variant="ghost"
-                  onClick={() => router.push('/goals-okr/kanban')}
+                  onClick={() => router.push(getBackUrl())}
                   className="gap-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {language === 'nl' ? 'Terug naar Progress Board' : 'Back to Progress Board'}
+                  {language === 'nl' ? 'Terug naar Execute Board' : 'Back to Execute Board'}
                 </Button>
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
@@ -360,11 +482,11 @@ export default function KanbanItemDetailPage() {
               <div className="space-y-4">
                 <Button
                   variant="ghost"
-                  onClick={() => router.push('/goals-okr/kanban')}
+                  onClick={() => router.push(getBackUrl())}
                   className="gap-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  {language === 'nl' ? 'Terug naar Progress Board' : 'Back to Progress Board'}
+                  {language === 'nl' ? 'Terug naar Execute Board' : 'Back to Execute Board'}
                 </Button>
                 
                 <div className="space-y-2">
@@ -385,6 +507,121 @@ export default function KanbanItemDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* Program Increment Section (for all items - shows parent Goal's PI) */}
+              {kanbanItem && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Set Quarter</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {isLoadingGoalData ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loading className="h-6 w-6" />
+                        <span className="ml-2 text-sm text-muted-foreground">Loading goal data...</span>
+                      </div>
+                    ) : goalDataError ? (
+                      <div className="space-y-2">
+                        <div className="text-sm text-destructive">
+                          {language === 'nl' ? 'Fout bij het laden:' : 'Error loading:'} {goalDataError}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Retry loading
+                            if (kanbanItem?.itemType === 'GOAL') {
+                              const loadGoalData = async () => {
+                                setIsLoadingGoalData(true)
+                                setGoalDataError(null)
+                                try {
+                                  const userGoalInstance = await getUserGoalInstance(kanbanItem.itemId)
+                                  const goal = await getGoal(userGoalInstance.goalId)
+                                  setGoalData(goal)
+                                  setSelectedQuarter(goal.quarter ?? null)
+                                  setSelectedYear(goal.year ?? null)
+                                } catch (error: any) {
+                                  console.error('Failed to load goal data (retry):', error)
+                                  const errorMessage = error?.response?.data?.error || error?.message || 'Failed to load goal data'
+                                  setGoalDataError(errorMessage)
+                                } finally {
+                                  setIsLoadingGoalData(false)
+                                }
+                              }
+                              loadGoalData()
+                            }
+                          }}
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    ) : goalData ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="quarter">Quarter</Label>
+                            <Select
+                              value={selectedQuarter?.toString() || ''}
+                              onValueChange={(v) => setSelectedQuarter(v ? parseInt(v) : null)}
+                              disabled={isUpdatingPI}
+                            >
+                              <SelectTrigger id="quarter">
+                                <SelectValue placeholder="Select quarter" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">None</SelectItem>
+                                <SelectItem value="1">Q1</SelectItem>
+                                <SelectItem value="2">Q2</SelectItem>
+                                <SelectItem value="3">Q3</SelectItem>
+                                <SelectItem value="4">Q4</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="year">Year</Label>
+                            <Select
+                              value={selectedYear?.toString() || ''}
+                              onValueChange={(v) => setSelectedYear(v ? parseInt(v) : null)}
+                              disabled={isUpdatingPI}
+                            >
+                              <SelectTrigger id="year">
+                                <SelectValue placeholder="Select year" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="">None</SelectItem>
+                                {Array.from({ length: 5 }, (_, i) => {
+                                  const year = new Date().getFullYear() + i
+                                  return (
+                                    <SelectItem key={year} value={year.toString()}>
+                                      {year}
+                                    </SelectItem>
+                                  )
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={handleUpdatePI}
+                          disabled={isUpdatingPI || (selectedQuarter === goalData.quarter && selectedYear === goalData.year)}
+                          className="w-full"
+                        >
+                          {isUpdatingPI ? 'Updating...' : 'Update Quarter'}
+                        </Button>
+                        {goalData.quarter && goalData.year && (
+                          <p className="text-sm text-muted-foreground">
+                            Current: Q{goalData.quarter} {goalData.year}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        {language === 'nl' ? 'Goal data niet beschikbaar' : 'Goal data not available'}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Children Section */}
               {children.length > 0 && (

@@ -13,6 +13,8 @@ public record GoalResult(
     String descriptionNl,
     String descriptionEn,
     Integer orderIndex,
+    Integer quarter, // Program Increment quarter (1-4)
+    Integer year,    // Program Increment year (e.g., 2025)
     String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
@@ -26,6 +28,8 @@ public record GoalResult(
             goal.getDescriptionNl(),
             goal.getDescriptionEn(),
             goal.getOrderIndex(),
+            goal.getQuarter(),
+            goal.getYear(),
             goal.getNumber(),
             goal.getCreatedAt(),
             goal.getUpdatedAt()

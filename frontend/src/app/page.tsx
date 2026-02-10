@@ -92,24 +92,33 @@ export default function LandingPage() {
                 Looking for a life with meaning and direction?<br />
                 <span className="text-primary">Check!</span>
               </h1>
-              
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 2 — Welcome to Qalbsalim */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">2</div>
+        <Container className="max-w-7xl mx-auto">
+          <div className="flex flex-col gap-12">
+            {/* Text Content */}
+            <div className="space-y-6">
               <div className="text-xl md:text-2xl text-muted-foreground leading-relaxed space-y-4">
                 <p>
                   Welcome to <span className="font-bold">Qalbsalim</span> (Soundheart).
                 </p>
                 <p className="font-bold">
-                  A platform designed to help you flourish and achieve true success (Falah) in this life and the next.
+                  A platform designed to help you flourish and achieve true success (Falah). Success in this life and the next.
                 </p>
-                <div>
-                  Experience sustainable growth through:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Tazkiyyah, the purification and development of the heart, and</li>
-                    <li>Fiqh, the understanding and application of divine guidelines.</li>
-                  </ul>
-                </div>
                 <p>
-                  Learn modern day proven techniques in Goal Management & Execution
+                  Experience sustainable growth through:
                 </p>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Tazkiyyah, the purification and development of the heart</li>
+                  <li>Fiqh, the understanding and application of divine guidelines.</li>
+                  <li>Proven techniques in Goal Management & Execution</li>
+                </ul>
               </div>
 
               {/* Buttons */}
@@ -135,9 +144,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 2 — Success as taught in the Quran, Sunnah */}
+      {/* SECTION 3 — Success as taught in the Quran, Sunnah */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">2</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">3</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
@@ -170,7 +179,12 @@ export default function LandingPage() {
               </blockquote>
               
               <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
-                "And that the ultimate goal is to your Lord"<br />
+                "Our Lord, give us in this world good and in the Hereafter good, (...)."<br />
+                <span className="text-base not-italic mt-2 block">Qur'an 2:201</span>
+              </blockquote>
+              
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "And that the ultimate goal is (going back) to your Lord"<br />
                 <span className="text-base not-italic mt-2 block">Quran 53:42</span>
               </blockquote>
             </div>
@@ -178,9 +192,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 3 — Goal Management & Execution */}
+      {/* SECTION 4 — Goal Management & Execution */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">3</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">4</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-8">
             <div className="space-y-6">
@@ -188,7 +202,7 @@ export default function LandingPage() {
                 Succes, Goal- Management & Execution
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Wanna learn how to be good at goal management and execution, in order to be succesfull?<br />
+                Wanna learn how to be good at goal- management and execution, in order to be succesfull?<br />
                 Just login and lets grow together. You wil learn thinks like:
               </p>
             </div>
@@ -208,7 +222,7 @@ export default function LandingPage() {
                   Measure Your Success
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  You dont need to guess. Know exactly what's working and what's not with clear metrics and feedbackloops.
+                  You dont have to guess. Know exactly what's working and what's not with clear metrics and feedbackloops.
                 </p>
               </div>
 
@@ -217,7 +231,7 @@ export default function LandingPage() {
                   Achieving goals
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Dream big and set big goals. Learn how to break them down and why this is needed. Execute and track your progress.
+                  Dream big and set big goals. Learn how to break them down. Execute and track your progress.
                 </p>
               </div>
 
@@ -234,9 +248,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 4 — Wheel of Life */}
+      {/* SECTION 5 — Wheel of Life */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">4</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">5</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-6">
             <div className="flex justify-center">
@@ -250,15 +264,15 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 5 — Imam Ibn al-Qayyim on Tazkiyah */}
+      {/* SECTION 6 — Imam Ibn al-Qayyim on Tazkiyah */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">5</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">6</div>
         <Container className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-12">
             {/* Text Content */}
             <div className="space-y-6">
               <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-                Imam Ibn al-Qayyim on Tazkiyah and the heart
+                Quote imam Ibn al-Qayyim (ra)
               </h2>
               <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
                 <blockquote className="text-lg italic leading-relaxed border-l-4 border-primary pl-6">
@@ -277,9 +291,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 6 — Wheel of Islam Model */}
+      {/* SECTION 7 — Wheel of Islam Model */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">6</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">7</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-6">
             <div className="flex justify-center">
@@ -293,9 +307,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 7 — Core Concepts of Success */}
+      {/* SECTION 8 — Core Concepts of Success */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">7</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">8</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-8 mb-8">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
@@ -381,9 +395,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 8 — Image Carousel */}
+      {/* SECTION 9 — Image Carousel */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">8</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">9</div>
         <Container className="max-w-7xl mx-auto">
           <div className="relative">
             <Carousel
@@ -419,9 +433,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 9 — Why Success Needs Inner Strength */}
+      {/* SECTION 10 — Why Success Needs Inner Strength */}
       <section className="relative py-20 px-4 bg-muted/30 border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">9</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">10</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-12">
             {/* Header */}

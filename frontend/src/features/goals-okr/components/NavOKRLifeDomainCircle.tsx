@@ -415,7 +415,7 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
 
       {/* Rotation controls - onder de navigatie */}
       {ringDomains.length > 0 && (
-        <div className="flex justify-center gap-4 w-full">
+        <div className="flex justify-center gap-4 w-full mb-4">
           <Button
             onClick={rotateRingLeft}
             variant="outline"

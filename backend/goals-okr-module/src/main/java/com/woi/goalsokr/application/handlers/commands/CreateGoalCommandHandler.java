@@ -31,7 +31,9 @@ public class CreateGoalCommandHandler {
             command.lifeDomainId(),
             command.titleNl(),
             command.titleEn(),
-            command.orderIndex()
+            command.orderIndex(),
+            command.quarter(),
+            command.year()
         );
 
         // Set optional fields

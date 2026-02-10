@@ -21,6 +21,8 @@ public class Goal {
     private String descriptionNl;
     private String descriptionEn;
     private Integer orderIndex; // Order within the life domain
+    private Integer quarter; // Program Increment quarter (1-4)
+    private Integer year; // Program Increment year (e.g., 2025)
     private String number; // Unique human-readable number (e.g., "GOAL-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -35,10 +37,12 @@ public class Goal {
      * @param titleNl Dutch title (can be null)
      * @param titleEn English title (can be null)
      * @param orderIndex Order index within the life domain (required)
+     * @param quarter Program Increment quarter (1-4, optional)
+     * @param year Program Increment year (e.g., 2025, optional)
      * @return New Goal instance
      * @throws IllegalArgumentException if required fields are null or invalid
      */
-    public static Goal create(Long lifeDomainId, String titleNl, String titleEn, Integer orderIndex) {
+    public static Goal create(Long lifeDomainId, String titleNl, String titleEn, Integer orderIndex, Integer quarter, Integer year) {
         if (lifeDomainId == null) {
             throw new IllegalArgumentException("Life Domain ID cannot be null");
         }
@@ -49,12 +53,20 @@ public class Goal {
         if (orderIndex == null || orderIndex < 1) {
             throw new IllegalArgumentException("Order index must be a positive integer");
         }
+        if (quarter != null && (quarter < 1 || quarter > 4)) {
+            throw new IllegalArgumentException("Quarter must be between 1 and 4");
+        }
+        if (year != null && year < 2000) {
+            throw new IllegalArgumentException("Year must be 2000 or later");
+        }
 
         Goal goal = new Goal();
         goal.lifeDomainId = lifeDomainId;
         goal.titleNl = (titleNl != null && !titleNl.trim().isEmpty()) ? titleNl : titleEn;
         goal.titleEn = (titleEn != null && !titleEn.trim().isEmpty()) ? titleEn : titleNl;
         goal.orderIndex = orderIndex;
+        goal.quarter = quarter;
+        goal.year = year;
         goal.createdAt = LocalDateTime.now();
         goal.updatedAt = LocalDateTime.now();
         return goal;
@@ -78,6 +90,8 @@ public class Goal {
     public String getDescriptionNl() { return descriptionNl; }
     public String getDescriptionEn() { return descriptionEn; }
     public Integer getOrderIndex() { return orderIndex; }
+    public Integer getQuarter() { return quarter; }
+    public Integer getYear() { return year; }
     public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
@@ -90,6 +104,8 @@ public class Goal {
     public void setDescriptionNl(String descriptionNl) { this.descriptionNl = descriptionNl; }
     public void setDescriptionEn(String descriptionEn) { this.descriptionEn = descriptionEn; }
     public void setOrderIndex(Integer orderIndex) { this.orderIndex = orderIndex; }
+    public void setQuarter(Integer quarter) { this.quarter = quarter; }
+    public void setYear(Integer year) { this.year = year; }
     public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

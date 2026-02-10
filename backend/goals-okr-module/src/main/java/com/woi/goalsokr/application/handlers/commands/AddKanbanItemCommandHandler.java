@@ -37,7 +37,12 @@ public class AddKanbanItemCommandHandler {
         }
 
         // Check if item already exists
-        ItemType itemType = ItemType.valueOf(command.itemType());
+        ItemType itemType;
+        try {
+            itemType = ItemType.valueOf(command.itemType());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid item type: " + command.itemType() + ". Must be one of: GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE");
+        }
         kanbanItemRepository.findByUserIdAndItemTypeAndItemId(
             command.userId(),
             itemType,
