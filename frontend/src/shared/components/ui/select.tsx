@@ -29,6 +29,11 @@ function Select({ value, onValueChange, children }: SelectProps) {
     if (open) {
       const handleClickOutside = (event: MouseEvent) => {
         const target = event.target as HTMLElement
+        // Check if click is on the trigger button itself - if so, don't close
+        const isTrigger = containerRef.current?.querySelector('button')?.contains(target)
+        if (isTrigger) {
+          return
+        }
         // Check if click is outside both the container and the portal content
         const isOutsideContainer = containerRef.current && !containerRef.current.contains(target)
         const isOutsidePortal = !target.closest(`[data-select-content="${selectId}"]`)
@@ -36,8 +41,9 @@ function Select({ value, onValueChange, children }: SelectProps) {
           setOpen(false)
         }
       }
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
+      // Use click instead of mousedown to avoid conflicts with button clicks
+      document.addEventListener('click', handleClickOutside, true)
+      return () => document.removeEventListener('click', handleClickOutside, true)
     }
   }, [open, selectId])
 
@@ -54,11 +60,18 @@ interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   children: React.ReactNode
 }
 
-function SelectTrigger({ className, children, ...props }: SelectTriggerProps) {
+function SelectTrigger({ className, children, onClick, ...props }: SelectTriggerProps) {
   const context = React.useContext(SelectContext)
   
   if (!context) {
     throw new Error('SelectTrigger must be used within Select')
+  }
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    context.setOpen(!context.open)
+    onClick?.(e)
   }
 
   return (
@@ -68,7 +81,7 @@ function SelectTrigger({ className, children, ...props }: SelectTriggerProps) {
         "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
-      onClick={() => context.setOpen(!context.open)}
+      onClick={handleClick}
       {...props}
     >
       {children}
@@ -92,15 +105,22 @@ function SelectTrigger({ className, children, ...props }: SelectTriggerProps) {
 
 interface SelectValueProps {
   placeholder?: string
+  children?: React.ReactNode
 }
 
-function SelectValue({ placeholder }: SelectValueProps) {
+function SelectValue({ placeholder, children }: SelectValueProps) {
   const context = React.useContext(SelectContext)
   
   if (!context) {
     throw new Error('SelectValue must be used within Select')
   }
 
+  // If children are provided, use them (for custom labels)
+  if (children) {
+    return <span>{children}</span>
+  }
+
+  // Otherwise use value or placeholder
   return <span>{context.value || placeholder}</span>
 }
 
@@ -110,21 +130,14 @@ interface SelectContentProps {
 
 function SelectContent({ children }: SelectContentProps) {
   const context = React.useContext(SelectContext)
-  const [position, setPosition] = React.useState({ top: 0, left: 0, width: 0 })
+  const [position, setPosition] = React.useState<{ top: number; left: number; width: number } | null>(null)
   const contentRef = React.useRef<HTMLDivElement | null>(null)
-  const [mounted, setMounted] = React.useState(false)
   
   if (!context) {
     throw new Error('SelectContent must be used within Select')
   }
 
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const updatePosition = React.useCallback(() => {
-    if (!context.open || !mounted) return
-    
+  const calculatePosition = React.useCallback(() => {
     // Find the trigger element using the selectId
     const selectContainer = document.querySelector(`[data-select="${context.selectId}"]`)
     if (selectContainer) {
@@ -170,20 +183,56 @@ function SelectContent({ children }: SelectContentProps) {
           left = 8
         }
         
-        setPosition({
+        return {
           top,
           left,
-          width: rect.width,
-        })
+          width: Math.max(rect.width, 200),
+        }
       }
     }
-  }, [context.open, context.selectId, mounted])
+    return null
+  }, [context.selectId])
 
-  React.useEffect(() => {
-    if (context.open && mounted) {
-      updatePosition()
+  // Calculate position immediately when opening (useLayoutEffect runs synchronously before paint)
+  React.useLayoutEffect(() => {
+    if (context.open) {
+      // Always set a fallback position first to ensure dropdown is visible
+      const fallbackPosition = {
+        top: typeof window !== 'undefined' ? window.innerHeight / 2 + window.scrollY : 0,
+        left: typeof window !== 'undefined' ? window.innerWidth / 2 : 0,
+        width: 200,
+      }
+      setPosition(fallbackPosition)
       
-      // Update position on scroll and resize
+      // Then try to calculate the actual position
+      const newPosition = calculatePosition()
+      if (newPosition) {
+        setPosition(newPosition)
+      } else {
+        // If position calculation fails, try again on next frame
+        const frameId = requestAnimationFrame(() => {
+          const retryPosition = calculatePosition()
+          if (retryPosition) {
+            setPosition(retryPosition)
+          }
+        })
+        return () => cancelAnimationFrame(frameId)
+      }
+    } else {
+      setPosition(null)
+    }
+  }, [context.open, calculatePosition])
+
+  // Update position on scroll and resize
+  React.useEffect(() => {
+    if (context.open && position) {
+      const updatePosition = () => {
+        const newPosition = calculatePosition()
+        if (newPosition) {
+          setPosition(newPosition)
+        }
+      }
+      
       window.addEventListener('scroll', updatePosition, true)
       window.addEventListener('resize', updatePosition)
       
@@ -192,19 +241,49 @@ function SelectContent({ children }: SelectContentProps) {
         window.removeEventListener('resize', updatePosition)
       }
     }
-  }, [context.open, mounted, updatePosition])
+  }, [context.open, position, calculatePosition])
 
-  if (!context.open || !mounted) return null
+  // Render dropdown immediately when open, even if position is not yet calculated
+  if (!context.open) return null
+
+  // Use a fallback position if position is not yet calculated
+  // This ensures the dropdown is always visible, even if position calculation fails
+  const finalPosition = position || (() => {
+    // Try to get trigger position as fallback
+    if (typeof window !== 'undefined') {
+      const selectContainer = document.querySelector(`[data-select="${context.selectId}"]`)
+      if (selectContainer) {
+        const trigger = selectContainer.querySelector('button')
+        if (trigger) {
+          const rect = trigger.getBoundingClientRect()
+          return {
+            top: rect.bottom + window.scrollY + 4,
+            left: rect.left + window.scrollX,
+            width: Math.max(rect.width, 200),
+          }
+        }
+      }
+    }
+    // Last resort: center of viewport
+    return {
+      top: typeof window !== 'undefined' ? window.innerHeight / 2 + window.scrollY : 0,
+      left: typeof window !== 'undefined' ? window.innerWidth / 2 : 0,
+      width: 200,
+    }
+  })()
 
   const content = (
     <div
       ref={contentRef}
       data-select-content={context.selectId}
-      className="fixed z-[9999] min-w-[8rem] overflow-hidden rounded-md border bg-background border-border shadow-lg"
+      className="fixed z-[100000] min-w-[8rem] overflow-hidden rounded-md border bg-popover border-border shadow-lg"
       style={{
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        width: `${position.width}px`,
+        top: `${finalPosition.top}px`,
+        left: `${finalPosition.left}px`,
+        width: `${finalPosition.width}px`,
+        pointerEvents: 'auto',
+        opacity: 1,
+        transition: 'opacity 0.1s ease-in-out',
       }}
     >
       <div className="p-1">
@@ -230,6 +309,16 @@ function SelectItem({ value, children, className, ...props }: SelectItemProps) {
 
   const isSelected = context.value === value
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    context.onValueChange(value)
+    // Use setTimeout to ensure onValueChange is called before closing
+    setTimeout(() => {
+      context.setOpen(false)
+    }, 0)
+  }
+
   return (
     <button
       type="button"
@@ -238,9 +327,10 @@ function SelectItem({ value, children, className, ...props }: SelectItemProps) {
         isSelected && "bg-accent",
         className
       )}
-      onClick={() => {
-        context.onValueChange(value)
-        context.setOpen(false)
+      onClick={handleClick}
+      onMouseDown={(e) => {
+        // Prevent mousedown from closing the dropdown before onClick fires
+        e.preventDefault()
       }}
       {...props}
     >

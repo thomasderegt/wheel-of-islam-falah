@@ -11,7 +11,10 @@
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { getCategoryByNumber } from '@/features/content/api/contentApi'
+import { useContentWheelByKey } from '@/features/content/hooks/useWheels'
+import { useCategoriesByWheelId } from '@/features/content/hooks/useCategoriesByWheel'
 import { useTheme } from '@/shared/contexts/ThemeContext'
+import { useModeContext } from '@/shared/hooks/useModeContext'
 
 interface CircleOption {
   id: string
@@ -35,38 +38,72 @@ export function NavCategoryCircle() {
   const language = 'en' as 'nl' | 'en' // TODO: Add language context later
   const { userGroup } = useTheme()
   const isUniversalTheme = !userGroup || userGroup === 'universal'
+  const { contentContext } = useModeContext()
 
-  const { data: category1, isLoading: isLoading1 } = useQuery({
+  // Content Context is always SUCCESS, so always show
+  // This component is for Content (Wheel of Islam)
+  if (contentContext !== 'SUCCESS') {
+    return null
+  }
+
+  // Get Wheel of Islam
+  const { data: wheelOfIslam, isLoading: isLoadingWheel } = useContentWheelByKey('WHEEL_OF_ISLAM')
+  
+  // Get categories by wheel ID
+  const { data: categories, isLoading: isLoadingCategories } = useCategoriesByWheelId(wheelOfIslam?.id ?? null)
+
+  // Find categories by number (fallback to old method if wheel not found)
+  const category0 = categories?.find(c => c.categoryNumber === 0)
+  const category1 = categories?.find(c => c.categoryNumber === 1)
+  const category2 = categories?.find(c => c.categoryNumber === 2)
+  const category3 = categories?.find(c => c.categoryNumber === 3)
+  const category4 = categories?.find(c => c.categoryNumber === 4)
+
+  // Fallback: use old method if wheel not loaded yet
+  const { data: category1Fallback, isLoading: isLoading1 } = useQuery({
     queryKey: ['categoryByNumber', 1],
     queryFn: () => getCategoryByNumber(1),
+    enabled: !category1 && !isLoadingCategories,
   })
 
-  const { data: category2, isLoading: isLoading2 } = useQuery({
+  const { data: category2Fallback, isLoading: isLoading2 } = useQuery({
     queryKey: ['categoryByNumber', 2],
     queryFn: () => getCategoryByNumber(2),
+    enabled: !category2 && !isLoadingCategories,
   })
 
-  const { data: category3, isLoading: isLoading3 } = useQuery({
+  const { data: category3Fallback, isLoading: isLoading3 } = useQuery({
     queryKey: ['categoryByNumber', 3],
     queryFn: () => getCategoryByNumber(3),
+    enabled: !category3 && !isLoadingCategories,
   })
 
-  const { data: category4, isLoading: isLoading4 } = useQuery({
+  const { data: category4Fallback, isLoading: isLoading4 } = useQuery({
     queryKey: ['categoryByNumber', 4],
     queryFn: () => getCategoryByNumber(4),
+    enabled: !category4 && !isLoadingCategories,
   })
 
-  const { data: centerCategory, isLoading: isLoadingFalah } = useQuery({
+  const { data: centerCategoryFallback, isLoading: isLoadingFalah } = useQuery({
     queryKey: ['categoryByNumber', 0],
     queryFn: () => getCategoryByNumber(0),
+    enabled: !category0 && !isLoadingCategories,
   })
+
+  // Use wheel categories if available, otherwise fallback
+  const finalCategory1 = category1 || category1Fallback
+  const finalCategory2 = category2 || category2Fallback
+  const finalCategory3 = category3 || category3Fallback
+  const finalCategory4 = category4 || category4Fallback
+  const finalCenterCategory = category0 || centerCategoryFallback
 
   // Helper function to round to avoid hydration mismatches
   const round = (num: number, decimals: number = 10) => 
     Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals)
 
   // Don't render until all categories are loaded
-  if (isLoading1 || isLoading2 || isLoading3 || isLoading4 || isLoadingFalah || !category1 || !category2 || !category3 || !category4 || !centerCategory) {
+  const isLoading = isLoadingWheel || isLoadingCategories || isLoading1 || isLoading2 || isLoading3 || isLoading4 || isLoadingFalah
+  if (isLoading || !finalCategory1 || !finalCategory2 || !finalCategory3 || !finalCategory4 || !finalCenterCategory) {
     return (
       <div className="w-full">
         <div className="relative w-full aspect-square flex items-center justify-center">
@@ -78,39 +115,39 @@ export function NavCategoryCircle() {
 
   const ringCategories: CircleOption[] = [
     {
-      id: `category-${category4.id}`,
-      titleEn: category4.titleEn,
-      titleNl: category4.titleNl,
-      subtitleEn: category4.subtitleEn,
-      subtitleNl: category4.subtitleNl,
-      categoryNumber: category4.categoryNumber ?? 4,
+      id: `category-${finalCategory4.id}`,
+      titleEn: finalCategory4.titleEn,
+      titleNl: finalCategory4.titleNl,
+      subtitleEn: finalCategory4.subtitleEn,
+      subtitleNl: finalCategory4.subtitleNl,
+      categoryNumber: finalCategory4.categoryNumber ?? 4,
       colorVar: '--circular-menu-chapter-9'
     },
     {
-      id: `category-${category3.id}`,
-      titleEn: category3.titleEn,
-      titleNl: category3.titleNl,
-      subtitleEn: category3.subtitleEn,
-      subtitleNl: category3.subtitleNl,
-      categoryNumber: category3.categoryNumber ?? 3,
+      id: `category-${finalCategory3.id}`,
+      titleEn: finalCategory3.titleEn,
+      titleNl: finalCategory3.titleNl,
+      subtitleEn: finalCategory3.subtitleEn,
+      subtitleNl: finalCategory3.subtitleNl,
+      categoryNumber: finalCategory3.categoryNumber ?? 3,
       colorVar: '--circular-menu-chapter-7'
     },
     {
-      id: `category-${category2.id}`,
-      titleEn: category2.titleEn,
-      titleNl: category2.titleNl,
-      subtitleEn: category2.subtitleEn,
-      subtitleNl: category2.subtitleNl,
-      categoryNumber: category2.categoryNumber ?? 2,
+      id: `category-${finalCategory2.id}`,
+      titleEn: finalCategory2.titleEn,
+      titleNl: finalCategory2.titleNl,
+      subtitleEn: finalCategory2.subtitleEn,
+      subtitleNl: finalCategory2.subtitleNl,
+      categoryNumber: finalCategory2.categoryNumber ?? 2,
       colorVar: '--circular-menu-chapter-4'
     },
     {
-      id: `category-${category1.id}`,
-      titleEn: category1.titleEn,
-      titleNl: category1.titleNl,
-      subtitleEn: category1.subtitleEn,
-      subtitleNl: category1.subtitleNl,
-      categoryNumber: category1.categoryNumber ?? 1,
+      id: `category-${finalCategory1.id}`,
+      titleEn: finalCategory1.titleEn,
+      titleNl: finalCategory1.titleNl,
+      subtitleEn: finalCategory1.subtitleEn,
+      subtitleNl: finalCategory1.subtitleNl,
+      categoryNumber: finalCategory1.categoryNumber ?? 1,
       colorVar: '--circular-menu-chapter-0'
     }
   ]
@@ -400,10 +437,10 @@ export function NavCategoryCircle() {
                 style={{ fontSize: '24px', fontWeight: 'bold' }}
               >
                 {language === 'nl' 
-                  ? centerCategory.titleNl
-                  : centerCategory.titleEn}
+                  ? finalCenterCategory.titleNl
+                  : finalCenterCategory.titleEn}
               </text>
-              {(language === 'nl' ? centerCategory.subtitleNl : centerCategory.subtitleEn) && (
+              {(language === 'nl' ? finalCenterCategory.subtitleNl : finalCenterCategory.subtitleEn) && (
                 <text
                   x="200"
                   y="210"
@@ -413,8 +450,8 @@ export function NavCategoryCircle() {
                   style={{ fontSize: '14px', opacity: 0.8 }}
                 >
                   {language === 'nl' 
-                    ? centerCategory.subtitleNl
-                    : centerCategory.subtitleEn}
+                    ? finalCenterCategory.subtitleNl
+                    : finalCenterCategory.subtitleEn}
                 </text>
               )}
             </g>

@@ -7,6 +7,8 @@ import {
   RegisterResponse,
   RefreshTokenResponse,
   UserResponse,
+  UserPreferenceResponse,
+  UpdateUserPreferencesRequest,
 } from '@/shared/api/types'
 
 /**
@@ -53,6 +55,28 @@ export const authApi = {
   logout(): void {
     // Tokens are cleared by auth store
     // No API call needed (stateless JWT)
+  },
+
+  /**
+   * Get user preferences
+   */
+  async getUserPreferences(userId: number): Promise<UserPreferenceResponse> {
+    const response = await apiClient.get<UserPreferenceResponse>(`/api/v2/user/${userId}/preferences`)
+    return response.data
+  },
+
+  /**
+   * Update user preferences
+   */
+  async updateUserPreferences(
+    userId: number,
+    data: UpdateUserPreferencesRequest
+  ): Promise<UserPreferenceResponse> {
+    const response = await apiClient.put<UserPreferenceResponse>(
+      `/api/v2/user/${userId}/preferences`,
+      data
+    )
+    return response.data
   },
 }
 

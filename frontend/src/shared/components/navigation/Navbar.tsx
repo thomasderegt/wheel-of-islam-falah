@@ -39,11 +39,11 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
 
   // Get page title based on pathname
   const getPageTitle = () => {
-    if (pathname === '/home') return 'Success-Mode'
-    if (pathname.startsWith('/goals-okr/insight')) return 'Insight-Mode'
-    if (pathname.startsWith('/goals-okr/execute')) return 'Execute-Mode'
-    if (pathname.startsWith('/goals-okr/kanban')) return 'Progress-Mode'
-    if (pathname.startsWith('/goals-okr')) return 'Goal-Mode'
+    if (pathname === '/home') return 'Success'
+    if (pathname.startsWith('/goals-okr/insight')) return 'Insight'
+    if (pathname.startsWith('/goals-okr/execute')) return 'Execute'
+    if (pathname.startsWith('/goals-okr/kanban')) return 'Progress'
+    if (pathname.startsWith('/goals-okr')) return 'Goal'
     return null
   }
 
@@ -201,7 +201,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
 
       {/* Bottom Navigation Bar - Always visible */}
       {isAuthenticated && (
-        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="fixed bottom-0 left-0 right-0 bg-background backdrop-blur-md border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="flex items-center justify-around px-2 py-2 max-w-6xl mx-auto">
             {bottomNavItems.map((item) => {
               const Icon = item.icon

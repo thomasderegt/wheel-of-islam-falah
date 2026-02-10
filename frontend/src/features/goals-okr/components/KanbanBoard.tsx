@@ -8,7 +8,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
-import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getUserGoal } from '../api/goalsOkrApi'
+import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult } from '../api/goalsOkrApi'
 import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO, LifeDomainDTO } from '../api/goalsOkrApi'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
@@ -352,7 +352,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
 
   // Get target wheelId from goalsOkrContext
   const targetWheelId = useMemo(() => {
-    if (goalsOkrContext === 'NONE') return null
+    if (goalsOkrContext === 'NONE' || goalsOkrContext === 'ALL') return null
     return getWheelIdFromGoalsOkrContext(goalsOkrContext, wheels)
   }, [goalsOkrContext, wheels])
 
@@ -365,17 +365,18 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       return []
     }
     
+    // If goalsOkrContext is ALL, show items from all wheels (no wheelId filtering)
+    
     let filtered = kanbanItems
     
     // Filter by showInitiatives toggle (if enabled, only show INITIATIVE items)
-    // If disabled, only show OKR items (GOAL, USER_GOAL, OBJECTIVE, KEY_RESULT)
+    // If disabled, only show OKR items (GOAL, OBJECTIVE, KEY_RESULT)
     if (filters.showInitiatives) {
       filtered = filtered.filter(item => item.itemType === 'INITIATIVE')
     } else {
       // Show only OKR items (exclude INITIATIVE)
       filtered = filtered.filter(item => 
         item.itemType === 'GOAL' || 
-        item.itemType === 'USER_GOAL' ||
         item.itemType === 'OBJECTIVE' || 
         item.itemType === 'KEY_RESULT'
       )
@@ -395,8 +396,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       })
     }
     
-    // Filter by goalsOkrContext (wheelId) - ALWAYS apply this filter
-    if (targetWheelId && itemLifeDomainIds.size > 0 && lifeDomainIdToWheelId.size > 0) {
+    // Filter by goalsOkrContext (wheelId) - Skip if ALL (show all wheels)
+    if (goalsOkrContext !== 'ALL' && targetWheelId && itemLifeDomainIds.size > 0 && lifeDomainIdToWheelId.size > 0) {
       filtered = filtered.filter(item => {
         const compoundKey = `${item.itemType}-${item.itemId}`
         const lifeDomainId = itemLifeDomainIds.get(compoundKey)
@@ -472,18 +473,6 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
               // Store user instance number
               if (userGoalInstance.number) {
                 numbers.set(`${item.itemType}-${item.itemId}`, userGoalInstance.number)
-              }
-              break
-            }
-            case 'USER_GOAL': {
-              // item.itemId is a userGoalId (UserGoal, not UserGoalInstance)
-              const userGoal = await getUserGoal(item.itemId)
-              if (isCancelled) return
-              title = userGoal.title
-              lifeDomainId = userGoal.lifeDomainId || undefined
-              // Store user goal number
-              if (userGoal.number) {
-                numbers.set(`${item.itemType}-${item.itemId}`, userGoal.number)
               }
               break
             }
@@ -770,10 +759,6 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     switch (item.itemType) {
       case 'GOAL':
         router.push(`/goals-okr/user-goal-instances/${item.itemId}`)
-        break
-      case 'USER_GOAL':
-        // Navigate to user goal page (if it exists) or stay on kanban for now
-        // TODO: Create user goal detail page
         break
       case 'OBJECTIVE':
         router.push(`/goals-okr/user-objective-instances/${item.itemId}`)

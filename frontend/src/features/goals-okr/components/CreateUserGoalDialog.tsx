@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/features/auth'
-import { useCreateUserGoal } from '../hooks/useUserGoals'
+import { useCreatePersonalGoal } from '../hooks/useUserGoals'
 import { useLifeDomains } from '../hooks/useLifeDomains'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
 import { Button } from '@/shared/components/ui/button'
@@ -24,7 +24,7 @@ export function CreateUserGoalDialog({
   onSuccess 
 }: CreateUserGoalDialogProps) {
   const { user } = useAuth()
-  const createUserGoal = useCreateUserGoal()
+  const createPersonalGoal = useCreatePersonalGoal()
   const { data: lifeDomains } = useLifeDomains()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -36,10 +36,10 @@ export function CreateUserGoalDialog({
     e.preventDefault()
     if (!user?.id || !title.trim()) return
 
-    createUserGoal.mutate(
+    createPersonalGoal.mutate(
       {
         userId: user.id,
-        lifeDomainId,
+        lifeDomainId, // Required for personal goals
         title: title.trim(),
         description: description.trim() || undefined,
       },
@@ -90,7 +90,7 @@ export function CreateUserGoalDialog({
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Learn Arabic in 6 months"
                 required
-                disabled={createUserGoal.isPending}
+                disabled={createPersonalGoal.isPending}
                 autoFocus
               />
             </div>
@@ -103,7 +103,7 @@ export function CreateUserGoalDialog({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description of your goal..."
                 rows={3}
-                disabled={createUserGoal.isPending}
+                disabled={createPersonalGoal.isPending}
               />
             </div>
           </div>
@@ -113,15 +113,15 @@ export function CreateUserGoalDialog({
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={createUserGoal.isPending}
+              disabled={createPersonalGoal.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createUserGoal.isPending || !title.trim()}
+              disabled={createPersonalGoal.isPending || !title.trim()}
             >
-              {createUserGoal.isPending ? 'Creating...' : 'Create Goal'}
+              {createPersonalGoal.isPending ? 'Creating...' : 'Create Goal'}
             </Button>
           </DialogFooter>
         </form>

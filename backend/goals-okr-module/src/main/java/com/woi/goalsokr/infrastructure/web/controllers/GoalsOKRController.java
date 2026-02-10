@@ -80,15 +80,7 @@ public class GoalsOKRController {
     private final com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository;
     
     // User-specific command handlers
-    private final CreateUserGoalCommandHandler createUserGoalHandler;
-    private final CreateUserObjectiveCommandHandler createUserObjectiveHandler;
-    private final CreateUserKeyResultCommandHandler createUserKeyResultHandler;
-    
-    // User-specific query handlers
-    private final GetUserGoalsByUserQueryHandler getUserGoalsByUserHandler;
-    private final GetUserGoalQueryHandler getUserGoalHandler;
-    private final GetUserObjectivesByUserGoalQueryHandler getUserObjectivesByUserGoalHandler;
-    private final GetUserKeyResultsByUserObjectiveQueryHandler getUserKeyResultsByUserObjectiveHandler;
+    private final CreatePersonalGoalCommandHandler createPersonalGoalHandler;
 
     public GoalsOKRController(
             CreateGoalCommandHandler createGoalHandler,
@@ -138,13 +130,8 @@ public class GoalsOKRController {
             com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository,
-            CreateUserGoalCommandHandler createUserGoalHandler,
-            CreateUserObjectiveCommandHandler createUserObjectiveHandler,
-            CreateUserKeyResultCommandHandler createUserKeyResultHandler,
-            GetUserGoalsByUserQueryHandler getUserGoalsByUserHandler,
-            GetUserGoalQueryHandler getUserGoalHandler,
-            GetUserObjectivesByUserGoalQueryHandler getUserObjectivesByUserGoalHandler,
-            GetUserKeyResultsByUserObjectiveQueryHandler getUserKeyResultsByUserObjectiveHandler) {
+            CreatePersonalGoalCommandHandler createPersonalGoalHandler
+) {
         this.createGoalHandler = createGoalHandler;
         this.updateGoalHandler = updateGoalHandler;
         this.createObjectiveHandler = createObjectiveHandler;
@@ -192,13 +179,7 @@ public class GoalsOKRController {
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
-        this.createUserGoalHandler = createUserGoalHandler;
-        this.createUserObjectiveHandler = createUserObjectiveHandler;
-        this.createUserKeyResultHandler = createUserKeyResultHandler;
-        this.getUserGoalsByUserHandler = getUserGoalsByUserHandler;
-        this.getUserGoalHandler = getUserGoalHandler;
-        this.getUserObjectivesByUserGoalHandler = getUserObjectivesByUserGoalHandler;
-        this.getUserKeyResultsByUserObjectiveHandler = getUserKeyResultsByUserObjectiveHandler;
+        this.createPersonalGoalHandler = createPersonalGoalHandler;
     }
 
     // ========== Wheels ==========
@@ -1131,25 +1112,28 @@ public class GoalsOKRController {
         }
     }
 
-    // ========== User-Specific Goals ==========
+    // ========== Personal Goals ==========
 
     /**
-     * Create a new user-specific goal
-     * POST /api/v2/goals-okr/users/{userId}/user-goals
+     * Create a new personal goal (Goal template + UserGoalInstance + Kanban item)
+     * POST /api/v2/goals-okr/users/{userId}/personal-goals
+     * 
+     * This is the new approach: creates a Goal template, starts a UserGoalInstance,
+     * and adds it to the kanban board automatically.
      */
-    @PostMapping("/users/{userId}/user-goals")
+    @PostMapping("/users/{userId}/personal-goals")
     @Transactional
-    public ResponseEntity<?> createUserGoal(
+    public ResponseEntity<?> createPersonalGoal(
             @PathVariable Long userId,
-            @Valid @RequestBody CreateUserGoalRequest request) {
+            @Valid @RequestBody CreatePersonalGoalRequest request) {
         try {
-            CreateUserGoalCommand command = new CreateUserGoalCommand(
+            CreatePersonalGoalCommand command = new CreatePersonalGoalCommand(
                 userId,
                 request.lifeDomainId(),
                 request.title(),
                 request.description()
             );
-            UserGoalResult result = createUserGoalHandler.handle(command);
+            UserGoalInstanceResult result = createPersonalGoalHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -1160,116 +1144,4 @@ public class GoalsOKRController {
         }
     }
 
-    /**
-     * Get all user-specific goals for a user
-     * GET /api/v2/goals-okr/users/{userId}/user-goals
-     */
-    @GetMapping("/users/{userId}/user-goals")
-    public ResponseEntity<List<UserGoalResult>> getUserGoals(@PathVariable Long userId) {
-        List<UserGoalResult> results = getUserGoalsByUserHandler.handle(
-            new GetUserGoalsByUserQuery(userId));
-        return ResponseEntity.ok(results);
-    }
-
-    /**
-     * Get a user-specific goal by ID
-     * GET /api/v2/goals-okr/user-goals/{userGoalId}
-     */
-    @GetMapping("/user-goals/{userGoalId}")
-    public ResponseEntity<?> getUserGoal(@PathVariable Long userGoalId) {
-        try {
-            Optional<UserGoalResult> result = getUserGoalHandler.handle(
-                new GetUserGoalQuery(userGoalId));
-            return result.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    // ========== User-Specific Objectives ==========
-
-    /**
-     * Create a new user-specific objective
-     * POST /api/v2/goals-okr/users/{userId}/user-objectives
-     */
-    @PostMapping("/users/{userId}/user-objectives")
-    @Transactional
-    public ResponseEntity<?> createUserObjective(
-            @PathVariable Long userId,
-            @Valid @RequestBody CreateUserObjectiveRequest request) {
-        try {
-            CreateUserObjectiveCommand command = new CreateUserObjectiveCommand(
-                userId,
-                request.userGoalId(),
-                request.title(),
-                request.description()
-            );
-            UserObjectiveResult result = createUserObjectiveHandler.handle(command);
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    /**
-     * Get all user-specific objectives for a user goal
-     * GET /api/v2/goals-okr/user-goals/{userGoalId}/user-objectives
-     */
-    @GetMapping("/user-goals/{userGoalId}/user-objectives")
-    public ResponseEntity<List<UserObjectiveResult>> getUserObjectivesByUserGoal(
-            @PathVariable Long userGoalId) {
-        List<UserObjectiveResult> results = getUserObjectivesByUserGoalHandler.handle(
-            new GetUserObjectivesByUserGoalQuery(userGoalId));
-        return ResponseEntity.ok(results);
-    }
-
-    // ========== User-Specific Key Results ==========
-
-    /**
-     * Create a new user-specific key result
-     * POST /api/v2/goals-okr/users/{userId}/user-key-results
-     */
-    @PostMapping("/users/{userId}/user-key-results")
-    @Transactional
-    public ResponseEntity<?> createUserKeyResult(
-            @PathVariable Long userId,
-            @Valid @RequestBody CreateUserKeyResultRequest request) {
-        try {
-            CreateUserKeyResultCommand command = new CreateUserKeyResultCommand(
-                userId,
-                request.userObjectiveId(),
-                request.title(),
-                request.description(),
-                request.targetValue(),
-                request.unit()
-            );
-            UserKeyResultResult result = createUserKeyResultHandler.handle(command);
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    /**
-     * Get all user-specific key results for a user objective
-     * GET /api/v2/goals-okr/user-objectives/{userObjectiveId}/user-key-results
-     */
-    @GetMapping("/user-objectives/{userObjectiveId}/user-key-results")
-    public ResponseEntity<List<UserKeyResultResult>> getUserKeyResultsByUserObjective(
-            @PathVariable Long userObjectiveId) {
-        List<UserKeyResultResult> results = getUserKeyResultsByUserObjectiveHandler.handle(
-            new GetUserKeyResultsByUserObjectiveQuery(userObjectiveId));
-        return ResponseEntity.ok(results);
-    }
 }

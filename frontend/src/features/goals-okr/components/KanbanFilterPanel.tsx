@@ -44,15 +44,18 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
 
   // Get target wheelId from goalsOkrContext
   const targetWheelId = useMemo(() => {
-    if (goalsOkrContext === 'NONE') return null
+    if (goalsOkrContext === 'NONE' || goalsOkrContext === 'ALL') return null
     return getWheelIdFromGoalsOkrContext(goalsOkrContext, wheels)
   }, [goalsOkrContext, wheels])
 
   // Filter life domains by target wheelId (based on goalsOkrContext)
+  // If ALL, show all life domains (no filtering)
   const filteredLifeDomains = useMemo(() => {
-    if (!lifeDomains || !targetWheelId) return []
+    if (!lifeDomains) return []
+    if (goalsOkrContext === 'ALL') return lifeDomains // Show all domains for ALL
+    if (!targetWheelId) return []
     return lifeDomains.filter(domain => domain.wheelId === targetWheelId)
-  }, [lifeDomains, targetWheelId])
+  }, [lifeDomains, targetWheelId, goalsOkrContext])
 
   // Reset lifeDomainId filter if it's not in the filtered domains
   useEffect(() => {

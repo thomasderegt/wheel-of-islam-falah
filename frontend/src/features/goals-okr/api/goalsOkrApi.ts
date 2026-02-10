@@ -858,8 +858,34 @@ export interface UserGoalDTO {
 }
 
 /**
- * Create a user-specific goal
+ * Create a personal goal (Goal template + UserGoalInstance + Kanban item)
+ * POST /api/v2/goals-okr/users/{userId}/personal-goals
+ * 
+ * This is the new approach: creates a Goal template, starts a UserGoalInstance,
+ * and adds it to the kanban board automatically.
+ * 
+ * Returns: UserGoalInstanceDTO (not UserGoalDTO)
+ */
+export async function createPersonalGoal(
+  userId: number,
+  request: {
+    lifeDomainId: number
+    title: string
+    description?: string
+  }
+): Promise<UserGoalInstanceDTO> {
+  const response = await apiClient.post<UserGoalInstanceDTO>(
+    `/api/v2/goals-okr/users/${userId}/personal-goals`,
+    request
+  )
+  return response.data
+}
+
+/**
+ * Create a user-specific goal (OLD APPROACH - kept for backward compatibility)
  * POST /api/v2/goals-okr/users/{userId}/user-goals
+ * 
+ * @deprecated Use createPersonalGoal instead
  */
 export async function createUserGoal(
   userId: number,

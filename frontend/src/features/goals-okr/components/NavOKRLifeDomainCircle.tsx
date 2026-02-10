@@ -39,31 +39,37 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
   const [ringDomains, setRingDomains] = useState<LifeDomainDTO[]>([])
   const [ringRotation, setRingRotation] = useState(0)
 
+  // Extract wheelId from URL to use in dependency array (avoids searchParams object size changes)
+  const wheelIdFromUrl = searchParams?.get('wheelId') ?? null
+  const hasSearchParams = searchParams !== null
+
   // Set wheel from URL query parameter or default to Wheel of Life
   useEffect(() => {
     if (!wheels || wheels.length === 0) return
     
     // Check for wheelId in URL query parameter (always respect URL)
-    const wheelIdParam = searchParams?.get('wheelId')
-    if (wheelIdParam) {
-      const wheelId = Number(wheelIdParam)
+    if (wheelIdFromUrl) {
+      const wheelId = Number(wheelIdFromUrl)
       const wheel = wheels.find(w => w.id === wheelId)
       if (wheel && selectedWheelId !== wheel.id) {
         setSelectedWheelId(wheel.id)
         return
       }
-    } else if (selectedWheelId === null) {
+    } else {
       // Only set default if no wheelId in URL and no wheel selected yet
-      // Default to Wheel of Life
-      const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
-      if (wheelOfLife) {
-        setSelectedWheelId(wheelOfLife.id)
-      } else if (wheels.length > 0) {
-        // Fallback to first wheel if WHEEL_OF_LIFE not found
-        setSelectedWheelId(wheels[0].id)
+      // But wait until searchParams is definitely available (not undefined)
+      if (hasSearchParams && selectedWheelId === null) {
+        // Default to Wheel of Life
+        const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
+        if (wheelOfLife) {
+          setSelectedWheelId(wheelOfLife.id)
+        } else if (wheels.length > 0) {
+          // Fallback to first wheel if WHEEL_OF_LIFE not found
+          setSelectedWheelId(wheels[0].id)
+        }
       }
     }
-  }, [wheels, searchParams])
+  }, [wheels, wheelIdFromUrl, hasSearchParams, selectedWheelId])
 
   // Filter life domains by selected wheel
   const filteredDomains = useMemo(() => {

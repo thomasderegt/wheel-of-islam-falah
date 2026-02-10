@@ -4,14 +4,20 @@
  * Bottom Navigation Component
  * 
  * Bottom navigation bar for authenticated users
+ * 
+ * Navigation logic:
+ * - Content Context: always SUCCESS (always active)
+ * - Goals-OKR Context: LIFE/WORK/BUSINESS/NONE (via user preference)
+ * - If Goals-OKR context is NONE: Show only Succes + MySpace + User + Uitloggen
+ * - If Goals-OKR context is LIFE/WORK/BUSINESS: Show Succes + Goal + Execute + Insight + MySpace + User + Uitloggen
  */
 
-import { useEffect } from 'react'
-import { usePathname } from 'next/navigation'
+import { useEffect, useMemo } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
-import { useRouter } from 'next/navigation'
+import { useModeContext } from '@/shared/hooks/useModeContext'
 import { Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
 
 export function BottomNav() {
@@ -19,11 +25,13 @@ export function BottomNav() {
   const pathname = usePathname()
   const { isAuthenticated, user } = useAuth()
   const logout = useLogout()
+  const { goalsOkrContext } = useModeContext()
 
   const handleLogout = () => {
     logout()
     router.push('/')
   }
+
 
   // Check if a path is active (including sub-routes)
   const isActive = (path: string) => {
@@ -42,14 +50,34 @@ export function BottomNav() {
     return pathname.startsWith(path)
   }
 
-  // Bottom navigation items
-  const bottomNavItems = [
-    { href: '/home', label: 'Succes', icon: Star },
-    { href: '/goals-okr', label: 'Goal', icon: Target },
-    { href: '/goals-okr/execute', label: 'Execute', icon: TrendingUp },
-    { href: '/goals-okr/insight', label: 'Insight', icon: Lightbulb },
-    { href: '/mywoispace', label: 'MySpace', icon: User },
-  ]
+  // Determine if Goal/Execute/Insight should be shown
+  // Show them only if Goals-OKR context is LIFE, WORK, or BUSINESS (not NONE)
+  // Default is NONE, so by default these items are NOT shown
+  const showGoalExecuteInsight = goalsOkrContext !== 'NONE'
+
+  // Bottom navigation items - filtered based on Goals-OKR context
+  const bottomNavItems = useMemo(() => {
+    const items = [
+      { href: '/home', label: 'Succes', icon: Star },
+    ]
+
+    // Only add Goal, Execute, Insight if Goals-OKR context is not NONE
+    // Default is NONE, so by default these items are NOT shown
+    if (showGoalExecuteInsight && goalsOkrContext !== 'NONE') {
+      items.push(
+        { href: '/goals-okr', label: 'Goal', icon: Target },
+        { href: '/goals-okr/execute', label: 'Execute', icon: TrendingUp },
+        { href: '/goals-okr/insight', label: 'Insight', icon: Lightbulb }
+      )
+    }
+
+    // MySpace is always shown
+    items.push(
+      { href: '/mywoispace', label: 'MySpace', icon: User }
+    )
+
+    return items
+  }, [showGoalExecuteInsight, goalsOkrContext]) // Add goalsOkrContext to dependencies for safety
 
   // Add/remove class to body when bottom nav is visible
   useEffect(() => {
@@ -68,7 +96,7 @@ export function BottomNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="fixed bottom-0 left-0 right-0 bg-background backdrop-blur-md border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-center justify-around px-2 py-2 max-w-6xl mx-auto">
         {bottomNavItems.map((item) => {
           const Icon = item.icon
@@ -98,6 +126,7 @@ export function BottomNav() {
             </Link>
           )
         })}
+        
         {/* User settings */}
         <Link
           href="/user/settings"

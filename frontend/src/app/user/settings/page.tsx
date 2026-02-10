@@ -13,12 +13,76 @@ import { Container } from '@/shared/components/ui/container'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/components/ui/select'
 import { Label } from '@/shared/components/ui/label'
+import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useTheme } from '@/shared/contexts/ThemeContext'
+import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/hooks/useUserPreferences'
+import { GoalsOkrContext } from '@/shared/api/types'
+import { useState, useEffect } from 'react'
 
 export default function UserSettingsPage() {
   const { user } = useAuth()
   const { userGroup, setUserGroup, availableGroups } = useTheme()
+  
+  // User preferences
+  const { data: preferences, isLoading: preferencesLoading } = useUserPreferences(user?.id ?? null)
+  const updatePreferences = useUpdateUserPreferences()
+  
+  // Local state for form
+  const [selectedGoalsOkrContext, setSelectedGoalsOkrContext] = useState<GoalsOkrContext>('NONE')
+  const [hasChanges, setHasChanges] = useState(false)
+
+  // Initialize form when preferences load
+  useEffect(() => {
+    if (preferences) {
+      setSelectedGoalsOkrContext(preferences.defaultGoalsOkrContext ?? 'NONE')
+      setHasChanges(false)
+    }
+  }, [preferences])
+
+  // Check for changes
+  useEffect(() => {
+    if (preferences) {
+      const changed = 
+        selectedGoalsOkrContext !== (preferences.defaultGoalsOkrContext ?? 'NONE')
+      setHasChanges(changed)
+    }
+  }, [selectedGoalsOkrContext, preferences])
+
+  // Handle save
+  const handleSave = async () => {
+    if (!user?.id || !hasChanges) return
+
+    try {
+      await updatePreferences.mutateAsync({
+        userId: user.id,
+        data: {
+          defaultGoalsOkrContext: selectedGoalsOkrContext,
+        },
+      })
+      setHasChanges(false)
+    } catch (error) {
+      console.error('Failed to save preferences:', error)
+    }
+  }
+
+  // Get Goals-OKR context label
+  const getGoalsOkrContextLabel = (context: GoalsOkrContext): string => {
+    switch (context) {
+      case 'NONE':
+        return 'None (hide Goal/Execute/Insight)'
+      case 'LIFE':
+        return 'Wheel of Life'
+      case 'BUSINESS':
+        return 'Wheel of Business'
+      case 'WORK':
+        return 'Wheel of Work'
+      case 'ALL':
+        return 'All Wheels'
+      default:
+        return context
+    }
+  }
 
   return (
     <ProtectedRoute>
@@ -40,59 +104,120 @@ export default function UserSettingsPage() {
                 </p>
               </div>
 
-              {/* User Info Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Account Information</CardTitle>
-                  <CardDescription>
-                    Your account details
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">
-                      Email
-                    </label>
-                    <p className="text-foreground mt-1">
-                      {user?.email || 'Not available'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Cards Grid - 2x2 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* User Info Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Account Information</CardTitle>
+                    <CardDescription>
+                      Your account details
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Email
+                      </label>
+                      <p className="text-foreground mt-1">
+                        {user?.email || 'Not available'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Theme Settings Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Theme Settings</CardTitle>
-                  <CardDescription>
-                    Choose your preferred theme
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="theme">Theme</Label>
-                    <Select
-                      value={userGroup || 'universal'}
-                      onValueChange={(value) => setUserGroup(value)}
-                    >
-                      <SelectTrigger id="theme" className="w-full">
-                        <SelectValue placeholder="Select theme" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableGroups.map((group) => (
-                          <SelectItem key={group} value={group}>
-                            {group === 'adult-woman' ? 'Adult Woman' :
-                             group === 'adult-man' ? 'Adult Man' :
-                             group === 'young-adult-male' ? 'Young Adult Male' :
-                             group === 'young-adult-female' ? 'Young Adult Female' :
+                {/* Theme Settings Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Theme Settings</CardTitle>
+                    <CardDescription>
+                      Choose your preferred theme
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="theme">Theme</Label>
+                      <Select
+                        value={userGroup || 'universal'}
+                        onValueChange={(value) => setUserGroup(value)}
+                      >
+                        <SelectTrigger id="theme" className="w-full">
+                          <SelectValue placeholder="Select theme">
+                            {userGroup === 'adult-woman' ? 'Adult Woman' :
+                             userGroup === 'adult-man' ? 'Adult Man' :
+                             userGroup === 'young-adult-male' ? 'Young Adult Male' :
+                             userGroup === 'young-adult-female' ? 'Young Adult Female' :
                              'Universal'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableGroups.map((group) => (
+                            <SelectItem key={group} value={group}>
+                              {group === 'adult-woman' ? 'Adult Woman' :
+                               group === 'adult-man' ? 'Adult Man' :
+                               group === 'young-adult-male' ? 'Young Adult Male' :
+                               group === 'young-adult-female' ? 'Young Adult Female' :
+                               'Universal'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Navigation Settings Card */}
+                <Card className="md:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Navigation Settings</CardTitle>
+                    <CardDescription>
+                      Configure your default Goals-OKR context
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {preferencesLoading ? (
+                      <p className="text-muted-foreground">Loading preferences...</p>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="goalsOkrContext">Goals-OKR Context</Label>
+                          <Select
+                            value={selectedGoalsOkrContext || 'NONE'}
+                            onValueChange={(value) => setSelectedGoalsOkrContext(value as GoalsOkrContext)}
+                          >
+                            <SelectTrigger id="goalsOkrContext" className="w-full">
+                              <SelectValue placeholder="Select Goals-OKR context">
+                                {getGoalsOkrContextLabel(selectedGoalsOkrContext || 'NONE')}
+                              </SelectValue>
+                            </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="NONE">None (hide Goal/Execute/Insight)</SelectItem>
+                            <SelectItem value="LIFE">Wheel of Life</SelectItem>
+                            <SelectItem value="BUSINESS">Wheel of Business</SelectItem>
+                            <SelectItem value="WORK">Wheel of Work</SelectItem>
+                            <SelectItem value="ALL">All Wheels</SelectItem>
+                          </SelectContent>
+                          </Select>
+                          <p className="text-sm text-muted-foreground">
+                            Determines which navigation items are shown in the bottom navigation. Content Context is always SUCCESS (Wheel of Islam).
+                          </p>
+                        </div>
+
+                        {hasChanges && (
+                          <div className="flex justify-end pt-2">
+                            <Button
+                              onClick={handleSave}
+                              disabled={updatePreferences.isPending}
+                            >
+                              {updatePreferences.isPending ? 'Saving...' : 'Save Preferences'}
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </Container>
         </main>

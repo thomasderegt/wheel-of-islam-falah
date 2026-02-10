@@ -40,7 +40,7 @@ export default function KanbanDashboardPage() {
 
   // Get target wheelKey from goalsOkrContext
   const targetWheelKey = useMemo(() => {
-    if (goalsOkrContext === 'NONE') return null
+    if (goalsOkrContext === 'NONE' || goalsOkrContext === 'ALL') return null
     return goalsOkrContextToWheelKey(goalsOkrContext)
   }, [goalsOkrContext])
 
@@ -181,8 +181,8 @@ export default function KanbanDashboardPage() {
       return
     }
     
-    // Filter by Goals-OKR context if not NONE
-    const targetWheelKey = goalsOkrContext !== 'NONE' ? goalsOkrContextToWheelKey(goalsOkrContext) : null
+    // Filter by Goals-OKR context if not NONE or ALL
+    const targetWheelKey = (goalsOkrContext !== 'NONE' && goalsOkrContext !== 'ALL') ? goalsOkrContextToWheelKey(goalsOkrContext) : null
 
     setIsLoadingGoalStats(true)
     const loadGoalStatsByWheel = async () => {
@@ -498,8 +498,8 @@ export default function KanbanDashboardPage() {
       return
     }
     
-    // Filter by Goals-OKR context if not NONE
-    const targetWheelKey = goalsOkrContext !== 'NONE' ? goalsOkrContextToWheelKey(goalsOkrContext) : null
+    // Filter by Goals-OKR context if not NONE or ALL
+    const targetWheelKey = (goalsOkrContext !== 'NONE' && goalsOkrContext !== 'ALL') ? goalsOkrContextToWheelKey(goalsOkrContext) : null
 
     setIsLoadingPI(true)
     const loadPIStats = async () => {

@@ -50,11 +50,45 @@ export interface UserResponse {
   updatedAt: string
 }
 
+// ========== User Preferences Types ==========
+
+// Mode type removed - no longer used (always SUCCESS)
+// export type Mode = 'SUCCESS' | 'GOAL' | 'EXECUTE' | 'INSIGHT'
+export type Context = 'SUCCESS' | 'LIFE' | 'BUSINESS' | 'WORK'
+export type GoalsOkrContext = 'LIFE' | 'BUSINESS' | 'WORK' | 'NONE' | 'ALL'
+
+export interface UserPreferenceResponse {
+  id: number
+  userId: number
+  defaultContext: Context  // Always SUCCESS (Content Context)
+  // defaultMode is no longer in API (always SUCCESS)
+  defaultGoalsOkrContext?: GoalsOkrContext  // Separate Goals-OKR context (LIFE/WORK/BUSINESS/NONE)
+  createdAt: string
+  updatedAt: string
+}
+
+export interface UpdateUserPreferencesRequest {
+  // defaultMode and defaultContext are no longer needed (always SUCCESS)
+  defaultGoalsOkrContext?: GoalsOkrContext  // Separate Goals-OKR context
+}
+
 // ========== Content Types ==========
+
+export interface WheelDTO {
+  id: number
+  wheelKey: string
+  nameNl: string
+  nameEn: string
+  descriptionNl: string | null
+  descriptionEn: string | null
+  displayOrder: number
+  createdAt: string
+}
 
 export interface CategoryDTO {
   id: number
   categoryNumber: number | null
+  wheelId: number | null
   titleNl: string
   titleEn: string
   subtitleNl: string | null

@@ -12,7 +12,8 @@ import type {
   BookDTO,
   ChapterDTO,
   SectionDTO,
-  SectionVersionDTO as SectionVersionDTOType
+  SectionVersionDTO as SectionVersionDTOType,
+  WheelDTO
 } from '@/shared/api/types'
 
 // ========== Version History ==========
@@ -256,6 +257,39 @@ export async function getParagraphPublishedVersion(paragraphId: number): Promise
 export async function getAllCategories(): Promise<CategoryDTO[]> {
   const response = await apiClient.get(`/api/v2/content/categories`)
   return response.data
+}
+
+/**
+ * Get categories by wheel ID
+ */
+export async function getCategoriesByWheelId(wheelId: number): Promise<CategoryDTO[]> {
+  const response = await apiClient.get(`/api/v2/content/categories/wheel/${wheelId}`)
+  return response.data
+}
+
+// ========== Wheel API ==========
+
+/**
+ * Get all wheels (content module)
+ */
+export async function getAllContentWheels(): Promise<WheelDTO[]> {
+  const response = await apiClient.get(`/api/v2/content/wheels`)
+  return response.data
+}
+
+/**
+ * Get wheel by wheel key (content module)
+ */
+export async function getContentWheelByKey(wheelKey: string): Promise<WheelDTO | null> {
+  try {
+    const response = await apiClient.get(`/api/v2/content/wheels/key/${wheelKey}`)
+    return response.data
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null
+    }
+    throw error
+  }
 }
 
 // ========== Create Content ==========

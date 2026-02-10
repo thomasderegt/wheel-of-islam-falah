@@ -3,11 +3,12 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUserGoals, createUserGoal } from '../api/goalsOkrApi'
+import { getUserGoals, createUserGoal, createPersonalGoal } from '../api/goalsOkrApi'
 import type { UserGoalDTO } from '../api/goalsOkrApi'
 
 /**
- * Get user-specific goals by user
+ * Get user-specific goals by user (OLD APPROACH - kept for backward compatibility)
+ * @deprecated Use UserGoalInstances instead
  */
 export function useUserGoals(userId: number | null) {
   return useQuery({
@@ -18,7 +19,26 @@ export function useUserGoals(userId: number | null) {
 }
 
 /**
- * Hook for creating a user-specific goal
+ * Hook for creating a personal goal (NEW APPROACH: Goal template + UserGoalInstance + Kanban item)
+ */
+export function useCreatePersonalGoal() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ userId, ...request }: { userId: number; title: string; description?: string; lifeDomainId: number }) =>
+      createPersonalGoal(userId, request),
+    onSuccess: (_, variables) => {
+      // Invalidate kanban items since a new item is automatically added
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', variables.userId] })
+      // Invalidate user goal instances
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-goal-instances', 'user', variables.userId] })
+    },
+  })
+}
+
+/**
+ * Hook for creating a user-specific goal (OLD APPROACH - kept for backward compatibility)
+ * @deprecated Use useCreatePersonalGoal instead
  */
 export function useCreateUserGoal() {
   const queryClient = useQueryClient()
