@@ -19,6 +19,18 @@ public enum LifeDomainType {
     SPORTS,
     REST,
     
+    // Work/Professional Development Domains
+    CAREER_GROWTH,
+    SKILLS_DEVELOPMENT,
+    COMMUNICATION,
+    LEADERSHIP,
+    NETWORKING,
+    PERFORMANCE,
+    REPUTATION,
+    TIME_MANAGEMENT,
+    WORK_LIFE_BALANCE,
+    PROJECT,  // Project management and execution in work context
+    
     // Business Domains (Wheel of Business)
     SHARIAH,  // Shariah compliance (centraal)
     PRODUCT,

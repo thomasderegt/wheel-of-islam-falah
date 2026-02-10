@@ -12,15 +12,70 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { useAuth } from '@/features/auth'
 import { useKanbanItems } from '@/features/goals-okr/hooks/useKanbanItems'
 import { Loading } from '@/shared/components/ui/Loading'
+import { useModeContext } from '@/shared/hooks/useModeContext'
+import { useWheels } from '@/features/goals-okr/hooks/useWheels'
+import { useLifeDomains } from '@/features/goals-okr/hooks/useLifeDomains'
+import { goalsOkrContextToWheelKey, getWheelIdFromGoalsOkrContext } from '@/shared/utils/contextUtils'
 import { useMemo, useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/shared/components/ui/chart'
 import { Pie, PieChart, Cell } from 'recharts'
 import { getGoal, getObjective, getKeyResult, getInitiative, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getUserGoalInstance, getAllLifeDomains, getAllWheels, getInitiativesByKeyResult } from '@/features/goals-okr/api/goalsOkrApi'
 
 export default function KanbanDashboardPage() {
   const { user } = useAuth()
+  const { goalsOkrContext } = useModeContext()
   const { data: kanbanItems, isLoading } = useKanbanItems(user?.id || null)
+  const { data: wheels } = useWheels()
+  const { data: lifeDomains } = useLifeDomains()
   const language = 'en' as 'nl' | 'en'
+  const router = useRouter()
+  
+  // Redirect if Goals-OKR context is NONE
+  useEffect(() => {
+    if (goalsOkrContext === 'NONE') {
+      router.push('/home')
+    }
+  }, [goalsOkrContext, router])
+
+  // Get target wheelKey from goalsOkrContext
+  const targetWheelKey = useMemo(() => {
+    if (goalsOkrContext === 'NONE') return null
+    return goalsOkrContextToWheelKey(goalsOkrContext)
+  }, [goalsOkrContext])
+
+  // Filter kanbanItems by Goals-OKR context
+  const filteredKanbanItems = useMemo(() => {
+    if (!kanbanItems || goalsOkrContext === 'NONE') {
+      return []
+    }
+    
+    if (!wheels || !lifeDomains) {
+      return kanbanItems
+    }
+    
+    const targetWheelKey = goalsOkrContextToWheelKey(goalsOkrContext)
+    if (!targetWheelKey) {
+      return kanbanItems
+    }
+    
+    const targetWheelId = getWheelIdFromGoalsOkrContext(goalsOkrContext, wheels)
+    if (!targetWheelId) {
+      return kanbanItems
+    }
+    
+    // Create mapping from life domain ID to wheel ID
+    const domainToWheelMap = new Map<number, number>()
+    lifeDomains.forEach(domain => {
+      if (domain.wheelId) {
+        domainToWheelMap.set(domain.id, domain.wheelId)
+      }
+    })
+    
+    // We can't filter here directly because we need to load goal data to get lifeDomainId
+    // So we'll filter in the useEffect hooks that process the items
+    return kanbanItems
+  }, [kanbanItems, goalsOkrContext, wheels, lifeDomains])
   const [piStats, setPiStats] = useState<Map<string, Array<{
     kanbanItemId: number
     userInstanceId: number
@@ -68,7 +123,7 @@ export default function KanbanDashboardPage() {
   languageRef.current = language
 
   const stats = useMemo(() => {
-    if (!kanbanItems) {
+    if (!filteredKanbanItems || filteredKanbanItems.length === 0) {
       return {
         todo: { total: 0, goals: 0, objectives: 0, keyResults: 0, initiatives: 0 },
         inProgress: { total: 0, goals: 0, objectives: 0, keyResults: 0, initiatives: 0 },
@@ -78,7 +133,16 @@ export default function KanbanDashboardPage() {
       }
     }
 
-    const countByType = (items: typeof kanbanItems, columnName: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE') => {
+    const countByType = (items: typeof filteredKanbanItems, columnName: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE') => {
+      if (!items || !Array.isArray(items)) {
+        return {
+          total: 0,
+          goals: 0,
+          objectives: 0,
+          keyResults: 0,
+          initiatives: 0,
+        }
+      }
       const filtered = items.filter(item => item.columnName === columnName)
       return {
         total: filtered.length,
@@ -89,10 +153,10 @@ export default function KanbanDashboardPage() {
       }
     }
 
-    const todo = countByType(kanbanItems, 'TODO')
-    const inProgress = countByType(kanbanItems, 'IN_PROGRESS')
-    const inReview = countByType(kanbanItems, 'IN_REVIEW')
-    const done = countByType(kanbanItems, 'DONE')
+    const todo = countByType(filteredKanbanItems, 'TODO')
+    const inProgress = countByType(filteredKanbanItems, 'IN_PROGRESS')
+    const inReview = countByType(filteredKanbanItems, 'IN_REVIEW')
+    const done = countByType(filteredKanbanItems, 'DONE')
     const started = {
       total: inProgress.total + inReview.total + done.total,
       goals: inProgress.goals + inReview.goals + done.goals,
@@ -108,14 +172,17 @@ export default function KanbanDashboardPage() {
       done,
       started,
     }
-  }, [kanbanItems])
+  }, [filteredKanbanItems])
 
   // Load Goal statistics by wheel type
   useEffect(() => {
-    if (!kanbanItems || kanbanItems.length === 0 || !user?.id) {
+    if (!filteredKanbanItems || filteredKanbanItems.length === 0 || !user?.id) {
       setGoalStatsByWheel(new Map())
       return
     }
+    
+    // Filter by Goals-OKR context if not NONE
+    const targetWheelKey = goalsOkrContext !== 'NONE' ? goalsOkrContextToWheelKey(goalsOkrContext) : null
 
     setIsLoadingGoalStats(true)
     const loadGoalStatsByWheel = async () => {
@@ -148,7 +215,7 @@ export default function KanbanDashboardPage() {
       })
 
       // Process only GOAL kanban items
-      for (const item of kanbanItems) {
+      for (const item of filteredKanbanItems) {
         if (item.itemType !== 'GOAL') continue
 
         try {
@@ -158,11 +225,17 @@ export default function KanbanDashboardPage() {
           // Get wheel info via life domain
           const wheelId = domainToWheelMap.get(goal.lifeDomainId)
           const wheel = wheelId ? wheelMap.get(wheelId) : null
+          const wheelKey = wheel?.wheelKey || 'UNKNOWN'
+          
+          // Filter by context if specified
+          if (targetWheelKey && wheelKey !== targetWheelKey) {
+            continue
+          }
+          
           const currentLanguage = languageRef.current
           const wheelName = wheel 
             ? (currentLanguage === 'nl' ? wheel.nameNl : wheel.nameEn)
             : 'Unknown'
-          const wheelKey = wheel?.wheelKey || 'UNKNOWN'
           
           // Initialize wheel stats if not exists
           if (!wheelStatsMap.has(wheelKey)) {
@@ -201,7 +274,7 @@ export default function KanbanDashboardPage() {
       console.error('Error loading goal stats by wheel:', error)
       setIsLoadingGoalStats(false)
     })
-  }, [kanbanItems, user?.id])
+  }, [filteredKanbanItems, user?.id, goalsOkrContext])
 
   // Load Quarterly Goals by Domain for both Wheel of Life and Wheel of Business
   useEffect(() => {
@@ -260,7 +333,7 @@ export default function KanbanDashboardPage() {
       setLifeDomainsByWheel(allDomainsByWheel)
 
       // If no kanban items, just set empty stats and return
-      if (!kanbanItems || kanbanItems.length === 0 || !user?.id) {
+      if (!filteredKanbanItems || filteredKanbanItems.length === 0 || !user?.id) {
         setQuarterlyGoalsByDomain(new Map())
         setQuarterlyObjectivesByDomain(new Map())
         setQuarterlyKeyResultsByDomain(new Map())
@@ -269,6 +342,9 @@ export default function KanbanDashboardPage() {
         setIsLoadingQuarterlyKeyResults(false)
         return
       }
+      
+      // Filter by Goals-OKR context if not NONE
+      const targetWheelKey = goalsOkrContext !== 'NONE' ? goalsOkrContextToWheelKey(goalsOkrContext) : null
 
       // Process GOAL, OBJECTIVE, and KEY_RESULT kanban items that have quarter and year
       const objectivesStatsMap = new Map<string, Map<number, {
@@ -280,7 +356,7 @@ export default function KanbanDashboardPage() {
         count: number
       }>>()
 
-      for (const item of kanbanItems) {
+      for (const item of filteredKanbanItems) {
         if (item.itemType !== 'GOAL' && item.itemType !== 'OBJECTIVE' && item.itemType !== 'KEY_RESULT') continue
 
         try {
@@ -322,6 +398,11 @@ export default function KanbanDashboardPage() {
           }
           
           if (!wheelKey) continue
+          
+          // Filter by context if specified
+          if (targetWheelKey && wheelKey !== targetWheelKey) {
+            continue
+          }
           
           // Get domain name
           const domainInfo = domainNameMap.get(lifeDomainId)
@@ -408,14 +489,17 @@ export default function KanbanDashboardPage() {
       console.error('Error loading quarterly goals by domain:', error)
       setIsLoadingQuarterlyGoals(false)
     })
-  }, [kanbanItems, user?.id])
+  }, [filteredKanbanItems, user?.id, goalsOkrContext])
 
   // Load PI statistics
   useEffect(() => {
-    if (!kanbanItems || kanbanItems.length === 0 || !user?.id) {
+    if (!filteredKanbanItems || filteredKanbanItems.length === 0 || !user?.id) {
       setPiStats(new Map())
       return
     }
+    
+    // Filter by Goals-OKR context if not NONE
+    const targetWheelKey = goalsOkrContext !== 'NONE' ? goalsOkrContextToWheelKey(goalsOkrContext) : null
 
     setIsLoadingPI(true)
     const loadPIStats = async () => {
@@ -500,13 +584,65 @@ export default function KanbanDashboardPage() {
       }
 
       // Process all kanban items (filtering happens in UI based on selectedItemTypeByWheel)
-      for (const item of kanbanItems) {
+      for (const item of filteredKanbanItems) {
         // Process all item types - we'll filter by wheel and item type in the UI
 
         const { quarter, year } = await getGoalPI(item.itemType, item.itemId)
         const piLabel = getPILabel(quarter, year)
         
         if (!piLabel) continue // Skip items without PI
+        
+        // Get wheel info early to filter by context
+        let itemWheelKey: string | null = null
+        try {
+          let lifeDomainId: number | null = null
+          
+          if (item.itemType === 'GOAL') {
+            const userGoalInstance = await getUserGoalInstance(item.itemId)
+            const goal = await getGoal(userGoalInstance.goalId)
+            lifeDomainId = goal.lifeDomainId
+          } else if (item.itemType === 'OBJECTIVE') {
+            const userObjectiveInstance = await getUserObjectiveInstance(item.itemId)
+            const objective = await getObjective(userObjectiveInstance.objectiveId)
+            const goal = await getGoal(objective.goalId)
+            lifeDomainId = goal.lifeDomainId
+          } else if (item.itemType === 'KEY_RESULT') {
+            const userKeyResultInstance = await getUserKeyResultInstance(item.itemId)
+            const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
+            const objective = await getObjective(keyResult.objectiveId)
+            const goal = await getGoal(objective.goalId)
+            lifeDomainId = goal.lifeDomainId
+          } else if (item.itemType === 'INITIATIVE') {
+            const userInitiativeInstance = await getUserInitiativeInstance(item.itemId)
+            try {
+              const userInitiative = await getInitiative(userInitiativeInstance.initiativeId)
+              const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
+              const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
+              const objective = await getObjective(keyResult.objectiveId)
+              const goal = await getGoal(objective.goalId)
+              lifeDomainId = goal.lifeDomainId
+            } catch {
+              const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
+              const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
+              const objective = await getObjective(keyResult.objectiveId)
+              const goal = await getGoal(objective.goalId)
+              lifeDomainId = goal.lifeDomainId
+            }
+          }
+          
+          if (lifeDomainId) {
+            const wheelId = domainToWheelMap.get(lifeDomainId)
+            const wheel = wheelId ? wheelMap.get(wheelId) : null
+            itemWheelKey = wheel?.wheelKey || null
+          }
+        } catch (error) {
+          // Continue processing even if we can't get wheel info
+        }
+        
+        // Filter by context if specified
+        if (targetWheelKey && itemWheelKey !== targetWheelKey) {
+          continue
+        }
 
         if (!piMap.has(piLabel)) {
           piMap.set(piLabel, [])
@@ -618,7 +754,7 @@ export default function KanbanDashboardPage() {
       console.error('Error loading PI stats:', error)
       setIsLoadingPI(false)
     })
-  }, [kanbanItems, user?.id])
+  }, [filteredKanbanItems, user?.id, goalsOkrContext])
 
   if (isLoading) {
     return (
@@ -633,6 +769,11 @@ export default function KanbanDashboardPage() {
         </div>
       </ProtectedRoute>
     )
+  }
+
+  // Don't render if Goals-OKR context is NONE
+  if (goalsOkrContext === 'NONE') {
+    return null
   }
 
   return (
@@ -818,10 +959,12 @@ export default function KanbanDashboardPage() {
                   )
                 }
 
-                const wheelOrder = ['WHEEL_OF_LIFE', 'WHEEL_OF_BUSINESS']
+                // Only show wheel for current Goals-OKR context
+                const wheelOrder = targetWheelKey ? [targetWheelKey] : []
                 const wheelNames: Record<string, string> = {
                   'WHEEL_OF_LIFE': 'Wheel of Life',
-                  'WHEEL_OF_BUSINESS': 'Wheel of Business'
+                  'WHEEL_OF_BUSINESS': 'Wheel of Business',
+                  'WHEEL_OF_WORK': 'Wheel of Work'
                 }
 
                 // Helper to get domain stats map and loading state for each item type
@@ -922,7 +1065,7 @@ export default function KanbanDashboardPage() {
                   // Add Pie Chart cards for this item type
                   allCards.push(
                     <div key={`${itemType}-pie`} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {wheelOrder.map((wheelKey) => {
+                      {wheelOrder.filter(wheelKey => targetWheelKey ? wheelKey === targetWheelKey : true).map((wheelKey) => {
                         const domainStatsMap = statsConfig.domainStatsMap.get(wheelKey) || new Map()
                         const allDomainsForWheel = lifeDomainsByWheel.get(wheelKey) || []
                         return renderPieChartCard(
@@ -939,7 +1082,7 @@ export default function KanbanDashboardPage() {
                   // Add List cards for this item type (if available)
                   const listCardsForType: JSX.Element[] = []
                   
-                  wheelOrder.forEach(wheelKey => {
+                  wheelOrder.filter(wheelKey => targetWheelKey ? wheelKey === targetWheelKey : true).forEach(wheelKey => {
                     const typeMap = piStatsByWheelAndType.get(wheelKey)
                     if (!typeMap) return
                     
@@ -1058,6 +1201,7 @@ export default function KanbanDashboardPage() {
                   </Card>
                 ) : (
                   Array.from(goalStatsByWheel.entries())
+                    .filter(([wheelKey]) => targetWheelKey ? wheelKey === targetWheelKey : true)
                     .sort(([a], [b]) => {
                       // Sort: WHEEL_OF_LIFE first, then WHEEL_OF_BUSINESS
                       if (a === 'WHEEL_OF_LIFE') return -1

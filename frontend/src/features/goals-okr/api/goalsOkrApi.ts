@@ -887,6 +887,17 @@ export async function getUserGoals(userId: number): Promise<UserGoalDTO[]> {
   return response.data
 }
 
+/**
+ * Get a user-specific goal by ID
+ * GET /api/v2/goals-okr/user-goals/{userGoalId}
+ */
+export async function getUserGoal(userGoalId: number): Promise<UserGoalDTO> {
+  const response = await apiClient.get<UserGoalDTO>(
+    `/api/v2/goals-okr/user-goals/${userGoalId}`
+  )
+  return response.data
+}
+
 // ========== User-Specific Objectives ==========
 
 export interface UserObjectiveDTO {

@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * Spring Data JPA repository for WheelJpaEntity
  */
-@Repository
+@Repository("goalsOkrWheelJpaRepository")
 public interface WheelJpaRepository extends JpaRepository<WheelJpaEntity, Long> {
     
     /**

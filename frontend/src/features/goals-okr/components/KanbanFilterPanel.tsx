@@ -5,7 +5,7 @@
  * Filter panel for filtering kanban items by type and life domain
  */
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/shared/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
 import { Label } from '@/shared/components/ui/label'
@@ -13,8 +13,12 @@ import { Input } from '@/shared/components/ui/input'
 import { X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/components/ui/collapsible'
+import { ToggleGroup, ToggleGroupItem } from '@/shared/components/ui/toggle-group'
 import type { KanbanFilters } from '../hooks/useKanbanFilters'
 import { useLifeDomains } from '../hooks/useLifeDomains'
+import { useWheels } from '../hooks/useWheels'
+import { useModeContext } from '@/shared/hooks/useModeContext'
+import { getWheelIdFromGoalsOkrContext, goalsOkrContextToWheelType } from '@/shared/utils/contextUtils'
 
 const COLUMNS: Array<{ id: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'; label: string }> = [
   { id: 'TODO', label: 'To Do' },
@@ -33,8 +37,33 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
   const { data: lifeDomains } = useLifeDomains()
-  const hasActiveFilters = !!value.itemType || !!value.lifeDomainId || !!value.wheelType
+  const { data: wheels } = useWheels()
+  const { goalsOkrContext } = useModeContext()
+  const hasActiveFilters = !!value.itemType || !!value.lifeDomainId || !!value.columnName
   const [isOpen, setIsOpen] = useState(false)
+
+  // Get target wheelId from goalsOkrContext
+  const targetWheelId = useMemo(() => {
+    if (goalsOkrContext === 'NONE') return null
+    return getWheelIdFromGoalsOkrContext(goalsOkrContext, wheels)
+  }, [goalsOkrContext, wheels])
+
+  // Filter life domains by target wheelId (based on goalsOkrContext)
+  const filteredLifeDomains = useMemo(() => {
+    if (!lifeDomains || !targetWheelId) return []
+    return lifeDomains.filter(domain => domain.wheelId === targetWheelId)
+  }, [lifeDomains, targetWheelId])
+
+  // Reset lifeDomainId filter if it's not in the filtered domains
+  useEffect(() => {
+    if (value.lifeDomainId && filteredLifeDomains.length > 0) {
+      const isValid = filteredLifeDomains.some(domain => domain.id === value.lifeDomainId)
+      if (!isValid) {
+        // Clear the filter if the selected domain is not in the filtered list
+        onChange({ ...value, lifeDomainId: undefined })
+      }
+    }
+  }, [filteredLifeDomains, value, onChange])
 
   const handleItemTypeChange = (itemType: string) => {
     onChange({ ...value, itemType: itemType === 'ALL' ? undefined : itemType as KanbanFilters['itemType'] })
@@ -44,12 +73,39 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
     onChange({ ...value, lifeDomainId: lifeDomainId === 'ALL' ? undefined : parseInt(lifeDomainId) })
   }
 
-  const handleWheelTypeChange = (wheelType: string) => {
-    onChange({ ...value, wheelType: wheelType === 'ALL' ? undefined : wheelType as 'life' | 'business' })
+  const handleColumnNameChange = (columnName: string) => {
+    onChange({ ...value, columnName: columnName === 'ALL' ? undefined : columnName as KanbanFilters['columnName'] })
+  }
+
+  const handleViewModeChange = (viewMode: string) => {
+    if (viewMode === 'OKRs' || viewMode === 'Initiatives') {
+      onChange({ 
+        ...value, 
+        showInitiatives: viewMode === 'Initiatives' 
+      })
+    }
   }
 
   const getLifeDomainTitle = (domain: { titleNl: string; titleEn: string }) => {
     return language === 'nl' ? (domain.titleNl || domain.titleEn) : (domain.titleEn || domain.titleNl)
+  }
+
+  // Get wheel type for WIP limits based on goalsOkrContext
+  const wipLimitWheelType = useMemo(() => {
+    return goalsOkrContextToWheelType(goalsOkrContext)
+  }, [goalsOkrContext])
+
+  // Get wheel name for display
+  const getWheelName = (wheelType: 'life' | 'business' | null): string => {
+    if (!wheelType) return ''
+    switch (wheelType) {
+      case 'life':
+        return language === 'nl' ? 'Wheel of Life' : 'Wheel of Life'
+      case 'business':
+        return language === 'nl' ? 'Wheel of Business' : 'Wheel of Business'
+      default:
+        return ''
+    }
   }
 
   const clearFilters = () => {
@@ -169,33 +225,18 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="wheel-type-filter">{language === 'nl' ? 'Type' : 'Type'}</Label>
-                  <Select
-                    value={value.wheelType || 'ALL'}
-                    onValueChange={handleWheelTypeChange}
-                  >
-                    <SelectTrigger id="wheel-type-filter">
-                      <SelectValue placeholder={language === 'nl' ? 'Alle Types' : 'All Types'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ALL">{language === 'nl' ? 'Alle Types' : 'All Types'}</SelectItem>
-                      <SelectItem value="life">{language === 'nl' ? 'Leven' : 'Life'}</SelectItem>
-                      <SelectItem value="business">{language === 'nl' ? 'Zakelijk' : 'Business'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
                   <Label htmlFor="life-domain-filter">Life Domain</Label>
                   <Select
                     value={value.lifeDomainId?.toString() || 'ALL'}
                     onValueChange={handleLifeDomainChange}
+                    disabled={filteredLifeDomains.length === 0}
                   >
                     <SelectTrigger id="life-domain-filter">
                       <SelectValue placeholder="All Life Domains" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ALL">All Life Domains</SelectItem>
-                      {lifeDomains?.map((domain) => (
+                      {filteredLifeDomains.map((domain) => (
                         <SelectItem key={domain.id} value={domain.id.toString()}>
                           {getLifeDomainTitle(domain)}
                         </SelectItem>
@@ -203,34 +244,50 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="column-filter">Column</Label>
+                  <Select
+                    value={value.columnName || 'ALL'}
+                    onValueChange={handleColumnNameChange}
+                  >
+                    <SelectTrigger id="column-filter">
+                      <SelectValue placeholder="All Columns" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Columns</SelectItem>
+                      <SelectItem value="TODO">To Do</SelectItem>
+                      <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                      <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                      <SelectItem value="DONE">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              {/* WIP Limits Section */}
-              <div className="border-t pt-4 mt-4">
-                <h4 className="text-sm font-semibold mb-3">
-                  {language === 'nl' ? 'WIP Limits per wheel type' : 'WIP Limits per wheel type'}
-                </h4>
-                {(['life', 'business'] as const).map((wheelType) => (
-                  <div key={wheelType} className="mb-6">
+              {/* WIP Limits Section - Only show for active Goals-OKR Context */}
+              {wipLimitWheelType && (
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="text-sm font-semibold mb-3">
+                    {language === 'nl' ? 'WIP Limits' : 'WIP Limits'}
+                  </h4>
+                  <div className="mb-6">
                     <h5 className="text-xs font-medium mb-2 text-muted-foreground uppercase">
-                      {wheelType === 'life' 
-                        ? (language === 'nl' ? 'Wheel of Life' : 'Wheel of Life')
-                        : (language === 'nl' ? 'Wheel of Business' : 'Wheel of Business')}
+                      {getWheelName(wipLimitWheelType)}
                     </h5>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {COLUMNS.map((column) => {
                         const columnId = column.id
-                        const currentLimit = value.wipLimits?.[wheelType]?.[columnId]
+                        const currentLimit = value.wipLimits?.[wipLimitWheelType]?.[columnId]
                         return (
-                          <div key={`${wheelType}-${columnId}`} className="space-y-2">
-                            <Label htmlFor={`wip-limit-${wheelType}-${columnId}`}>{column.label}</Label>
+                          <div key={`${wipLimitWheelType}-${columnId}`} className="space-y-2">
+                            <Label htmlFor={`wip-limit-${wipLimitWheelType}-${columnId}`}>{column.label}</Label>
                             <Input
-                              id={`wip-limit-${wheelType}-${columnId}`}
+                              id={`wip-limit-${wipLimitWheelType}-${columnId}`}
                               type="number"
                               min="0"
                               placeholder={language === 'nl' ? 'Geen limit' : 'No limit'}
                               value={currentLimit?.toString() || ''}
-                              onChange={(e) => handleWipLimitChange(wheelType, columnId, e.target.value)}
+                              onChange={(e) => handleWipLimitChange(wipLimitWheelType, columnId, e.target.value)}
                               className="w-full"
                             />
                           </div>
@@ -238,11 +295,44 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                       })}
                     </div>
                   </div>
-                ))}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {language === 'nl' 
+                      ? 'Stel een maximum aantal items per kolom in. Laat leeg voor geen limit.'
+                      : 'Set a maximum number of items per column. Leave empty for no limit.'}
+                  </p>
+                </div>
+              )}
+
+              {/* OKRs / Initiatives Toggle - Under WIP Limits */}
+              <div className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-semibold mb-3">
+                  {language === 'nl' ? 'View Mode' : 'View Mode'}
+                </h4>
+                <ToggleGroup
+                  type="single"
+                  value={value.showInitiatives ? 'Initiatives' : 'OKRs'}
+                  onValueChange={handleViewModeChange}
+                  className="bg-muted rounded-full p-1"
+                >
+                  <ToggleGroupItem
+                    value="OKRs"
+                    aria-label={language === 'nl' ? 'OKRs' : 'OKRs'}
+                    className="rounded-full px-4 py-1.5"
+                  >
+                    {language === 'nl' ? 'OKRs' : 'OKRs'}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="Initiatives"
+                    aria-label={language === 'nl' ? 'Initiatives' : 'Initiatives'}
+                    className="rounded-full px-4 py-1.5"
+                  >
+                    {language === 'nl' ? 'Initiatives' : 'Initiatives'}
+                  </ToggleGroupItem>
+                </ToggleGroup>
                 <p className="text-xs text-muted-foreground mt-2">
                   {language === 'nl' 
-                    ? 'Stel een maximum aantal items per kolom per wheel type in. Laat leeg voor geen limit.'
-                    : 'Set a maximum number of items per column per wheel type. Leave empty for no limit.'}
+                    ? 'Kies tussen OKRs (Goals, Objectives, Key Results) of Initiatives weergave.'
+                    : 'Choose between OKRs (Goals, Objectives, Key Results) or Initiatives view.'}
                 </p>
               </div>
             </div>

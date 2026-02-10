@@ -18,6 +18,9 @@ public class CategoryJpaEntity {
     @Column(name = "category_number")
     private Integer categoryNumber;
     
+    @Column(name = "wheel_id")
+    private Long wheelId; // FK to content.wheels
+    
     @Column(name = "title_nl", nullable = false)
     private String titleNl;
     
@@ -51,6 +54,9 @@ public class CategoryJpaEntity {
     
     public Integer getCategoryNumber() { return categoryNumber; }
     public void setCategoryNumber(Integer categoryNumber) { this.categoryNumber = categoryNumber; }
+    
+    public Long getWheelId() { return wheelId; }
+    public void setWheelId(Long wheelId) { this.wheelId = wheelId; }
     
     public String getTitleNl() { return titleNl; }
     public void setTitleNl(String titleNl) { this.titleNl = titleNl; }

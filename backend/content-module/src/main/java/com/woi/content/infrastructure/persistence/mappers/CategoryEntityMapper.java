@@ -16,6 +16,7 @@ public class CategoryEntityMapper {
         Category category = new Category();
         category.setId(jpaEntity.getId());
         category.setCategoryNumber(jpaEntity.getCategoryNumber());
+        category.setWheelId(jpaEntity.getWheelId());
         category.setTitleNl(jpaEntity.getTitleNl());
         category.setTitleEn(jpaEntity.getTitleEn());
         category.setSubtitleNl(jpaEntity.getSubtitleNl());
@@ -36,6 +37,7 @@ public class CategoryEntityMapper {
         CategoryJpaEntity jpaEntity = new CategoryJpaEntity();
         jpaEntity.setId(domain.getId());
         jpaEntity.setCategoryNumber(domain.getCategoryNumber());
+        jpaEntity.setWheelId(domain.getWheelId());
         jpaEntity.setTitleNl(domain.getTitleNl());
         jpaEntity.setTitleEn(domain.getTitleEn());
         jpaEntity.setSubtitleNl(domain.getSubtitleNl());

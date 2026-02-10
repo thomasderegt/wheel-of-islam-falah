@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class CategoryDTO {
     private Long id;
     private Integer categoryNumber;
+    private Long wheelId; // FK to content.wheels
     private String titleNl;
     private String titleEn;
     private String subtitleNl;
@@ -31,6 +32,14 @@ public class CategoryDTO {
     
     public void setCategoryNumber(Integer categoryNumber) {
         this.categoryNumber = categoryNumber;
+    }
+    
+    public Long getWheelId() {
+        return wheelId;
+    }
+    
+    public void setWheelId(Long wheelId) {
+        this.wheelId = wheelId;
     }
     
     public String getTitleNl() {

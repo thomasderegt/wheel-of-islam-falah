@@ -6,6 +6,7 @@ export interface KanbanFilters {
   lifeDomainId?: number
   wheelType?: 'life' | 'business'
   showInitiatives?: boolean
+  columnName?: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'
   wipLimits?: {
     life?: {
       TODO?: number
@@ -84,6 +85,11 @@ export function useKanbanFilters(initialFilters: KanbanFilters = {}) {
       filters.showInitiatives = true
     }
     
+    const columnName = params.get('columnName')
+    if (columnName && ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE'].includes(columnName)) {
+      filters.columnName = columnName as KanbanFilters['columnName']
+    }
+    
     return filters
   }
   
@@ -137,6 +143,10 @@ export function useKanbanFilters(initialFilters: KanbanFilters = {}) {
     
     if (updatedFilters.showInitiatives) {
       params.set('showInitiatives', 'true')
+    }
+    
+    if (updatedFilters.columnName) {
+      params.set('columnName', updatedFilters.columnName)
     }
     
     // WIP limits are not stored in URL

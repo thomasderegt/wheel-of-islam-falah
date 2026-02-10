@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class Category {
     private Long id;
     private Integer categoryNumber;  // Optional (for stable codes like CAT01)
+    private Long wheelId; // FK to content.wheels (e.g., WHEEL_OF_ISLAM)
     private String titleNl;
     private String titleEn;
     private String subtitleNl;
@@ -98,6 +99,7 @@ public class Category {
     // Getters
     public Long getId() { return id; }
     public Integer getCategoryNumber() { return categoryNumber; }
+    public Long getWheelId() { return wheelId; }
     public String getTitleNl() { return titleNl; }
     public String getTitleEn() { return titleEn; }
     public String getSubtitleNl() { return subtitleNl; }
@@ -135,6 +137,14 @@ public class Category {
             throw new IllegalArgumentException("Category number must be a non-negative integer");
         }
         this.categoryNumber = categoryNumber;
+    }
+    
+    /**
+     * Setter for wheelId - ONLY for entity mapping (infrastructure layer)
+     * DO NOT use in business logic - this is for persistence mapping only
+     */
+    public void setWheelId(Long wheelId) {
+        this.wheelId = wheelId;
     }
     
     /**

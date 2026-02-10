@@ -25,6 +25,7 @@ public class LifeDomainRepositoryImpl implements LifeDomainRepository {
     public List<LifeDomain> findAllOrderedByDisplayOrder() {
         return jpaRepository.findAllByOrderByDisplayOrderAsc().stream()
             .map(LifeDomainEntityMapper::toDomain)
+            .filter(domain -> domain != null) // Filter out null domains (unknown enum values)
             .collect(Collectors.toList());
     }
     

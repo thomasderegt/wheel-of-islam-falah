@@ -47,6 +47,9 @@ import com.woi.content.application.handlers.queries.GetPublicSectionsByChapterQu
 import com.woi.content.application.handlers.queries.GetPublicParagraphsBySectionQueryHandler;
 import com.woi.content.application.handlers.queries.GetCategoryQueryHandler;
 import com.woi.content.application.handlers.queries.GetCategoryByNumberQueryHandler;
+import com.woi.content.application.handlers.queries.GetCategoriesByWheelIdQueryHandler;
+import com.woi.content.application.handlers.queries.GetAllWheelsQueryHandler;
+import com.woi.content.application.handlers.queries.GetWheelByKeyQueryHandler;
 import com.woi.content.application.handlers.queries.GetChapterQueryHandler;
 import com.woi.content.application.handlers.queries.GetChaptersByBookQueryHandler;
 import com.woi.content.application.handlers.queries.GetSectionsByChapterQueryHandler;
@@ -72,6 +75,9 @@ import com.woi.content.application.queries.GetPublicSectionsByChapterQuery;
 import com.woi.content.application.queries.GetPublicParagraphsBySectionQuery;
 import com.woi.content.application.queries.GetCategoryQuery;
 import com.woi.content.application.queries.GetCategoryByNumberQuery;
+import com.woi.content.application.queries.GetCategoriesByWheelIdQuery;
+import com.woi.content.application.queries.GetAllWheelsQuery;
+import com.woi.content.application.queries.GetWheelByKeyQuery;
 import com.woi.content.application.queries.GetChapterQuery;
 import com.woi.content.application.queries.GetChaptersByBookQuery;
 import com.woi.content.application.queries.GetSectionsByChapterQuery;
@@ -112,6 +118,9 @@ public class ContentController {
     private final GetCategoryQueryHandler getCategoryHandler;
     private final GetCategoryByNumberQueryHandler getCategoryByNumberHandler;
     private final GetAllCategoriesQueryHandler getAllCategoriesHandler;
+    private final GetCategoriesByWheelIdQueryHandler getCategoriesByWheelIdHandler;
+    private final GetAllWheelsQueryHandler getAllWheelsHandler;
+    private final GetWheelByKeyQueryHandler getWheelByKeyHandler;
     private final CreateBookCommandHandler createBookHandler;
     private final UpdateBookCommandHandler updateBookHandler;
     private final DeleteBookCommandHandler deleteBookHandler;
@@ -156,6 +165,9 @@ public class ContentController {
             GetCategoryQueryHandler getCategoryHandler,
             GetCategoryByNumberQueryHandler getCategoryByNumberHandler,
             GetAllCategoriesQueryHandler getAllCategoriesHandler,
+            GetCategoriesByWheelIdQueryHandler getCategoriesByWheelIdHandler,
+            GetAllWheelsQueryHandler getAllWheelsHandler,
+            GetWheelByKeyQueryHandler getWheelByKeyHandler,
             CreateBookCommandHandler createBookHandler,
             UpdateBookCommandHandler updateBookHandler,
             DeleteBookCommandHandler deleteBookHandler,
@@ -198,6 +210,9 @@ public class ContentController {
         this.getCategoryHandler = getCategoryHandler;
         this.getCategoryByNumberHandler = getCategoryByNumberHandler;
         this.getAllCategoriesHandler = getAllCategoriesHandler;
+        this.getCategoriesByWheelIdHandler = getCategoriesByWheelIdHandler;
+        this.getAllWheelsHandler = getAllWheelsHandler;
+        this.getWheelByKeyHandler = getWheelByKeyHandler;
         this.createBookHandler = createBookHandler;
         this.updateBookHandler = updateBookHandler;
         this.deleteBookHandler = deleteBookHandler;
@@ -358,6 +373,53 @@ public class ContentController {
             .collect(Collectors.toList());
         
         return ResponseEntity.ok(dtos);
+    }
+    
+    /**
+     * Get categories by wheel ID
+     * GET /api/v2/content/categories/wheel/{wheelId}
+     */
+    @GetMapping("/categories/wheel/{wheelId}")
+    public ResponseEntity<List<CategoryDTO>> getCategoriesByWheelId(@PathVariable Long wheelId) {
+        GetCategoriesByWheelIdQuery query = new GetCategoriesByWheelIdQuery(wheelId);
+        List<com.woi.content.application.results.CategoryResult> results = getCategoriesByWheelIdHandler.handle(query);
+        
+        List<CategoryDTO> dtos = results.stream()
+            .map(this::toCategoryDTO)
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(dtos);
+    }
+    
+    // ========== Wheel Endpoints ==========
+    
+    /**
+     * Get all wheels
+     * GET /api/v2/content/wheels
+     */
+    @GetMapping("/wheels")
+    public ResponseEntity<List<WheelDTO>> getAllWheels() {
+        GetAllWheelsQuery query = new GetAllWheelsQuery();
+        List<com.woi.content.application.results.WheelResult> results = getAllWheelsHandler.handle(query);
+        
+        List<WheelDTO> dtos = results.stream()
+            .map(this::toWheelDTO)
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(dtos);
+    }
+    
+    /**
+     * Get wheel by wheel key
+     * GET /api/v2/content/wheels/key/{wheelKey}
+     */
+    @GetMapping("/wheels/key/{wheelKey}")
+    public ResponseEntity<WheelDTO> getWheelByKey(@PathVariable String wheelKey) {
+        GetWheelByKeyQuery query = new GetWheelByKeyQuery(wheelKey);
+        Optional<com.woi.content.application.results.WheelResult> result = getWheelByKeyHandler.handle(query);
+        
+        return result.map(r -> ResponseEntity.ok(toWheelDTO(r)))
+                     .orElse(ResponseEntity.notFound().build());
     }
     
     /**
@@ -1219,6 +1281,7 @@ public class ContentController {
         CategoryDTO dto = new CategoryDTO();
         dto.setId(result.id());
         dto.setCategoryNumber(result.categoryNumber());
+        dto.setWheelId(result.wheelId());
         dto.setTitleNl(result.titleNl());
         dto.setTitleEn(result.titleEn());
         dto.setSubtitleNl(result.subtitleNl());
@@ -1227,6 +1290,19 @@ public class ContentController {
         dto.setDescriptionEn(result.descriptionEn());
         dto.setCreatedAt(result.createdAt());
         dto.setUpdatedAt(result.updatedAt());
+        return dto;
+    }
+    
+    private WheelDTO toWheelDTO(com.woi.content.application.results.WheelResult result) {
+        WheelDTO dto = new WheelDTO();
+        dto.setId(result.id());
+        dto.setWheelKey(result.wheelKey());
+        dto.setNameNl(result.nameNl());
+        dto.setNameEn(result.nameEn());
+        dto.setDescriptionNl(result.descriptionNl());
+        dto.setDescriptionEn(result.descriptionEn());
+        dto.setDisplayOrder(result.displayOrder());
+        dto.setCreatedAt(result.createdAt());
         return dto;
     }
     

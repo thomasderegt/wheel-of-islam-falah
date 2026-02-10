@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  * JPA entity for Wheel (database mapping)
  * Points to goals_okr.wheels
  */
-@Entity
+@Entity(name = "GoalsOkrWheelJpaEntity")
 @Table(name = "wheels", schema = "goals_okr")
 public class WheelJpaEntity {
     

@@ -13,9 +13,14 @@ import com.woi.user.application.handlers.commands.RefreshTokenCommandHandler;
 import com.woi.user.application.handlers.commands.RegisterUserCommandHandler;
 import com.woi.user.application.handlers.commands.ResetPasswordCommandHandler;
 import com.woi.user.application.handlers.queries.GetUserQueryHandler;
+import com.woi.user.application.handlers.queries.GetUserPreferencesQueryHandler;
+import com.woi.user.application.handlers.commands.UpdateUserPreferencesCommandHandler;
 import com.woi.user.application.queries.GetUserQuery;
+import com.woi.user.application.queries.GetUserPreferencesQuery;
+import com.woi.user.application.commands.UpdateUserPreferencesCommand;
 import com.woi.user.application.results.AuthResult;
 import com.woi.user.application.results.UserResult;
+import com.woi.user.application.results.UserPreferenceResult;
 import com.woi.user.infrastructure.web.dtos.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -44,6 +49,8 @@ public class UserController {
     private final ResetPasswordCommandHandler resetPasswordHandler;
     private final ChangePasswordCommandHandler changePasswordHandler;
     private final GetUserQueryHandler getUserHandler;
+    private final GetUserPreferencesQueryHandler getUserPreferencesHandler;
+    private final UpdateUserPreferencesCommandHandler updateUserPreferencesHandler;
     
     public UserController(
             RegisterUserCommandHandler registerHandler,
@@ -52,7 +59,9 @@ public class UserController {
             ForgotPasswordCommandHandler forgotPasswordHandler,
             ResetPasswordCommandHandler resetPasswordHandler,
             ChangePasswordCommandHandler changePasswordHandler,
-            GetUserQueryHandler getUserHandler) {
+            GetUserQueryHandler getUserHandler,
+            GetUserPreferencesQueryHandler getUserPreferencesHandler,
+            UpdateUserPreferencesCommandHandler updateUserPreferencesHandler) {
         this.registerHandler = registerHandler;
         this.loginHandler = loginHandler;
         this.refreshTokenHandler = refreshTokenHandler;
@@ -60,6 +69,8 @@ public class UserController {
         this.resetPasswordHandler = resetPasswordHandler;
         this.changePasswordHandler = changePasswordHandler;
         this.getUserHandler = getUserHandler;
+        this.getUserPreferencesHandler = getUserPreferencesHandler;
+        this.updateUserPreferencesHandler = updateUserPreferencesHandler;
     }
     
     /**
@@ -342,6 +353,65 @@ public class UserController {
                      .orElse(ResponseEntity.notFound().build());
     }
     
+    /**
+     * Get user preferences by user ID
+     * GET /api/v2/user/{id}/preferences
+     * Creates default preferences if they don't exist
+     */
+    @GetMapping("/{id}/preferences")
+    public ResponseEntity<UserPreferenceResponseDTO> getUserPreferences(@PathVariable Long id) {
+        try {
+            GetUserPreferencesQuery query = new GetUserPreferencesQuery(id);
+            UserPreferenceResult result = getUserPreferencesHandler.handle(query);
+            return ResponseEntity.ok(toUserPreferenceResponseDTO(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Update user preferences
+     * PUT /api/v2/user/{id}/preferences
+     * Creates preferences if they don't exist
+     */
+    @PutMapping("/{id}/preferences")
+    @Transactional
+    public ResponseEntity<?> updateUserPreferences(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserPreferencesRequestDTO request,
+            BindingResult bindingResult) {
+        try {
+            if (bindingResult.hasErrors()) {
+                String errorMessage = bindingResult.getFieldErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .findFirst()
+                    .orElse("Ongeldige invoer");
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", errorMessage));
+            }
+            
+            // Context is always SUCCESS (Content Context)
+            UpdateUserPreferencesCommand command = new UpdateUserPreferencesCommand(
+                id,
+                com.woi.user.domain.enums.Context.SUCCESS,
+                request.getDefaultGoalsOkrContext() // Can be null, will default to NONE
+            );
+            
+            UserPreferenceResult result = updateUserPreferencesHandler.handle(command);
+            return ResponseEntity.ok(toUserPreferenceResponseDTO(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Er is een fout opgetreden bij het bijwerken van de voorkeuren."));
+        }
+    }
+    
     // Mapper methods
     private RegisterResponseDTO toRegisterResponseDTO(UserResult result) {
         RegisterResponseDTO dto = new RegisterResponseDTO();
@@ -369,6 +439,18 @@ public class UserController {
         dto.setEmail(result.email());
         dto.setProfileName(result.profileName());
         dto.setStatus(result.status());
+        dto.setCreatedAt(result.createdAt());
+        dto.setUpdatedAt(result.updatedAt());
+        return dto;
+    }
+    
+    private UserPreferenceResponseDTO toUserPreferenceResponseDTO(UserPreferenceResult result) {
+        UserPreferenceResponseDTO dto = new UserPreferenceResponseDTO();
+        dto.setId(result.id());
+        dto.setUserId(result.userId());
+        // defaultMode is no longer exposed in API (always SUCCESS)
+        dto.setDefaultContext(result.defaultContext()); // Always SUCCESS (Content Context)
+        dto.setDefaultGoalsOkrContext(result.defaultGoalsOkrContext());
         dto.setCreatedAt(result.createdAt());
         dto.setUpdatedAt(result.updatedAt());
         return dto;

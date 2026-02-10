@@ -13,6 +13,7 @@ public interface CategoryRepository {
     Optional<Category> findById(Long id);
     Optional<Category> findByCategoryNumber(Integer categoryNumber);
     List<Category> findAll();
+    List<Category> findByWheelId(Long wheelId);
     Category save(Category category);
     void delete(Category category);
 }

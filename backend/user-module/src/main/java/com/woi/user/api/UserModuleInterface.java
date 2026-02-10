@@ -9,6 +9,7 @@ import java.util.Optional;
  * v1 Scope:
  * - User queries (by ID, by email)
  * - User validation (exists, is active)
+ * - User preferences (get, update)
  */
 public interface UserModuleInterface {
     
@@ -41,4 +42,22 @@ public interface UserModuleInterface {
      * @return true if user exists and is ACTIVE, false otherwise
      */
     boolean isUserActive(Long userId);
+    
+    /**
+     * Get user preferences by user ID
+     * Creates default preferences if they don't exist
+     * @param userId User ID
+     * @return User preference summary (never null - creates default if missing)
+     */
+    UserPreferenceSummary getUserPreferences(Long userId);
+    
+    /**
+     * Update user preferences
+     * Creates preferences if they don't exist
+     * @param userId User ID
+     * @param defaultContext Default context (always SUCCESS - Content Context)
+     * @param defaultGoalsOkrContext Default Goals-OKR context (can be null, defaults to NONE)
+     * @return Updated user preference summary
+     */
+    UserPreferenceSummary updateUserPreferences(Long userId, com.woi.user.domain.enums.Context defaultContext, com.woi.user.domain.enums.GoalsOkrContext defaultGoalsOkrContext);
 }

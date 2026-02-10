@@ -46,6 +46,14 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     }
     
     @Override
+    @Transactional(readOnly = true)
+    public List<Category> findByWheelId(Long wheelId) {
+        return jpaRepository.findByWheelId(wheelId).stream()
+            .map(CategoryEntityMapper::toDomain)
+            .collect(Collectors.toList());
+    }
+    
+    @Override
     @Transactional
     public Category save(Category category) {
         CategoryJpaEntity jpaEntity = CategoryEntityMapper.toJpa(category);

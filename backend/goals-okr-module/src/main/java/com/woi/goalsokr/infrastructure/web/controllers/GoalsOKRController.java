@@ -86,6 +86,7 @@ public class GoalsOKRController {
     
     // User-specific query handlers
     private final GetUserGoalsByUserQueryHandler getUserGoalsByUserHandler;
+    private final GetUserGoalQueryHandler getUserGoalHandler;
     private final GetUserObjectivesByUserGoalQueryHandler getUserObjectivesByUserGoalHandler;
     private final GetUserKeyResultsByUserObjectiveQueryHandler getUserKeyResultsByUserObjectiveHandler;
 
@@ -141,6 +142,7 @@ public class GoalsOKRController {
             CreateUserObjectiveCommandHandler createUserObjectiveHandler,
             CreateUserKeyResultCommandHandler createUserKeyResultHandler,
             GetUserGoalsByUserQueryHandler getUserGoalsByUserHandler,
+            GetUserGoalQueryHandler getUserGoalHandler,
             GetUserObjectivesByUserGoalQueryHandler getUserObjectivesByUserGoalHandler,
             GetUserKeyResultsByUserObjectiveQueryHandler getUserKeyResultsByUserObjectiveHandler) {
         this.createGoalHandler = createGoalHandler;
@@ -194,6 +196,7 @@ public class GoalsOKRController {
         this.createUserObjectiveHandler = createUserObjectiveHandler;
         this.createUserKeyResultHandler = createUserKeyResultHandler;
         this.getUserGoalsByUserHandler = getUserGoalsByUserHandler;
+        this.getUserGoalHandler = getUserGoalHandler;
         this.getUserObjectivesByUserGoalHandler = getUserObjectivesByUserGoalHandler;
         this.getUserKeyResultsByUserObjectiveHandler = getUserKeyResultsByUserObjectiveHandler;
     }
@@ -1166,6 +1169,24 @@ public class GoalsOKRController {
         List<UserGoalResult> results = getUserGoalsByUserHandler.handle(
             new GetUserGoalsByUserQuery(userId));
         return ResponseEntity.ok(results);
+    }
+
+    /**
+     * Get a user-specific goal by ID
+     * GET /api/v2/goals-okr/user-goals/{userGoalId}
+     */
+    @GetMapping("/user-goals/{userGoalId}")
+    public ResponseEntity<?> getUserGoal(@PathVariable Long userGoalId) {
+        try {
+            Optional<UserGoalResult> result = getUserGoalHandler.handle(
+                new GetUserGoalQuery(userGoalId));
+            return result.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
     }
 
     // ========== User-Specific Objectives ==========

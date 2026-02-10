@@ -17,9 +17,19 @@ public class LifeDomainEntityMapper {
             return null;
         }
         
+        // Safely parse enum, skip if domain_key doesn't exist in enum
+        LifeDomainType domainKey;
+        try {
+            domainKey = LifeDomainType.valueOf(jpa.getDomainKey());
+        } catch (IllegalArgumentException e) {
+            // Domain key doesn't exist in enum - skip this domain
+            // This can happen if database has domains that were removed from enum
+            return null;
+        }
+        
         LifeDomain domain = new LifeDomain();
         domain.setId(jpa.getId());
-        domain.setDomainKey(LifeDomainType.valueOf(jpa.getDomainKey()));
+        domain.setDomainKey(domainKey);
         domain.setTitleNl(jpa.getTitleNl());
         domain.setTitleEn(jpa.getTitleEn());
         domain.setDescriptionNl(jpa.getDescriptionNl());

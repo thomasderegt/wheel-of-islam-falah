@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public record CategoryResult(
     Long id,
     Integer categoryNumber,
+    Long wheelId,
     String titleNl,
     String titleEn,
     String subtitleNl,
@@ -21,6 +22,7 @@ public record CategoryResult(
         return new CategoryResult(
             category.getId(),
             category.getCategoryNumber(),
+            category.getWheelId(),
             category.getTitleNl(),
             category.getTitleEn(),
             category.getSubtitleNl(),

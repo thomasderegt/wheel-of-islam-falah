@@ -17,7 +17,6 @@ import { useWheels } from '../hooks/useWheels'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Button } from '@/shared/components/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/components/ui/toggle-group'
 import type { LifeDomainDTO } from '../api/goalsOkrApi'
 
 interface NavOKRLifeDomainCircleProps {
@@ -149,16 +148,6 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
     router.push(`/goals-okr/life-domains/${domainId}?wheelId=${selectedWheelId}`)
   }
 
-  const handleWheelChange = (value: string) => {
-    if (value) {
-      const wheelId = Number(value)
-      setSelectedWheelId(wheelId)
-      // Update URL without navigation
-      const params = new URLSearchParams(searchParams?.toString() || '')
-      params.set('wheelId', value)
-      router.replace(`/goals-okr?${params.toString()}`, { scroll: false })
-    }
-  }
 
   const isLoading = isLoadingDomains || isLoadingWheels
 
@@ -192,40 +181,6 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
 
   return (
     <div className="w-full space-y-4">
-      {/* Wheel Toggle - rechtsboven (Life / Business) */}
-      {wheels && wheels.length > 0 && (
-        <div className="flex justify-end mb-4">
-          <ToggleGroup
-            type="single"
-            value={selectedWheelId?.toString() || ''}
-            onValueChange={handleWheelChange}
-            className="bg-muted rounded-full p-1"
-          >
-            {wheels
-              .filter(wheel => 
-                wheel.wheelKey === 'WHEEL_OF_LIFE' || 
-                wheel.wheelKey === 'WHEEL_OF_BUSINESS'
-              )
-              .map((wheel) => {
-                const label = wheel.wheelKey === 'WHEEL_OF_LIFE' 
-                  ? (language === 'nl' ? 'Life' : 'Life')
-                  : (language === 'nl' ? 'Business' : 'Business')
-                
-                return (
-                  <ToggleGroupItem
-                    key={wheel.id}
-                    value={wheel.id.toString()}
-                    aria-label={label}
-                    className="rounded-full px-4 py-1.5"
-                  >
-                    {label}
-                  </ToggleGroupItem>
-                )
-              })}
-          </ToggleGroup>
-        </div>
-      )}
-
       <div className="relative w-full aspect-square">
         {/* SVG Circular Menu */}
         <svg 

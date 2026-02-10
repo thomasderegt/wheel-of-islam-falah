@@ -8,7 +8,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
-import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult } from '../api/goalsOkrApi'
+import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getUserGoal } from '../api/goalsOkrApi'
 import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO, LifeDomainDTO } from '../api/goalsOkrApi'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
@@ -23,6 +23,8 @@ import { useWheels } from '../hooks/useWheels'
 import { useLifeDomains } from '../hooks/useLifeDomains'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useModeContext } from '@/shared/hooks/useModeContext'
+import { getWheelIdFromGoalsOkrContext } from '@/shared/utils/contextUtils'
 
 const COLUMNS: Array<{ id: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'; label: string }> = [
   { id: 'TODO', label: 'To Do' },
@@ -224,7 +226,6 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
   }, [items])
 
   const itemCount = sortedItems.length
-  const showWipLimits = wipLimits && (wipLimits.life !== undefined || wipLimits.business !== undefined)
 
   return (
     <div className="flex-1 min-w-0">
@@ -242,28 +243,6 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">{label}</h3>
           <div className="flex items-center gap-2">
-            {showWipLimits && (
-              <div className="flex items-center gap-1">
-                {wipLimits.life !== undefined && (
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    countsByWheelType.life >= wipLimits.life
-                      ? 'bg-destructive/20 text-destructive font-semibold' 
-                      : 'bg-muted text-muted-foreground'
-                  }`} title={language === 'nl' ? 'Wheel of Life' : 'Wheel of Life'}>
-                    L: {countsByWheelType.life}/{wipLimits.life}
-                  </span>
-                )}
-                {wipLimits.business !== undefined && (
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    countsByWheelType.business >= wipLimits.business
-                      ? 'bg-destructive/20 text-destructive font-semibold' 
-                      : 'bg-muted text-muted-foreground'
-                  }`} title={language === 'nl' ? 'Wheel of Business' : 'Wheel of Business'}>
-                    B: {countsByWheelType.business}/{wipLimits.business}
-                  </span>
-                )}
-              </div>
-            )}
             <span className={`text-sm px-2 py-1 rounded-full ${
               isWipLimitReached 
                 ? 'bg-destructive/20 text-destructive' 
@@ -278,16 +257,6 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
             {language === 'nl' 
               ? `WIP limit bereikt` 
               : `WIP limit reached`}
-            {wipLimits.life !== undefined && countsByWheelType.life >= wipLimits.life && (
-              <span className="ml-1">
-                ({language === 'nl' ? 'Life' : 'Life'}: {countsByWheelType.life}/{wipLimits.life})
-              </span>
-            )}
-            {wipLimits.business !== undefined && countsByWheelType.business >= wipLimits.business && (
-              <span className="ml-1">
-                ({language === 'nl' ? 'Business' : 'Business'}: {countsByWheelType.business}/{wipLimits.business})
-              </span>
-            )}
           </div>
         )}
         <SortableContext items={sortedItems.map(item => item.id.toString())} strategy={verticalListSortingStrategy}>
@@ -341,6 +310,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { goalsOkrContext } = useModeContext()
   const { data: kanbanItems, isLoading } = useKanbanItems(user?.id || null)
   const { data: wheels } = useWheels()
   const { data: lifeDomains } = useLifeDomains()
@@ -355,7 +325,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<{ id: number; title: string } | null>(null)
   
-  // Create maps for wheel type filtering
+  // Create maps for wheel type filtering (still needed for WIP limits display)
   const wheelIdToType = useMemo(() => {
     if (!wheels) return new Map<number, 'life' | 'business'>()
     const map = new Map<number, 'life' | 'business'>()
@@ -380,20 +350,32 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     return map
   }, [lifeDomains])
 
-  // Filter items based on filters
+  // Get target wheelId from goalsOkrContext
+  const targetWheelId = useMemo(() => {
+    if (goalsOkrContext === 'NONE') return null
+    return getWheelIdFromGoalsOkrContext(goalsOkrContext, wheels)
+  }, [goalsOkrContext, wheels])
+
+  // Filter items based on filters AND goalsOkrContext
   const filteredItems = useMemo(() => {
     if (!kanbanItems) return []
+    
+    // If goalsOkrContext is NONE, show nothing
+    if (goalsOkrContext === 'NONE') {
+      return []
+    }
     
     let filtered = kanbanItems
     
     // Filter by showInitiatives toggle (if enabled, only show INITIATIVE items)
-    // If disabled, only show OKR items (GOAL, OBJECTIVE, KEY_RESULT)
+    // If disabled, only show OKR items (GOAL, USER_GOAL, OBJECTIVE, KEY_RESULT)
     if (filters.showInitiatives) {
       filtered = filtered.filter(item => item.itemType === 'INITIATIVE')
     } else {
       // Show only OKR items (exclude INITIATIVE)
       filtered = filtered.filter(item => 
         item.itemType === 'GOAL' || 
+        item.itemType === 'USER_GOAL' ||
         item.itemType === 'OBJECTIVE' || 
         item.itemType === 'KEY_RESULT'
       )
@@ -404,8 +386,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       filtered = filtered.filter(item => item.itemType === filters.itemType)
     }
     
-    // Filter by lifeDomainId
-    // Only filter if we have loaded life domain IDs, otherwise show all items
+    // Filter by lifeDomainId (user can still filter by specific domain)
     if (filters.lifeDomainId && itemLifeDomainIds.size > 0) {
       filtered = filtered.filter(item => {
         const compoundKey = `${item.itemType}-${item.itemId}`
@@ -414,8 +395,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       })
     }
     
-    // Filter by wheelType (life or business)
-    if (filters.wheelType && itemLifeDomainIds.size > 0 && wheelIdToType.size > 0 && lifeDomainIdToWheelId.size > 0) {
+    // Filter by goalsOkrContext (wheelId) - ALWAYS apply this filter
+    if (targetWheelId && itemLifeDomainIds.size > 0 && lifeDomainIdToWheelId.size > 0) {
       filtered = filtered.filter(item => {
         const compoundKey = `${item.itemType}-${item.itemId}`
         const lifeDomainId = itemLifeDomainIds.get(compoundKey)
@@ -424,13 +405,13 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
         const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
         if (!wheelId) return false
         
-        const wheelType = wheelIdToType.get(wheelId)
-        return wheelType === filters.wheelType
+        // Only show items from the target wheel (based on goalsOkrContext)
+        return wheelId === targetWheelId
       })
     }
     
     return filtered
-  }, [kanbanItems, filters, itemLifeDomainIds, wheelIdToType, lifeDomainIdToWheelId])
+  }, [kanbanItems, filters, itemLifeDomainIds, lifeDomainIdToWheelId, goalsOkrContext, targetWheelId])
 
   // Group items by column
   const itemsByColumn = useMemo(() => {
@@ -491,6 +472,18 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
               // Store user instance number
               if (userGoalInstance.number) {
                 numbers.set(`${item.itemType}-${item.itemId}`, userGoalInstance.number)
+              }
+              break
+            }
+            case 'USER_GOAL': {
+              // item.itemId is a userGoalId (UserGoal, not UserGoalInstance)
+              const userGoal = await getUserGoal(item.itemId)
+              if (isCancelled) return
+              title = userGoal.title
+              lifeDomainId = userGoal.lifeDomainId || undefined
+              // Store user goal number
+              if (userGoal.number) {
+                numbers.set(`${item.itemType}-${item.itemId}`, userGoal.number)
               }
               break
             }
@@ -778,6 +771,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       case 'GOAL':
         router.push(`/goals-okr/user-goal-instances/${item.itemId}`)
         break
+      case 'USER_GOAL':
+        // Navigate to user goal page (if it exists) or stay on kanban for now
+        // TODO: Create user goal detail page
+        break
       case 'OBJECTIVE':
         router.push(`/goals-okr/user-objective-instances/${item.itemId}`)
         break
@@ -823,7 +820,12 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {COLUMNS.map((column) => {
-              const items = itemsByColumn[column.id]
+              // Filter items by columnName filter - if filter is set, only show items in that column
+              let items = itemsByColumn[column.id]
+              if (filters.columnName && filters.columnName !== column.id) {
+                // If a column filter is set and this is not the selected column, show empty array
+                items = []
+              }
               const wipLimits = filters.wipLimits ? {
                 life: filters.wipLimits.life?.[column.id],
                 business: filters.wipLimits.business?.[column.id]

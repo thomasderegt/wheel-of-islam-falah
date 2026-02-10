@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of WheelRepository using JPA
  */
-@Component
+@Component("goalsOkrWheelRepositoryImpl")
 public class WheelRepositoryImpl implements WheelRepository {
     
     private final WheelJpaRepository jpaRepository;

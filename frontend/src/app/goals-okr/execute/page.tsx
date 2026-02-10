@@ -12,28 +12,27 @@ import { Container } from '@/shared/components/ui/container'
 import { KanbanBoard } from '@/features/goals-okr/components/KanbanBoard'
 import { KanbanFilterPanel } from '@/features/goals-okr/components/KanbanFilterPanel'
 import { useKanbanFilters } from '@/features/goals-okr/hooks/useKanbanFilters'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/components/ui/toggle-group'
-import { useState } from 'react'
+import { useModeContext } from '@/shared/hooks/useModeContext'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function ExecutePage() {
   // TODO: Get from language context
   const language = 'en' as 'nl' | 'en'
   const { filters, setFilters } = useKanbanFilters()
-  // Initialize viewMode based on filters.showInitiatives
-  const [viewMode, setViewMode] = useState<'OKRs' | 'Initiatives'>(
-    filters.showInitiatives ? 'Initiatives' : 'OKRs'
-  )
+  const { goalsOkrContext } = useModeContext()
+  const router = useRouter()
 
-  const handleViewModeChange = (value: string) => {
-    if (value === 'OKRs' || value === 'Initiatives') {
-      setViewMode(value)
-      // Update filters: if Initiatives, set showInitiatives to true, otherwise false
-      if (value === 'Initiatives') {
-        setFilters({ ...filters, showInitiatives: true })
-      } else {
-        setFilters({ ...filters, showInitiatives: false })
-      }
+  // Redirect if Goals-OKR context is NONE
+  useEffect(() => {
+    if (goalsOkrContext === 'NONE') {
+      router.push('/home')
     }
+  }, [goalsOkrContext, router])
+
+  // Don't render if Goals-OKR context is NONE
+  if (goalsOkrContext === 'NONE') {
+    return null
   }
 
   return (
@@ -48,31 +47,6 @@ export default function ExecutePage() {
             {/* Filter Panel */}
             <div className="mb-6">
               <KanbanFilterPanel value={filters} onChange={setFilters} language={language} />
-            </div>
-
-            {/* View Mode Toggle - tussen filter en kanban board (OKRs vs Initiatives) */}
-            <div className="mb-6 flex justify-end">
-              <ToggleGroup
-                type="single"
-                value={viewMode}
-                onValueChange={handleViewModeChange}
-                className="bg-muted rounded-full p-1"
-              >
-                <ToggleGroupItem
-                  value="OKRs"
-                  aria-label={language === 'nl' ? 'OKRs' : 'OKRs'}
-                  className="rounded-full px-4 py-1.5"
-                >
-                  {language === 'nl' ? 'OKRs' : 'OKRs'}
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="Initiatives"
-                  aria-label={language === 'nl' ? 'Initiatives' : 'Initiatives'}
-                  className="rounded-full px-4 py-1.5"
-                >
-                  {language === 'nl' ? 'Initiatives' : 'Initiatives'}
-                </ToggleGroupItem>
-              </ToggleGroup>
             </div>
 
             {/* Progress Board */}

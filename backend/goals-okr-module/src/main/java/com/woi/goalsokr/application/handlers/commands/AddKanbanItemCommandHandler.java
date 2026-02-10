@@ -29,7 +29,7 @@ public class AddKanbanItemCommandHandler {
         this.numberGenerator = numberGenerator;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {IllegalArgumentException.class})
     public KanbanItemResult handle(AddKanbanItemCommand command) {
         // Validate user exists
         if (!userModule.userExists(command.userId())) {
@@ -41,7 +41,7 @@ public class AddKanbanItemCommandHandler {
         try {
             itemType = ItemType.valueOf(command.itemType());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid item type: " + command.itemType() + ". Must be one of: GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE");
+            throw new IllegalArgumentException("Invalid item type: " + command.itemType() + ". Must be one of: GOAL, USER_GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE");
         }
         kanbanItemRepository.findByUserIdAndItemTypeAndItemId(
             command.userId(),
