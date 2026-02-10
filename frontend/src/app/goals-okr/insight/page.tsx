@@ -296,8 +296,9 @@ export default function KanbanDashboardPage() {
       // Find wheel IDs
       const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
       const wheelOfBusiness = wheels.find(w => w.wheelKey === 'WHEEL_OF_BUSINESS')
+      const wheelOfWork = wheels.find(w => w.wheelKey === 'WHEEL_OF_WORK')
       
-      if (!wheelOfLife && !wheelOfBusiness) {
+      if (!wheelOfLife && !wheelOfBusiness && !wheelOfWork) {
         setIsLoadingQuarterlyGoals(false)
         return
       }
@@ -329,6 +330,12 @@ export default function KanbanDashboardPage() {
           .filter(domain => domain.wheelId === wheelOfBusiness.id)
           .map(domain => ({ id: domain.id, nameNl: domain.titleNl, nameEn: domain.titleEn }))
         allDomainsByWheel.set('WHEEL_OF_BUSINESS', lifeDomainsForBusiness)
+      }
+      if (wheelOfWork) {
+        const lifeDomainsForWork = lifeDomains
+          .filter(domain => domain.wheelId === wheelOfWork.id)
+          .map(domain => ({ id: domain.id, nameNl: domain.titleNl, nameEn: domain.titleEn }))
+        allDomainsByWheel.set('WHEEL_OF_WORK', lifeDomainsForWork)
       }
       setLifeDomainsByWheel(allDomainsByWheel)
 
@@ -395,6 +402,8 @@ export default function KanbanDashboardPage() {
             wheelKey = 'WHEEL_OF_LIFE'
           } else if (wheelId === wheelOfBusiness?.id) {
             wheelKey = 'WHEEL_OF_BUSINESS'
+          } else if (wheelId === wheelOfWork?.id) {
+            wheelKey = 'WHEEL_OF_WORK'
           }
           
           if (!wheelKey) continue
@@ -959,8 +968,11 @@ export default function KanbanDashboardPage() {
                   )
                 }
 
-                // Only show wheel for current Goals-OKR context
-                const wheelOrder = targetWheelKey ? [targetWheelKey] : []
+                // Show wheel(s) based on Goals-OKR context
+                // If ALL, show all wheels; otherwise show only the target wheel
+                const wheelOrder = targetWheelKey 
+                  ? [targetWheelKey] 
+                  : ['WHEEL_OF_LIFE', 'WHEEL_OF_BUSINESS', 'WHEEL_OF_WORK']
                 const wheelNames: Record<string, string> = {
                   'WHEEL_OF_LIFE': 'Wheel of Life',
                   'WHEEL_OF_BUSINESS': 'Wheel of Business',
@@ -1064,7 +1076,7 @@ export default function KanbanDashboardPage() {
 
                   // Add Pie Chart cards for this item type
                   allCards.push(
-                    <div key={`${itemType}-pie`} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div key={`${itemType}-pie`} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {wheelOrder.filter(wheelKey => targetWheelKey ? wheelKey === targetWheelKey : true).map((wheelKey) => {
                         const domainStatsMap = statsConfig.domainStatsMap.get(wheelKey) || new Map()
                         const allDomainsForWheel = lifeDomainsByWheel.get(wheelKey) || []
@@ -1166,7 +1178,7 @@ export default function KanbanDashboardPage() {
                   // Add list cards for this item type as a grid
                   if (listCardsForType.length > 0) {
                     allCards.push(
-                      <div key={`${itemType}-list`} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div key={`${itemType}-list`} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {listCardsForType}
                       </div>
                     )
@@ -1176,8 +1188,8 @@ export default function KanbanDashboardPage() {
                 return <>{allCards}</>
               })()}
 
-              {/* Grid 2 columns */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Grid 3 columns */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Pie Charts by Wheel Type - Each wheel in its own card */}
                 {isLoadingGoalStats ? (
                   <Card>
@@ -1203,9 +1215,13 @@ export default function KanbanDashboardPage() {
                   Array.from(goalStatsByWheel.entries())
                     .filter(([wheelKey]) => targetWheelKey ? wheelKey === targetWheelKey : true)
                     .sort(([a], [b]) => {
-                      // Sort: WHEEL_OF_LIFE first, then WHEEL_OF_BUSINESS
+                      // Sort: WHEEL_OF_LIFE first, then WHEEL_OF_BUSINESS, then WHEEL_OF_WORK
                       if (a === 'WHEEL_OF_LIFE') return -1
                       if (b === 'WHEEL_OF_LIFE') return 1
+                      if (a === 'WHEEL_OF_BUSINESS') return -1
+                      if (b === 'WHEEL_OF_BUSINESS') return 1
+                      if (a === 'WHEEL_OF_WORK') return -1
+                      if (b === 'WHEEL_OF_WORK') return 1
                       return a.localeCompare(b)
                     })
                     .map(([wheelKey, wheelStats]) => {
