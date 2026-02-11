@@ -3,7 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getKanbanItems, addKanbanItem, updateKanbanItemPosition, updateKanbanItemNotes, deleteKanbanItem } from '../api/goalsOkrApi'
+import { getKanbanItems, getTeamKanbanItems, addKanbanItem, updateKanbanItemPosition, updateKanbanItemNotes, deleteKanbanItem } from '../api/goalsOkrApi'
 import type { KanbanItemDTO } from '../api/goalsOkrApi'
 
 /**
@@ -75,5 +75,16 @@ export function useDeleteKanbanItem() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', variables.userId] })
     },
+  })
+}
+
+/**
+ * Get team kanban items (read-only, from team owner)
+ */
+export function useTeamKanbanItems(teamId: number | null) {
+  return useQuery({
+    queryKey: ['goals-okr', 'kanban-items', 'team', teamId],
+    queryFn: () => getTeamKanbanItems(teamId!),
+    enabled: teamId !== null,
   })
 }

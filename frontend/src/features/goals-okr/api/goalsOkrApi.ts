@@ -146,6 +146,7 @@ export interface KanbanItemDTO {
   number?: string | null
   createdAt: string
   updatedAt: string
+  readOnly?: boolean // true for team kanban items (read-only for members)
 }
 
 export interface WheelDTO {
@@ -733,6 +734,17 @@ export async function getKeyResultProgress(
 export async function getKanbanItems(userId: number): Promise<KanbanItemDTO[]> {
   const response = await apiClient.get<KanbanItemDTO[]>(
     `/api/v2/goals-okr/users/${userId}/kanban-items`
+  )
+  return response.data
+}
+
+/**
+ * Get team kanban items (read-only, from team owner)
+ * GET /api/v2/goals-okr/teams/{teamId}/kanban-items
+ */
+export async function getTeamKanbanItems(teamId: number): Promise<KanbanItemDTO[]> {
+  const response = await apiClient.get<KanbanItemDTO[]>(
+    `/api/v2/goals-okr/teams/${teamId}/kanban-items`
   )
   return response.data
 }

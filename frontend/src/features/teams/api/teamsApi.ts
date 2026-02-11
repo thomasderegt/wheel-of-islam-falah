@@ -39,6 +39,16 @@ export interface TeamInvitationDTO {
   createdAt: string
 }
 
+export interface TeamKanbanShareDTO {
+  id: number
+  teamId: number
+  ownerUserId: number
+  sharedAt: string
+  unsharedAt?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 // ========== API Calls ==========
 
 /**
@@ -118,4 +128,44 @@ export async function acceptTeamInvitation(
     `/api/v2/users/teams/invitations/${token}/accept`
   )
   return response.data
+}
+
+/**
+ * Share team kanban board
+ * POST /api/v2/users/teams/{teamId}/kanban/share
+ */
+export async function shareTeamKanban(teamId: number): Promise<TeamKanbanShareDTO> {
+  const response = await apiClient.post<TeamKanbanShareDTO>(
+    `/api/v2/users/teams/${teamId}/kanban/share`
+  )
+  return response.data
+}
+
+/**
+ * Unshare team kanban board
+ * POST /api/v2/users/teams/{teamId}/kanban/unshare
+ */
+export async function unshareTeamKanban(teamId: number): Promise<TeamKanbanShareDTO> {
+  const response = await apiClient.post<TeamKanbanShareDTO>(
+    `/api/v2/users/teams/${teamId}/kanban/unshare`
+  )
+  return response.data
+}
+
+/**
+ * Get team kanban share status
+ * GET /api/v2/users/teams/{teamId}/kanban/share
+ */
+export async function getTeamKanbanShare(teamId: number): Promise<TeamKanbanShareDTO | null> {
+  try {
+    const response = await apiClient.get<TeamKanbanShareDTO>(
+      `/api/v2/users/teams/${teamId}/kanban/share`
+    )
+    return response.data
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null // Not shared
+    }
+    throw error
+  }
 }

@@ -7,7 +7,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
-import { useKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
+import { useKanbanItems, useTeamKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
 import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult } from '../api/goalsOkrApi'
 import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO, LifeDomainDTO } from '../api/goalsOkrApi'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable } from '@dnd-kit/core'
@@ -44,9 +44,10 @@ interface KanbanCardProps {
   onNavigateToInstance?: () => void
 }
 
-function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, language = 'en', onNavigate, onNavigateToInstance }: KanbanCardProps) {
+function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, language = 'en', onNavigate, onNavigateToInstance, readOnly = false }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id.toString(),
+    disabled: readOnly, // Disable drag in read-only mode
   })
 
   const style = {
@@ -73,7 +74,7 @@ function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, langua
       ref={setNodeRef}
       style={style}
       className={`
-        cursor-move transition-all duration-200
+        ${readOnly ? 'cursor-default' : 'cursor-move'} transition-all duration-200
         w-[calc(100%-0.5rem)] self-center
         ${isDragging ? 'opacity-50 shadow-lg scale-105' : 'opacity-100'}
         ${isWireframeTheme 
@@ -83,16 +84,23 @@ function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, langua
     >
       <CardHeader className="p-3 pb-3 flex flex-col">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <div
-            {...attributes}
-            {...listeners}
-            data-drag-handle
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            className="cursor-grab active:cursor-grabbing flex-shrink-0"
-          >
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </div>
+          {!readOnly && (
+            <div
+              {...attributes}
+              {...listeners}
+              data-drag-handle
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="cursor-grab active:cursor-grabbing flex-shrink-0"
+            >
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+            </div>
+          )}
+          {readOnly && (
+            <div className="text-xs text-muted-foreground italic flex-shrink-0">
+              {language === 'nl' ? 'Alleen-lezen' : 'Read-only'}
+            </div>
+          )}
         </div>
         <div className="flex flex-col min-w-0">
           <CardTitle 
@@ -123,20 +131,22 @@ function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, langua
                 Kanban Item: <span className="font-medium text-foreground">{item.number}</span>
               </div>
             )}
-            <div className="flex justify-start mt-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete()
-                }}
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                title={language === 'nl' ? 'Verwijderen' : 'Delete'}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </div>
+            {!readOnly && (
+              <div className="flex justify-start mt-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDelete()
+                  }}
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                  title={language === 'nl' ? 'Verwijderen' : 'Delete'}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -163,9 +173,11 @@ interface KanbanColumnProps {
   }
   wheelIdToType?: Map<number, 'life' | 'business'>
   lifeDomainIdToWheelId?: Map<number, number>
+  targetWheelId?: number | null
+  readOnly?: boolean
 }
 
-function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLifeDomainIds, lifeDomains, onDelete, language = 'en', onNavigate, onNavigateToInstance, isLoadingTitles = false, wipLimits, wheelIdToType, lifeDomainIdToWheelId }: KanbanColumnProps) {
+function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLifeDomainIds, lifeDomains, onDelete, language = 'en', onNavigate, onNavigateToInstance, isLoadingTitles = false, wipLimits, wheelIdToType, lifeDomainIdToWheelId, readOnly = false }: KanbanColumnProps) {
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
 
@@ -277,6 +289,7 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
                     onNavigate={onNavigate ? () => onNavigate(item) : undefined}
                     onNavigateToInstance={onNavigateToInstance ? () => onNavigateToInstance(item) : undefined}
                     language={language}
+                    readOnly={item.readOnly ?? false}
                   />
                 )
               })
@@ -297,8 +310,21 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
+  
+  // Check if team mode
+  const teamId = searchParams?.get('teamId') ? parseInt(searchParams.get('teamId')!) : null
+  const isTeamMode = searchParams?.get('mode') === 'team' && teamId !== null
   const { goalsOkrContext } = useModeContext()
-  const { data: kanbanItems, isLoading } = useKanbanItems(user?.id || null)
+  
+  // Use different hook based on mode
+  const { data: personalKanbanItems, isLoading: isLoadingPersonal } = useKanbanItems(isTeamMode ? null : user?.id ?? null)
+  const { data: teamKanbanItems, isLoading: isLoadingTeam } = useTeamKanbanItems(isTeamMode ? teamId : null)
+  
+  const kanbanItems = isTeamMode ? teamKanbanItems : personalKanbanItems
+  const isLoading = isTeamMode ? isLoadingTeam : isLoadingPersonal
+  
+  // Check if read-only (team mode items are always read-only)
+  const isReadOnly = isTeamMode && kanbanItems && kanbanItems.length > 0 && kanbanItems[0]?.readOnly === true
   const { data: wheels } = useWheels()
   const { data: lifeDomains } = useLifeDomains()
   const updatePositionMutation = useUpdateKanbanItemPosition()
@@ -784,10 +810,20 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
 
   return (
     <div className="space-y-4">
+      {isReadOnly && (
+        <div className="bg-muted border border-border rounded-lg p-3 mb-4">
+          <p className="text-sm text-muted-foreground">
+            {language === 'nl' 
+              ? '📖 Team Kanban Board - Alleen-lezen modus. Je bekijkt het board van de team owner.'
+              : '📖 Team Kanban Board - Read-only mode. You are viewing the team owner\'s board.'}
+          </p>
+        </div>
+      )}
       <DndContext
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        disabled={isReadOnly} // Disable drag & drop in read-only mode
       >
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
