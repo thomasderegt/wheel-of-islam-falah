@@ -2,7 +2,6 @@ package com.woi.user.application.handlers.commands;
 
 import com.woi.user.application.commands.InviteTeamMemberCommand;
 import com.woi.user.application.results.TeamInvitationResult;
-import com.woi.user.domain.entities.Team;
 import com.woi.user.domain.entities.TeamInvitation;
 import com.woi.user.domain.enums.TeamRole;
 import com.woi.user.domain.repositories.TeamInvitationRepository;

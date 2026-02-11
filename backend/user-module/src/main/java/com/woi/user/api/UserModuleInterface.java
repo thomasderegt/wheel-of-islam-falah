@@ -59,7 +59,7 @@ public interface UserModuleInterface {
      * @param defaultGoalsOkrContext Default Goals-OKR context (can be null, defaults to NONE)
      * @return Updated user preference summary
      */
-    UserPreferenceSummary updateUserPreferences(Long userId, String defaultContext, String defaultGoalsOkrContext);
+    UserPreferenceSummary updateUserPreferences(Long userId, com.woi.user.domain.enums.Context defaultContext, com.woi.user.domain.enums.GoalsOkrContext defaultGoalsOkrContext);
     
     /**
      * Get teams for a user
@@ -89,5 +89,5 @@ public interface UserModuleInterface {
      * @param teamId Team ID
      * @return Optional containing owner ID if team exists
      */
-    java.util.Optional<Long> getTeamOwnerId(Long teamId);(Long userId, com.woi.user.domain.enums.Context defaultContext, com.woi.user.domain.enums.GoalsOkrContext defaultGoalsOkrContext);
+    java.util.Optional<Long> getTeamOwnerId(Long teamId);
 }

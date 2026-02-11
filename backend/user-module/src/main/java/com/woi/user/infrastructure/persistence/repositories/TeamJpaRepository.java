@@ -1,7 +1,6 @@
 package com.woi.user.infrastructure.persistence.repositories;
 
 import com.woi.user.infrastructure.persistence.entities.TeamJpaEntity;
-import com.woi.user.infrastructure.persistence.entities.TeamMemberJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
