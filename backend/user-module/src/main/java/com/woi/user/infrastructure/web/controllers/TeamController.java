@@ -15,6 +15,8 @@ import com.woi.user.application.queries.GetTeamsByUserQuery;
 import com.woi.user.application.results.TeamInvitationResult;
 import com.woi.user.application.results.TeamMemberResult;
 import com.woi.user.application.results.TeamResult;
+import com.woi.user.api.UserModuleInterface;
+import com.woi.user.domain.enums.TeamRole;
 import com.woi.user.infrastructure.web.dtos.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +41,7 @@ public class TeamController {
     private final GetTeamMembersQueryHandler getTeamMembersHandler;
     private final InviteTeamMemberCommandHandler inviteMemberHandler;
     private final AcceptTeamInvitationCommandHandler acceptInvitationHandler;
+    private final UserModuleInterface userModule;
     
     public TeamController(
             CreateTeamCommandHandler createTeamHandler,
@@ -46,13 +49,15 @@ public class TeamController {
             GetTeamsByUserQueryHandler getTeamsByUserHandler,
             GetTeamMembersQueryHandler getTeamMembersHandler,
             InviteTeamMemberCommandHandler inviteMemberHandler,
-            AcceptTeamInvitationCommandHandler acceptInvitationHandler) {
+            AcceptTeamInvitationCommandHandler acceptInvitationHandler,
+            UserModuleInterface userModule) {
         this.createTeamHandler = createTeamHandler;
         this.getTeamHandler = getTeamHandler;
         this.getTeamsByUserHandler = getTeamsByUserHandler;
         this.getTeamMembersHandler = getTeamMembersHandler;
         this.inviteMemberHandler = inviteMemberHandler;
         this.acceptInvitationHandler = acceptInvitationHandler;
+        this.userModule = userModule;
     }
     
     /**
@@ -90,7 +95,14 @@ public class TeamController {
      * GET /api/v2/users/teams/{teamId}
      */
     @GetMapping("/{teamId}")
-    public ResponseEntity<TeamResponseDTO> getTeam(@PathVariable Long teamId) {
+    public ResponseEntity<TeamResponseDTO> getTeam(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal Long userId) {
+        // Authorization: User must be a member of the team
+        if (!userModule.isUserTeamMember(userId, teamId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         return getTeamHandler.handle(new GetTeamQuery(teamId))
             .map(result -> new TeamResponseDTO(
                 result.id(),
@@ -110,7 +122,14 @@ public class TeamController {
      * GET /api/v2/users/users/{userId}/teams
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<TeamResponseDTO>> getTeamsByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<TeamResponseDTO>> getTeamsByUser(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal Long authenticatedUserId) {
+        // Authorization: Only the authenticated user can request their own teams
+        if (!userId.equals(authenticatedUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         List<TeamResult> results = getTeamsByUserHandler.handle(new GetTeamsByUserQuery(userId));
         
         List<TeamResponseDTO> response = results.stream()
@@ -133,7 +152,14 @@ public class TeamController {
      * GET /api/v2/users/teams/{teamId}/members
      */
     @GetMapping("/{teamId}/members")
-    public ResponseEntity<List<TeamMemberResponseDTO>> getTeamMembers(@PathVariable Long teamId) {
+    public ResponseEntity<List<TeamMemberResponseDTO>> getTeamMembers(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal Long userId) {
+        // Authorization: User must be a member of the team
+        if (!userModule.isUserTeamMember(userId, teamId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         List<TeamMemberResult> results = getTeamMembersHandler.handle(new GetTeamMembersQuery(teamId));
         
         List<TeamMemberResponseDTO> response = results.stream()
@@ -162,6 +188,13 @@ public class TeamController {
             @PathVariable Long teamId,
             @RequestBody InviteTeamMemberRequestDTO request,
             @AuthenticationPrincipal Long userId) {
+        // Authorization: Only owner or admin can invite
+        String role = userModule.getUserTeamRole(userId, teamId)
+            .orElse(null);
+        if (role == null || (!role.equals(TeamRole.OWNER.name()) && !role.equals(TeamRole.ADMIN.name()))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         try {
             TeamInvitationResult result = inviteMemberHandler.handle(
                 new InviteTeamMemberCommand(
