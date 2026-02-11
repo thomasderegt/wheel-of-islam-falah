@@ -208,7 +208,7 @@ export default function LandingPage() {
                 Succes, Goal- Management & Execution
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                In order to be successful, you need to know how to be good at goal-management and execution. Qalbsalim is here to help you out. Just login and lets grow together.<br />
+                In order to be successful, you need to know how to be good at goal-management and execution. Therefore Qalbsalim is here to help you out. Just login and lets grow together.<br />
                 You will learn things like:
               </p>
             </div>

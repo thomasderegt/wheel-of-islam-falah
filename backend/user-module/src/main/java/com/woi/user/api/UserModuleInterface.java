@@ -59,5 +59,35 @@ public interface UserModuleInterface {
      * @param defaultGoalsOkrContext Default Goals-OKR context (can be null, defaults to NONE)
      * @return Updated user preference summary
      */
-    UserPreferenceSummary updateUserPreferences(Long userId, com.woi.user.domain.enums.Context defaultContext, com.woi.user.domain.enums.GoalsOkrContext defaultGoalsOkrContext);
+    UserPreferenceSummary updateUserPreferences(Long userId, String defaultContext, String defaultGoalsOkrContext);
+    
+    /**
+     * Get teams for a user
+     * @param userId User ID
+     * @return List of team summaries where user is a member
+     */
+    java.util.List<TeamSummary> getTeamsByUserId(Long userId);
+    
+    /**
+     * Check if user is team member
+     * @param userId User ID
+     * @param teamId Team ID
+     * @return true if user is active member of team
+     */
+    boolean isUserTeamMember(Long userId, Long teamId);
+    
+    /**
+     * Get user's role in team
+     * @param userId User ID
+     * @param teamId Team ID
+     * @return Optional containing role if user is member
+     */
+    java.util.Optional<String> getUserTeamRole(Long userId, Long teamId);
+    
+    /**
+     * Get team owner ID
+     * @param teamId Team ID
+     * @return Optional containing owner ID if team exists
+     */
+    java.util.Optional<Long> getTeamOwnerId(Long teamId);(Long userId, com.woi.user.domain.enums.Context defaultContext, com.woi.user.domain.enums.GoalsOkrContext defaultGoalsOkrContext);
 }

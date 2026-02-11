@@ -3,19 +3,27 @@ package com.woi.user.infrastructure.api;
 import com.woi.user.api.UserModuleInterface;
 import com.woi.user.api.UserSummary;
 import com.woi.user.api.UserPreferenceSummary;
+import com.woi.user.api.TeamSummary;
 import com.woi.user.application.handlers.queries.GetUserByEmailQueryHandler;
 import com.woi.user.application.handlers.queries.GetUserQueryHandler;
 import com.woi.user.application.handlers.queries.IsUserActiveQueryHandler;
 import com.woi.user.application.handlers.queries.GetUserPreferencesQueryHandler;
+import com.woi.user.application.handlers.queries.GetTeamsByUserQueryHandler;
 import com.woi.user.application.handlers.commands.UpdateUserPreferencesCommandHandler;
 import com.woi.user.application.queries.GetUserByEmailQuery;
 import com.woi.user.application.queries.GetUserQuery;
 import com.woi.user.application.queries.IsUserActiveQuery;
 import com.woi.user.application.queries.GetUserPreferencesQuery;
+import com.woi.user.application.queries.GetTeamsByUserQuery;
+import com.woi.user.application.queries.GetTeamQuery;
 import com.woi.user.application.commands.UpdateUserPreferencesCommand;
 import com.woi.user.application.results.UserResult;
 import com.woi.user.application.results.UserPreferenceResult;
+import com.woi.user.application.results.TeamResult;
 import com.woi.user.domain.repositories.UserRepository;
+import com.woi.user.domain.repositories.TeamRepository;
+import com.woi.user.domain.repositories.TeamMemberRepository;
+import com.woi.user.domain.enums.TeamMemberStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -31,22 +39,31 @@ public class UserModuleInterfaceImpl implements UserModuleInterface {
     private final GetUserByEmailQueryHandler getUserByEmailHandler;
     private final IsUserActiveQueryHandler isUserActiveHandler;
     private final GetUserPreferencesQueryHandler getUserPreferencesHandler;
+    private final GetTeamsByUserQueryHandler getTeamsByUserHandler;
     private final UpdateUserPreferencesCommandHandler updateUserPreferencesHandler;
     private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
+    private final TeamMemberRepository teamMemberRepository;
     
     public UserModuleInterfaceImpl(
             GetUserQueryHandler getUserHandler,
             GetUserByEmailQueryHandler getUserByEmailHandler,
             IsUserActiveQueryHandler isUserActiveHandler,
             GetUserPreferencesQueryHandler getUserPreferencesHandler,
+            GetTeamsByUserQueryHandler getTeamsByUserHandler,
             UpdateUserPreferencesCommandHandler updateUserPreferencesHandler,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            TeamRepository teamRepository,
+            TeamMemberRepository teamMemberRepository) {
         this.getUserHandler = getUserHandler;
         this.getUserByEmailHandler = getUserByEmailHandler;
         this.isUserActiveHandler = isUserActiveHandler;
         this.getUserPreferencesHandler = getUserPreferencesHandler;
+        this.getTeamsByUserHandler = getTeamsByUserHandler;
         this.updateUserPreferencesHandler = updateUserPreferencesHandler;
         this.userRepository = userRepository;
+        this.teamRepository = teamRepository;
+        this.teamMemberRepository = teamMemberRepository;
     }
     
     @Override
@@ -83,6 +100,33 @@ public class UserModuleInterfaceImpl implements UserModuleInterface {
             new UpdateUserPreferencesCommand(userId, defaultContext, defaultGoalsOkrContext)
         );
         return toPreferenceSummary(result);
+    }
+    
+    @Override
+    public java.util.List<TeamSummary> getTeamsByUserId(Long userId) {
+        java.util.List<TeamResult> results = getTeamsByUserHandler.handle(new GetTeamsByUserQuery(userId));
+        return results.stream()
+            .map(result -> new TeamSummary(result.id(), result.name(), result.ownerId()))
+            .collect(java.util.stream.Collectors.toList());
+    }
+    
+    @Override
+    public boolean isUserTeamMember(Long userId, Long teamId) {
+        return teamMemberRepository.existsByTeamIdAndUserIdAndStatus(
+            teamId, userId, TeamMemberStatus.ACTIVE);
+    }
+    
+    @Override
+    public java.util.Optional<String> getUserTeamRole(Long userId, Long teamId) {
+        return teamMemberRepository.findByTeamIdAndUserId(teamId, userId)
+            .filter(member -> member.getStatus() == TeamMemberStatus.ACTIVE)
+            .map(member -> member.getRole().name());
+    }
+    
+    @Override
+    public java.util.Optional<Long> getTeamOwnerId(Long teamId) {
+        return teamRepository.findById(teamId)
+            .map(team -> team.getOwnerId());
     }
     
     // ========== Mappers ==========
