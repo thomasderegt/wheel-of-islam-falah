@@ -15,9 +15,14 @@ public record KanbanItemResult(
     String notes,
     String number,
     String createdAt,
-    String updatedAt
+    String updatedAt,
+    Boolean readOnly // true for team kanban items (read-only for members)
 ) {
     public static KanbanItemResult from(KanbanItem item) {
+        return from(item, false); // Default: not read-only
+    }
+    
+    public static KanbanItemResult from(KanbanItem item, boolean readOnly) {
         return new KanbanItemResult(
             item.getId(),
             item.getUserId(),
@@ -28,7 +33,8 @@ public record KanbanItemResult(
             item.getNotes(),
             item.getNumber(),
             item.getCreatedAt() != null ? item.getCreatedAt().toString() : null,
-            item.getUpdatedAt() != null ? item.getUpdatedAt().toString() : null
+            item.getUpdatedAt() != null ? item.getUpdatedAt().toString() : null,
+            readOnly
         );
     }
 }

@@ -9,6 +9,7 @@ import com.woi.user.application.handlers.queries.GetUserQueryHandler;
 import com.woi.user.application.handlers.queries.IsUserActiveQueryHandler;
 import com.woi.user.application.handlers.queries.GetUserPreferencesQueryHandler;
 import com.woi.user.application.handlers.queries.GetTeamsByUserQueryHandler;
+import com.woi.user.application.handlers.queries.GetTeamKanbanShareQueryHandler;
 import com.woi.user.application.handlers.commands.UpdateUserPreferencesCommandHandler;
 import com.woi.user.application.queries.GetUserByEmailQuery;
 import com.woi.user.application.queries.GetUserQuery;
@@ -16,6 +17,7 @@ import com.woi.user.application.queries.IsUserActiveQuery;
 import com.woi.user.application.queries.GetUserPreferencesQuery;
 import com.woi.user.application.queries.GetTeamsByUserQuery;
 import com.woi.user.application.queries.GetTeamQuery;
+import com.woi.user.application.queries.GetTeamKanbanShareQuery;
 import com.woi.user.application.commands.UpdateUserPreferencesCommand;
 import com.woi.user.application.results.UserResult;
 import com.woi.user.application.results.UserPreferenceResult;
@@ -41,6 +43,7 @@ public class UserModuleInterfaceImpl implements UserModuleInterface {
     private final GetUserPreferencesQueryHandler getUserPreferencesHandler;
     private final GetTeamsByUserQueryHandler getTeamsByUserHandler;
     private final UpdateUserPreferencesCommandHandler updateUserPreferencesHandler;
+    private final GetTeamKanbanShareQueryHandler getTeamKanbanShareQueryHandler;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
@@ -52,6 +55,7 @@ public class UserModuleInterfaceImpl implements UserModuleInterface {
             GetUserPreferencesQueryHandler getUserPreferencesHandler,
             GetTeamsByUserQueryHandler getTeamsByUserHandler,
             UpdateUserPreferencesCommandHandler updateUserPreferencesHandler,
+            GetTeamKanbanShareQueryHandler getTeamKanbanShareQueryHandler,
             UserRepository userRepository,
             TeamRepository teamRepository,
             TeamMemberRepository teamMemberRepository) {
@@ -61,6 +65,7 @@ public class UserModuleInterfaceImpl implements UserModuleInterface {
         this.getUserPreferencesHandler = getUserPreferencesHandler;
         this.getTeamsByUserHandler = getTeamsByUserHandler;
         this.updateUserPreferencesHandler = updateUserPreferencesHandler;
+        this.getTeamKanbanShareQueryHandler = getTeamKanbanShareQueryHandler;
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
         this.teamMemberRepository = teamMemberRepository;
@@ -127,6 +132,12 @@ public class UserModuleInterfaceImpl implements UserModuleInterface {
     public java.util.Optional<Long> getTeamOwnerId(Long teamId) {
         return teamRepository.findById(teamId)
             .map(team -> team.getOwnerId());
+    }
+    
+    @Override
+    public java.util.Optional<Long> getTeamKanbanShareOwnerId(Long teamId) {
+        return getTeamKanbanShareQueryHandler.handle(new GetTeamKanbanShareQuery(teamId))
+            .map(com.woi.user.application.results.TeamKanbanShareResult::ownerUserId);
     }
     
     // ========== Mappers ==========

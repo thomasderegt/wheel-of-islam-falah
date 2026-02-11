@@ -72,6 +72,7 @@ public class GoalsOKRController {
     private final UpdateKanbanItemNotesCommandHandler updateKanbanItemNotesHandler;
     private final DeleteKanbanItemCommandHandler deleteKanbanItemHandler;
     private final GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler;
+    private final GetTeamKanbanItemsQueryHandler getTeamKanbanItemsHandler;
     private final KanbanItemRepository kanbanItemRepository;
     
     // Repositories for children endpoints
@@ -127,6 +128,7 @@ public class GoalsOKRController {
             UpdateKanbanItemNotesCommandHandler updateKanbanItemNotesHandler,
             DeleteKanbanItemCommandHandler deleteKanbanItemHandler,
             GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler,
+            GetTeamKanbanItemsQueryHandler getTeamKanbanItemsHandler,
             KanbanItemRepository kanbanItemRepository,
             com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository,
@@ -177,6 +179,7 @@ public class GoalsOKRController {
         this.updateKanbanItemNotesHandler = updateKanbanItemNotesHandler;
         this.deleteKanbanItemHandler = deleteKanbanItemHandler;
         this.getKanbanItemsByUserHandler = getKanbanItemsByUserHandler;
+        this.getTeamKanbanItemsHandler = getTeamKanbanItemsHandler;
         this.kanbanItemRepository = kanbanItemRepository;
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
@@ -987,6 +990,28 @@ public class GoalsOKRController {
             List<KanbanItemResult> results = getKanbanItemsByUserHandler.handle(
                 new GetKanbanItemsByUserQuery(userId));
             return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+    
+    /**
+     * Get team kanban items (read-only, from team owner)
+     * GET /api/v2/goals-okr/teams/{teamId}/kanban-items
+     */
+    @GetMapping("/teams/{teamId}/kanban-items")
+    public ResponseEntity<?> getTeamKanbanItems(
+            @PathVariable Long teamId,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal Long userId) {
+        try {
+            List<KanbanItemResult> results = getTeamKanbanItemsHandler.handle(
+                new GetTeamKanbanItemsQuery(teamId, userId));
+            return ResponseEntity.ok(results);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

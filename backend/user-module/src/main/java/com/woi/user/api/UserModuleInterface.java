@@ -90,4 +90,11 @@ public interface UserModuleInterface {
      * @return Optional containing owner ID if team exists
      */
     java.util.Optional<Long> getTeamOwnerId(Long teamId);
+    
+    /**
+     * Get team kanban share owner user ID (if shared)
+     * @param teamId Team ID
+     * @return Optional containing owner user ID if kanban board is shared
+     */
+    java.util.Optional<Long> getTeamKanbanShareOwnerId(Long teamId);
 }

@@ -15,6 +15,13 @@ import com.woi.user.application.queries.GetTeamsByUserQuery;
 import com.woi.user.application.results.TeamInvitationResult;
 import com.woi.user.application.results.TeamMemberResult;
 import com.woi.user.application.results.TeamResult;
+import com.woi.user.application.results.TeamKanbanShareResult;
+import com.woi.user.application.commands.ShareTeamKanbanCommand;
+import com.woi.user.application.commands.UnshareTeamKanbanCommand;
+import com.woi.user.application.queries.GetTeamKanbanShareQuery;
+import com.woi.user.application.handlers.commands.ShareTeamKanbanCommandHandler;
+import com.woi.user.application.handlers.commands.UnshareTeamKanbanCommandHandler;
+import com.woi.user.application.handlers.queries.GetTeamKanbanShareQueryHandler;
 import com.woi.user.api.UserModuleInterface;
 import com.woi.user.domain.enums.TeamRole;
 import com.woi.user.infrastructure.web.dtos.*;
@@ -25,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +49,9 @@ public class TeamController {
     private final GetTeamMembersQueryHandler getTeamMembersHandler;
     private final InviteTeamMemberCommandHandler inviteMemberHandler;
     private final AcceptTeamInvitationCommandHandler acceptInvitationHandler;
+    private final ShareTeamKanbanCommandHandler shareKanbanHandler;
+    private final UnshareTeamKanbanCommandHandler unshareKanbanHandler;
+    private final GetTeamKanbanShareQueryHandler getTeamKanbanShareHandler;
     private final UserModuleInterface userModule;
     
     public TeamController(
@@ -50,6 +61,9 @@ public class TeamController {
             GetTeamMembersQueryHandler getTeamMembersHandler,
             InviteTeamMemberCommandHandler inviteMemberHandler,
             AcceptTeamInvitationCommandHandler acceptInvitationHandler,
+            ShareTeamKanbanCommandHandler shareKanbanHandler,
+            UnshareTeamKanbanCommandHandler unshareKanbanHandler,
+            GetTeamKanbanShareQueryHandler getTeamKanbanShareHandler,
             UserModuleInterface userModule) {
         this.createTeamHandler = createTeamHandler;
         this.getTeamHandler = getTeamHandler;
@@ -57,6 +71,9 @@ public class TeamController {
         this.getTeamMembersHandler = getTeamMembersHandler;
         this.inviteMemberHandler = inviteMemberHandler;
         this.acceptInvitationHandler = acceptInvitationHandler;
+        this.shareKanbanHandler = shareKanbanHandler;
+        this.unshareKanbanHandler = unshareKanbanHandler;
+        this.getTeamKanbanShareHandler = getTeamKanbanShareHandler;
         this.userModule = userModule;
     }
     
@@ -252,5 +269,75 @@ public class TeamController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+    }
+    
+    /**
+     * Share team kanban board
+     * POST /api/v2/users/teams/{teamId}/kanban/share
+     */
+    @PostMapping("/{teamId}/kanban/share")
+    @Transactional
+    public ResponseEntity<?> shareKanban(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal Long userId) {
+        // Authorization: Only team owner can share
+        Long ownerId = userModule.getTeamOwnerId(teamId);
+        if (!ownerId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        try {
+            TeamKanbanShareResult result = shareKanbanHandler.handle(
+                new ShareTeamKanbanCommand(teamId, userId)
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    /**
+     * Unshare team kanban board
+     * POST /api/v2/users/teams/{teamId}/kanban/unshare
+     */
+    @PostMapping("/{teamId}/kanban/unshare")
+    @Transactional
+    public ResponseEntity<?> unshareKanban(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal Long userId) {
+        // Authorization: Only team owner can unshare
+        Long ownerId = userModule.getTeamOwnerId(teamId);
+        if (!ownerId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        try {
+            TeamKanbanShareResult result = unshareKanbanHandler.handle(
+                new UnshareTeamKanbanCommand(teamId, userId)
+            );
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    /**
+     * Get team kanban share status
+     * GET /api/v2/users/teams/{teamId}/kanban/share
+     */
+    @GetMapping("/{teamId}/kanban/share")
+    public ResponseEntity<?> getTeamKanbanShare(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal Long userId) {
+        // Authorization: User must be team member
+        if (!userModule.isUserTeamMember(userId, teamId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        return getTeamKanbanShareHandler.handle(new GetTeamKanbanShareQuery(teamId))
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 }
