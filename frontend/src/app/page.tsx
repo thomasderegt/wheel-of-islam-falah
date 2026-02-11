@@ -105,20 +105,21 @@ export default function LandingPage() {
             {/* Text Content */}
             <div className="space-y-6">
               <div className="text-xl md:text-2xl text-muted-foreground leading-relaxed space-y-4">
-                <p>
-                  Welcome to <span className="font-bold">Qalbsalim</span> (Soundheart).
-                </p>
                 <p className="font-bold">
-                  A platform designed to help you flourish and achieve true success (Falah). Success in this life and the next.
+                  Welcome to Qalbsalim (Soundheart).
+                </p>
+                <p className="italic">
+                  A platform designed to help you flourish and achieve true success (Falah).
                 </p>
                 <p>
-                  Experience sustainable growth through:
+                  Experience growth through:
                 </p>
-                <ul className="list-disc list-inside space-y-2">
-                  <li>Tazkiyyah, the purification and development of the heart</li>
-                  <li>Fiqh, the understanding and application of divine guidelines.</li>
-                  <li>Proven techniques in Goal Management & Execution</li>
-                </ul>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li><span className="font-bold">Falah</span>, i.e. true success, succes that lasts forever.</li>
+                  <li><span className="font-bold">Tazkiyyah</span>, the purification and development of your heart.</li>
+                  <li><span className="font-bold">Fiqh</span>, about your deeds, and the understanding and application of divine guidelines.</li>
+                  <li><span className="font-bold">High-performance</span>, about you able to use proven techniques in Goal- Management & Execution.</li>
+                </ol>
               </div>
 
               {/* Buttons */}
@@ -150,17 +151,17 @@ export default function LandingPage() {
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-              Succes as taught in the Quran & Sunnah
+              Straight from the source:
             </h2>
             <div className="space-y-6">
               <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
-                "The Day when neither wealth nor children will benefit anyone, except one who comes to Allah with a sound heart."<br />
+                "The Day when neither wealth nor children will benefit anyone, except one who comes to Allah (swt) with a sound heart."<br />
                 <span className="text-base not-italic mt-2 block">Qur'an 26:88–89</span>
               </blockquote>
                 
               <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
-                "Allah does not look at your appearance or your wealth, but He looks at your hearts and your deeds."<br />
-                <span className="text-base not-italic mt-2 block">Ṣaḥīḥ Muslim 2564</span>
+                "Allah (swt) does not look at your appearance or your wealth, but He looks at your hearts and your deeds."<br />
+                <span className="text-base not-italic mt-2 block">Prophet Muhammad saws, Ṣaḥīḥ Muslim 2564</span>
               </blockquote>
                 
               <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
@@ -174,7 +175,7 @@ export default function LandingPage() {
               </blockquote>
                 
               <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
-                "Unquestionably, in the remembrance of Allah do hearts find rest."<br />
+                "Unquestionably, in the remembrance of Allah (swt) do hearts find rest."<br />
                 <span className="text-base not-italic mt-2 block">Qur'an 13:28</span>
               </blockquote>
               
@@ -186,6 +187,11 @@ export default function LandingPage() {
               <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
                 "And that the ultimate goal is (going back) to your Lord"<br />
                 <span className="text-base not-italic mt-2 block">Quran 53:42</span>
+              </blockquote>
+              
+              <blockquote className="text-lg md:text-xl text-muted-foreground italic border-l-4 border-primary pl-6">
+                "The Messengers of Allah (swt) are the physicians of the heart"<br />
+                <span className="text-base not-italic mt-2 block">Quote imam Ibn al-Qayyim (ra)</span>
               </blockquote>
             </div>
           </div>
@@ -202,8 +208,8 @@ export default function LandingPage() {
                 Succes, Goal- Management & Execution
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Wanna learn how to be good at goal- management and execution, in order to be succesfull?<br />
-                Just login and lets grow together. You wil learn thinks like:
+                In order to be successful, you need to know how to be good at goal-management and execution. Qalbsalim is here to help you out. Just login and lets grow together.<br />
+                You will learn things like:
               </p>
             </div>
 
@@ -272,18 +278,21 @@ export default function LandingPage() {
             {/* Text Content */}
             <div className="space-y-6">
               <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-                Quote imam Ibn al-Qayyim (ra)
+                The Messengers of Allah (swt) are the physicians of the heart
               </h2>
+              <p className="text-xl text-muted-foreground">
+                Quote imam Ibn al-Qayyim (ra)
+              </p>
               <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
                 <blockquote className="text-lg italic leading-relaxed border-l-4 border-primary pl-6">
-                  "…tazkiyat al-nafs is more difficult and severe than treating the body. 
+                  "…tazkiyat al-nafs is more difficult and severe than treating the body.
                   <br /><br />
-                  Whoever purifies his ego-self through spiritual training (Ryada), disciplining (Mujahada) and retreat (Khalwa), (but mix it) with what was not brought by the Messenger of Allah (himself), then he (someone) is like the sick person who attempts to treat himself with his own opinion, but how does his opinion compare to that of the knowledge of a physician? 
+                  Whoever purifies his ego-self through spiritual training (Ryada), disciplining (Mujahada) and retreat (Khalwa), (but mix it) with what was not brought by the Messenger of Allah (swt) (himself), then he (someone) is like the sick person who attempts to treat himself with his own opinion, but how does his opinion compare to that of the knowledge of a physician?
                   <br /><br />
-                  The Messengers of Allah are the physicians of the heart, and as such there is no way of purifying them nor augmenting them except through their method; putting yourself in their hands and with absolute compliance and submission to them…"
+                  The Messengers of Allah (swt) are the physicians of the heart, and as such there is no way of purifying them nor augmenting them except through their method; putting yourself in their hands and with absolute compliance and submission to them…"
                 </blockquote>
                 <p className="text-sm opacity-75">
-                  [1]
+                  Ibn al-Qayyim (ra), lam al-Muwaqqicin, 2:177.
                 </p>
               </div>
             </div>

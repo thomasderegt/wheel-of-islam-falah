@@ -792,8 +792,6 @@ export default function KanbanDashboardPage() {
         <main className="flex-1 flex flex-col p-8 pb-24">
           <Container className="max-w-6xl mx-auto">
             <div className="space-y-6">
-              <h1 className="text-3xl font-bold">Insight</h1>
-              
               {/* Helper function to render pie chart card */}
               {(() => {
                 const renderPieChartCard = (
