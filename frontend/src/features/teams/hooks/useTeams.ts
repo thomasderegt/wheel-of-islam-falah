@@ -8,8 +8,11 @@ import {
   getTeam,
   getTeamsByUser,
   getTeamMembers,
+  getTeamInvitations,
+  getMyInvitations,
   inviteTeamMember,
   acceptTeamInvitation,
+  declineTeamInvitation,
 } from '../api/teamsApi'
 import type { TeamDTO, TeamMemberDTO, TeamInvitationDTO } from '../api/teamsApi'
 
@@ -47,6 +50,27 @@ export function useTeamMembers(teamId: number | null) {
 }
 
 /**
+ * Get pending team invitations (only for OWNER/ADMIN)
+ */
+export function useTeamInvitations(teamId: number | null) {
+  return useQuery({
+    queryKey: ['teams', teamId, 'invitations'],
+    queryFn: () => getTeamInvitations(teamId!),
+    enabled: teamId !== null,
+  })
+}
+
+/**
+ * Get invitations for the current user (invitations received by me)
+ */
+export function useMyInvitations() {
+  return useQuery({
+    queryKey: ['teams', 'my-invitations'],
+    queryFn: getMyInvitations,
+  })
+}
+
+/**
  * Hook for creating a team
  */
 export function useCreateTeam() {
@@ -80,6 +104,7 @@ export function useInviteTeamMember() {
     }) => inviteTeamMember(teamId, { email, role }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['teams', variables.teamId, 'members'] })
+      queryClient.invalidateQueries({ queryKey: ['teams', variables.teamId, 'invitations'] })
     },
   })
 }
@@ -95,6 +120,21 @@ export function useAcceptTeamInvitation() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] })
       queryClient.invalidateQueries({ queryKey: ['teams', data.teamId, 'members'] })
+      queryClient.invalidateQueries({ queryKey: ['teams', 'my-invitations'] })
+    },
+  })
+}
+
+/**
+ * Hook for declining a team invitation
+ */
+export function useDeclineTeamInvitation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (token: string) => declineTeamInvitation(token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams', 'my-invitations'] })
     },
   })
 }

@@ -2,13 +2,17 @@ package com.woi.user.infrastructure.web.controllers;
 
 import com.woi.user.application.commands.AcceptTeamInvitationCommand;
 import com.woi.user.application.commands.CreateTeamCommand;
+import com.woi.user.application.commands.DeclineTeamInvitationCommand;
 import com.woi.user.application.commands.InviteTeamMemberCommand;
 import com.woi.user.application.handlers.commands.AcceptTeamInvitationCommandHandler;
+import com.woi.user.application.handlers.commands.DeclineTeamInvitationCommandHandler;
 import com.woi.user.application.handlers.commands.CreateTeamCommandHandler;
 import com.woi.user.application.handlers.commands.InviteTeamMemberCommandHandler;
+import com.woi.user.application.handlers.queries.GetTeamInvitationsQueryHandler;
 import com.woi.user.application.handlers.queries.GetTeamMembersQueryHandler;
 import com.woi.user.application.handlers.queries.GetTeamQueryHandler;
 import com.woi.user.application.handlers.queries.GetTeamsByUserQueryHandler;
+import com.woi.user.application.queries.GetTeamInvitationsQuery;
 import com.woi.user.application.queries.GetTeamMembersQuery;
 import com.woi.user.application.queries.GetTeamQuery;
 import com.woi.user.application.queries.GetTeamsByUserQuery;
@@ -25,6 +29,7 @@ import com.woi.user.application.handlers.queries.GetTeamKanbanShareQueryHandler;
 import com.woi.user.api.UserModuleInterface;
 import com.woi.user.domain.enums.TeamRole;
 import com.woi.user.infrastructure.web.dtos.*;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -47,8 +52,10 @@ public class TeamController {
     private final GetTeamQueryHandler getTeamHandler;
     private final GetTeamsByUserQueryHandler getTeamsByUserHandler;
     private final GetTeamMembersQueryHandler getTeamMembersHandler;
+    private final GetTeamInvitationsQueryHandler getTeamInvitationsHandler;
     private final InviteTeamMemberCommandHandler inviteMemberHandler;
     private final AcceptTeamInvitationCommandHandler acceptInvitationHandler;
+    private final DeclineTeamInvitationCommandHandler declineInvitationHandler;
     private final ShareTeamKanbanCommandHandler shareKanbanHandler;
     private final UnshareTeamKanbanCommandHandler unshareKanbanHandler;
     private final GetTeamKanbanShareQueryHandler getTeamKanbanShareHandler;
@@ -59,8 +66,10 @@ public class TeamController {
             GetTeamQueryHandler getTeamHandler,
             GetTeamsByUserQueryHandler getTeamsByUserHandler,
             GetTeamMembersQueryHandler getTeamMembersHandler,
+            GetTeamInvitationsQueryHandler getTeamInvitationsHandler,
             InviteTeamMemberCommandHandler inviteMemberHandler,
             AcceptTeamInvitationCommandHandler acceptInvitationHandler,
+            DeclineTeamInvitationCommandHandler declineInvitationHandler,
             ShareTeamKanbanCommandHandler shareKanbanHandler,
             UnshareTeamKanbanCommandHandler unshareKanbanHandler,
             GetTeamKanbanShareQueryHandler getTeamKanbanShareHandler,
@@ -69,8 +78,10 @@ public class TeamController {
         this.getTeamHandler = getTeamHandler;
         this.getTeamsByUserHandler = getTeamsByUserHandler;
         this.getTeamMembersHandler = getTeamMembersHandler;
+        this.getTeamInvitationsHandler = getTeamInvitationsHandler;
         this.inviteMemberHandler = inviteMemberHandler;
         this.acceptInvitationHandler = acceptInvitationHandler;
+        this.declineInvitationHandler = declineInvitationHandler;
         this.shareKanbanHandler = shareKanbanHandler;
         this.unshareKanbanHandler = unshareKanbanHandler;
         this.getTeamKanbanShareHandler = getTeamKanbanShareHandler;
@@ -84,7 +95,7 @@ public class TeamController {
     @PostMapping
     @Transactional
     public ResponseEntity<TeamResponseDTO> createTeam(
-            @RequestBody CreateTeamRequestDTO request,
+            @Valid @RequestBody CreateTeamRequestDTO request,
             @AuthenticationPrincipal Long userId) {
         try {
             TeamResult result = createTeamHandler.handle(
@@ -108,35 +119,10 @@ public class TeamController {
     }
     
     /**
-     * Get a team by ID
-     * GET /api/v2/users/teams/{teamId}
-     */
-    @GetMapping("/{teamId}")
-    public ResponseEntity<TeamResponseDTO> getTeam(
-            @PathVariable Long teamId,
-            @AuthenticationPrincipal Long userId) {
-        // Authorization: User must be a member of the team
-        if (!userModule.isUserTeamMember(userId, teamId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        return getTeamHandler.handle(new GetTeamQuery(teamId))
-            .map(result -> new TeamResponseDTO(
-                result.id(),
-                result.name(),
-                result.description(),
-                result.ownerId(),
-                result.status(),
-                result.createdAt(),
-                result.updatedAt()
-            ))
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
-    }
-    
-    /**
      * Get all teams for a user
-     * GET /api/v2/users/users/{userId}/teams
+     * GET /api/v2/users/teams/user/{userId}
+     * 
+     * NOTE: This route must come BEFORE /{teamId} to avoid route conflicts
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TeamResponseDTO>> getTeamsByUser(
@@ -162,6 +148,35 @@ public class TeamController {
             .collect(Collectors.toList());
         
         return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Get a team by ID
+     * GET /api/v2/users/teams/{teamId}
+     * 
+     * NOTE: This route must come AFTER /user/{userId} and /invitations/me to avoid route conflicts
+     */
+    @GetMapping("/{teamId}")
+    public ResponseEntity<TeamResponseDTO> getTeam(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal Long userId) {
+        // Authorization: User must be a member of the team
+        if (!userModule.isUserTeamMember(userId, teamId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        return getTeamHandler.handle(new GetTeamQuery(teamId))
+            .map(result -> new TeamResponseDTO(
+                result.id(),
+                result.name(),
+                result.description(),
+                result.ownerId(),
+                result.status(),
+                result.createdAt(),
+                result.updatedAt()
+            ))
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
     
     /**
@@ -196,6 +211,42 @@ public class TeamController {
     }
     
     /**
+     * Get all pending invitations for a team
+     * GET /api/v2/users/teams/{teamId}/invitations
+     */
+    @GetMapping("/{teamId}/invitations")
+    public ResponseEntity<List<TeamInvitationResponseDTO>> getTeamInvitations(
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal Long userId) {
+        // Authorization: Only owner or admin can see pending invitations
+        String role = userModule.getUserTeamRole(userId, teamId)
+            .orElse(null);
+        if (role == null || (!role.equals(TeamRole.OWNER.name()) && !role.equals(TeamRole.ADMIN.name()))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        List<TeamInvitationResult> results = getTeamInvitationsHandler.handle(
+            new GetTeamInvitationsQuery(teamId)
+        );
+        
+        List<TeamInvitationResponseDTO> response = results.stream()
+            .map(result -> new TeamInvitationResponseDTO(
+                result.id(),
+                result.teamId(),
+                result.email(),
+                result.role(),
+                result.invitedById(),
+                result.token(),
+                result.expiresAt(),
+                result.acceptedAt(),
+                result.createdAt()
+            ))
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
      * Invite a team member
      * POST /api/v2/users/teams/{teamId}/members/invite
      */
@@ -203,7 +254,7 @@ public class TeamController {
     @Transactional
     public ResponseEntity<TeamInvitationResponseDTO> inviteMember(
             @PathVariable Long teamId,
-            @RequestBody InviteTeamMemberRequestDTO request,
+            @Valid @RequestBody InviteTeamMemberRequestDTO request,
             @AuthenticationPrincipal Long userId) {
         // Authorization: Only owner or admin can invite
         String role = userModule.getUserTeamRole(userId, teamId)
@@ -272,6 +323,23 @@ public class TeamController {
     }
     
     /**
+     * Decline a team invitation
+     * POST /api/v2/users/teams/invitations/{token}/decline
+     */
+    @PostMapping("/invitations/{token}/decline")
+    @Transactional
+    public ResponseEntity<Void> declineInvitation(
+            @PathVariable String token,
+            @AuthenticationPrincipal Long userId) {
+        try {
+            declineInvitationHandler.handle(new DeclineTeamInvitationCommand(token, userId));
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+    
+    /**
      * Share team kanban board
      * POST /api/v2/users/teams/{teamId}/kanban/share
      */
@@ -281,7 +349,8 @@ public class TeamController {
             @PathVariable Long teamId,
             @AuthenticationPrincipal Long userId) {
         // Authorization: Only team owner can share
-        Long ownerId = userModule.getTeamOwnerId(teamId);
+        Long ownerId = userModule.getTeamOwnerId(teamId)
+            .orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
         if (!ownerId.equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -307,7 +376,8 @@ public class TeamController {
             @PathVariable Long teamId,
             @AuthenticationPrincipal Long userId) {
         // Authorization: Only team owner can unshare
-        Long ownerId = userModule.getTeamOwnerId(teamId);
+        Long ownerId = userModule.getTeamOwnerId(teamId)
+            .orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
         if (!ownerId.equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

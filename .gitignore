@@ -38,6 +38,7 @@ out/
 .vscode/*
 !.vscode/extensions.json
 .idea/
+.cursor/
 *.iml
 *.swp
 *.swo

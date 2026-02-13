@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * User Settings Page
+ * User Management Page
  * 
  * User settings and profile management page
  * Route: /user/settings
@@ -19,10 +19,13 @@ import { useTheme } from '@/shared/contexts/ThemeContext'
 import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/hooks/useUserPreferences'
 import { GoalsOkrContext } from '@/shared/api/types'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Users } from 'lucide-react'
 
 export default function UserSettingsPage() {
   const { user } = useAuth()
   const { userGroup, setUserGroup, availableGroups } = useTheme()
+  const router = useRouter()
   
   // User preferences
   const { data: preferences, isLoading: preferencesLoading } = useUserPreferences(user?.id ?? null)
@@ -70,7 +73,7 @@ export default function UserSettingsPage() {
   const getGoalsOkrContextLabel = (context: GoalsOkrContext): string => {
     switch (context) {
       case 'NONE':
-        return 'None (hide Goal/Execute/Insight)'
+        return 'Wheel of Success'
       case 'LIFE':
         return 'Wheel of Life'
       case 'BUSINESS':
@@ -97,10 +100,10 @@ export default function UserSettingsPage() {
               {/* Header */}
               <div className="space-y-4">
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                  User Settings
+                  User Management
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                  Manage your account settings and preferences
+                  Manage your account, teams, settings and preferences
                 </p>
               </div>
 
@@ -166,14 +169,34 @@ export default function UserSettingsPage() {
                 </CardContent>
               </Card>
 
+              {/* Teams Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Teams</CardTitle>
+                  <CardDescription>
+                    Beheer je teams en werk samen met anderen
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={() => router.push('/teams')}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Ga naar Teams
+                  </Button>
+                </CardContent>
+              </Card>
+
                 {/* Context Settings Card */}
-                <Card className="md:col-span-2">
+                <Card>
                   <CardHeader>
                     <CardTitle>Context Settings</CardTitle>
                     <CardDescription className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Set a specific Context, to have full focus on the area (Life, Biz, Work)</div>
+                      <div className="text-sm text-muted-foreground">Set a specific Context (Life, Biz or Work), to have full focus on the area</div>
                       <div className="text-sm text-muted-foreground">Set the Context to &quot;All&quot;, in order to have overview of all areas</div>
-                      <div className="text-sm text-muted-foreground">Set the Context to &quot;None&quot;, to have full focus on the area True Succes</div>
+                      <div className="text-sm text-muted-foreground">Set the Context to &quot;Wheel of Success&quot;, to fully focus on True Success</div>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -193,7 +216,7 @@ export default function UserSettingsPage() {
                               </SelectValue>
                             </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="NONE">None (hide Goal/Execute/Insight)</SelectItem>
+                            <SelectItem value="NONE">Wheel of Success</SelectItem>
                             <SelectItem value="LIFE">Wheel of Life</SelectItem>
                             <SelectItem value="BUSINESS">Wheel of Business</SelectItem>
                             <SelectItem value="WORK">Wheel of Work</SelectItem>

@@ -131,6 +131,13 @@ function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, langua
                 Kanban Item: <span className="font-medium text-foreground">{item.number}</span>
               </div>
             )}
+            {item.notes && item.notes.trim() && (
+              <div className="text-muted-foreground text-xs mt-1 line-clamp-2">
+                {item.notes.trim().length > 80
+                  ? `${item.notes.trim().slice(0, 80)}...`
+                  : item.notes.trim()}
+              </div>
+            )}
             {!readOnly && (
               <div className="flex justify-start mt-1">
                 <Button
@@ -857,6 +864,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                   wipLimits={wipLimits}
                   wheelIdToType={wheelIdToType}
                   lifeDomainIdToWheelId={lifeDomainIdToWheelId}
+                  targetWheelId={targetWheelId}
+                  readOnly={isReadOnly}
                 />
               )
             })}
@@ -872,6 +881,13 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                     <CardTitle className="text-sm font-medium line-clamp-2">
                       {itemTitles.get(`${activeItem.itemType}-${activeItem.itemId}`) || `${activeItem.itemType} ${activeItem.itemId}`}
                     </CardTitle>
+                    {activeItem.notes && activeItem.notes.trim() && (
+                      <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {activeItem.notes.trim().length > 80
+                          ? `${activeItem.notes.trim().slice(0, 80)}...`
+                          : activeItem.notes.trim()}
+                      </div>
+                    )}
                     <div className="mt-1">
                       <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted">
                         {activeItem.itemType}

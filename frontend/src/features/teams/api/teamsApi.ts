@@ -39,6 +39,18 @@ export interface TeamInvitationDTO {
   createdAt: string
 }
 
+export interface MyTeamInvitationDTO {
+  id: number
+  teamId: number
+  teamName: string
+  role: 'OWNER' | 'ADMIN' | 'MEMBER'
+  invitedById: number
+  inviterName: string
+  token: string
+  expiresAt: string
+  createdAt: string
+}
+
 export interface TeamKanbanShareDTO {
   id: number
   teamId: number
@@ -89,6 +101,17 @@ export async function getTeamsByUser(userId: number): Promise<TeamDTO[]> {
 }
 
 /**
+ * Get all pending invitations for a team
+ * GET /api/v2/users/teams/{teamId}/invitations
+ */
+export async function getTeamInvitations(teamId: number): Promise<TeamInvitationDTO[]> {
+  const response = await apiClient.get<TeamInvitationDTO[]>(
+    `/api/v2/users/teams/${teamId}/invitations`
+  )
+  return response.data
+}
+
+/**
  * Get all members of a team
  * GET /api/v2/users/teams/{teamId}/members
  */
@@ -118,6 +141,17 @@ export async function inviteTeamMember(
 }
 
 /**
+ * Get invitations for the current user
+ * GET /api/v2/users/team-invitations
+ */
+export async function getMyInvitations(): Promise<MyTeamInvitationDTO[]> {
+  const response = await apiClient.get<MyTeamInvitationDTO[]>(
+    '/api/v2/users/team-invitations'
+  )
+  return response.data
+}
+
+/**
  * Accept a team invitation
  * POST /api/v2/users/teams/invitations/{token}/accept
  */
@@ -128,6 +162,14 @@ export async function acceptTeamInvitation(
     `/api/v2/users/teams/invitations/${token}/accept`
   )
   return response.data
+}
+
+/**
+ * Decline a team invitation
+ * POST /api/v2/users/teams/invitations/{token}/decline
+ */
+export async function declineTeamInvitation(token: string): Promise<void> {
+  await apiClient.post(`/api/v2/users/teams/invitations/${token}/decline`)
 }
 
 /**

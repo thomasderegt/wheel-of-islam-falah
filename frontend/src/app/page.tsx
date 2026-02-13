@@ -78,12 +78,11 @@ export default function LandingPage() {
       {/* Navbar */}
       <Navbar variant="landing" />
 
-      {/* SECTION 1 — Hero Section */}
+      {/* SECTION 1 — Gen Z Hero */}
       <section className="relative py-20 px-4 border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">1</div>
         <Container className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-12">
-            {/* Text Content */}
             <div className="space-y-6">
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-foreground">
                 Hey Gen Z!<br />
@@ -98,31 +97,51 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 2 — Welcome to Qalbsalim */}
-      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+      <section className="relative py-20 px-4 border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">2</div>
         <Container className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-12">
-            {/* Text Content */}
             <div className="space-y-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground">
+                Welcome to Qalbsalim (Soundheart),
+              </h1>
               <div className="text-xl md:text-2xl text-muted-foreground leading-relaxed space-y-4">
-                <p className="font-bold">
-                  Welcome to Qalbsalim (Soundheart).
-                </p>
-                <p className="italic">
-                  A platform designed to help you flourish and achieve true success (Falah).
+                <p>
+                  A platform designed to help you flourish and achieve success. Without compromising the dunya over the akhirah or vice versa.
                 </p>
                 <p>
-                  Experience growth through:
+                  Hence Allah (swt) says:
                 </p>
-                <ol className="list-decimal list-inside space-y-2">
-                  <li><span className="font-bold">Falah</span>, i.e. true success, succes that lasts forever.</li>
-                  <li><span className="font-bold">Tazkiyyah</span>, the purification and development of your heart.</li>
-                  <li><span className="font-bold">Fiqh</span>, about your deeds, and the understanding and application of divine guidelines.</li>
-                  <li><span className="font-bold">High-performance</span>, about you able to use proven techniques in Goal- Management & Execution.</li>
-                </ol>
+                <blockquote className="text-lg md:text-xl italic border-l-4 border-primary pl-6">
+                  &quot;Our Lord, give us in this world good and in the Hereafter good, (...).&quot;<br />
+                  <span className="text-base not-italic mt-2 block">Qur&apos;an 2:201</span>
+                </blockquote>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 3 — Hayya 'alal-falah */}
+      <section className="relative py-20 px-4 border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">3</div>
+        <Container className="max-w-7xl mx-auto">
+          <div className="flex flex-col gap-12">
+            <div className="space-y-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                Hayya &apos;alal-falah
+              </h2>
+              <div className="text-xl md:text-2xl text-muted-foreground leading-relaxed space-y-4">
+                <p>
+                  Experience Falah through:
+                </p>
+                <ul className="space-y-3 mt-6">
+                  <li>Through <span className="font-bold">Tazkiyyah</span>, the purification and development of your heart.</li>
+                  <li>And <span className="font-bold">Fiqh</span>, understanding and applying the divine dos and don&apos;ts concerning your actions.</li>
+                  <li>And, <span className="font-bold">High-performance</span>, being able to use proven techniques in Goal-Management & Execution, to keep you focused on success.</li>
+                </ul>
               </div>
 
-              {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button
                   onClick={handleGetStarted}
@@ -145,9 +164,9 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 3 — Success as taught in the Quran, Sunnah */}
+      {/* SECTION 4 — Success as taught in the Quran, Sunnah */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
-        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">3</div>
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">4</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
@@ -198,7 +217,23 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 4 — Goal Management & Execution */}
+      {/* SECTION 5 — Wheel of Islam Model */}
+      <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
+        <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">5</div>
+        <Container className="max-w-6xl mx-auto">
+          <div className="space-y-6">
+            <div className="flex justify-center">
+              <img 
+                src="/WheelOfIslamModel.png" 
+                alt="Wheel of Islam Model" 
+                className="max-w-full h-auto"
+              />
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* SECTION 6 — Goal Management & Execution */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">4</div>
         <Container className="max-w-6xl mx-auto">
@@ -207,8 +242,8 @@ export default function LandingPage() {
               <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
                 Succes, Goal- Management & Execution
               </h2>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                In order to be successful, you need to know how to be good at goal-management and execution. Therefore Qalbsalim is here to help you out. Just login and lets grow together.<br />
+                <p className="text-xl text-muted-foreground leading-relaxed">
+                To be successful, you need to know how to manage goals and execute them effectively. Qalbsalim is here to help. Just log in and let us grow together.<br />
                 You will learn things like:
               </p>
             </div>
@@ -254,15 +289,15 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 5 — Wheel of Life */}
+      {/* SECTION 7 — Wheel of Work */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">5</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-6">
             <div className="flex justify-center">
               <img 
-                src="/WheelOfLife.png" 
-                alt="Wheel of Life" 
+                src="/WheelOfWork.jpeg" 
+                alt="Wheel of Work" 
                 className="max-w-full h-auto"
               />
             </div>
@@ -270,7 +305,7 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 6 — Imam Ibn al-Qayyim on Tazkiyah */}
+      {/* SECTION 8 — Imam Ibn al-Qayyim on Tazkiyah */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">6</div>
         <Container className="max-w-7xl mx-auto">
@@ -300,15 +335,15 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 7 — Wheel of Islam Model */}
+      {/* SECTION 9 — Wheel of Life */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">7</div>
         <Container className="max-w-6xl mx-auto">
           <div className="space-y-6">
             <div className="flex justify-center">
               <img 
-                src="/WheelOfIslamModel.png" 
-                alt="Wheel of Islam Model" 
+                src="/WheelOfLife.png" 
+                alt="Wheel of Life" 
                 className="max-w-full h-auto"
               />
             </div>
@@ -316,7 +351,7 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 8 — Core Concepts of Success */}
+      {/* SECTION 10 — Core Concepts of Success */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">8</div>
         <Container className="max-w-6xl mx-auto">
@@ -404,7 +439,7 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 9 — Image Carousel */}
+      {/* SECTION 11 — Image Carousel */}
       <section className="relative py-20 px-4 bg-background border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">9</div>
         <Container className="max-w-7xl mx-auto">
@@ -442,7 +477,7 @@ export default function LandingPage() {
         </Container>
       </section>
 
-      {/* SECTION 10 — Why Success Needs Inner Strength */}
+      {/* SECTION 12 — Why Success Needs Inner Strength */}
       <section className="relative py-20 px-4 bg-muted/30 border-b border-dashed border-border">
         <div className="absolute top-4 left-4 text-2xl font-bold text-muted-foreground">10</div>
         <Container className="max-w-6xl mx-auto">
