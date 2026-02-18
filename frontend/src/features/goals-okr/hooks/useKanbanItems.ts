@@ -28,6 +28,9 @@ export function useAddKanbanItem() {
       addKanbanItem(request),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', variables.userId] })
+      if (variables.itemType === 'OBJECTIVE') {
+        queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userObjectiveInstances'] })
+      }
     },
   })
 }

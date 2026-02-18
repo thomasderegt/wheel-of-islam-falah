@@ -15,7 +15,7 @@ public class ObjectiveEntityMapper {
 
         Objective domain = new Objective();
         domain.setId(jpaEntity.getId());
-        domain.setGoalId(jpaEntity.getGoalId());
+        domain.setLifeDomainId(jpaEntity.getLifeDomainId());
         domain.setTitleNl(jpaEntity.getTitleNl());
         domain.setTitleEn(jpaEntity.getTitleEn());
         domain.setDescriptionNl(jpaEntity.getDescriptionNl());
@@ -35,7 +35,7 @@ public class ObjectiveEntityMapper {
 
         ObjectiveJpaEntity jpaEntity = new ObjectiveJpaEntity();
         jpaEntity.setId(domain.getId());
-        jpaEntity.setGoalId(domain.getGoalId());
+        jpaEntity.setLifeDomainId(domain.getLifeDomainId());
         jpaEntity.setTitleNl(domain.getTitleNl());
         jpaEntity.setTitleEn(domain.getTitleEn());
         jpaEntity.setDescriptionNl(domain.getDescriptionNl());

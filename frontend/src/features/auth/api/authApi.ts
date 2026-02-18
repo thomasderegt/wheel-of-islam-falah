@@ -3,6 +3,7 @@ import {
   LoginRequest,
   RegisterRequest,
   RefreshTokenRequest,
+  ChangePasswordRequest,
   LoginResponse,
   RegisterResponse,
   RefreshTokenResponse,
@@ -62,6 +63,18 @@ export const authApi = {
    */
   async getUserPreferences(userId: number): Promise<UserPreferenceResponse> {
     const response = await apiClient.get<UserPreferenceResponse>(`/api/v2/user/${userId}/preferences`)
+    return response.data
+  },
+
+  /**
+   * Change password (when logged in)
+   */
+  async changePassword(userId: number, data: ChangePasswordRequest): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>(
+      '/api/v2/user/change-password',
+      data,
+      { headers: { 'X-User-Id': String(userId) } }
+    )
     return response.data
   },
 

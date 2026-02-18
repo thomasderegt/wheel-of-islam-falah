@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { User, AuthTokens } from '../types'
 import { config } from '@/shared/constants/config'
 
@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage',
-      storage: safeStorage as unknown as { getItem: (n: string) => string | null; setItem: (n: string, v: string) => void; removeItem: (n: string) => void },
+      storage: createJSONStorage(() => safeStorage),
       partialize: (state) => ({
         user: state.user,
         tokens: state.tokens,

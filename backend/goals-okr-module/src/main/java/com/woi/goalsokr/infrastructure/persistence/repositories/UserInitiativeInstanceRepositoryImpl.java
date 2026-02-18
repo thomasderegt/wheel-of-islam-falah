@@ -54,6 +54,14 @@ public class UserInitiativeInstanceRepositoryImpl implements UserInitiativeInsta
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UserInitiativeInstance> findByInitiativeId(Long initiativeId) {
+        return jpaRepository.findByInitiativeId(initiativeId).stream()
+            .map(UserInitiativeInstanceEntityMapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public UserInitiativeInstance save(UserInitiativeInstance userInitiativeInstance) {
         UserInitiativeInstanceJpaEntity jpaEntity = UserInitiativeInstanceEntityMapper.toJpa(userInitiativeInstance);

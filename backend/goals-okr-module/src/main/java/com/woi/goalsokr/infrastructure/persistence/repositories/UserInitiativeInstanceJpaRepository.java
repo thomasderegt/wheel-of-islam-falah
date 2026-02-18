@@ -15,4 +15,5 @@ public interface UserInitiativeInstanceJpaRepository extends JpaRepository<UserI
     List<UserInitiativeInstanceJpaEntity> findByUserKeyResultInstanceId(Long userKeyResultInstanceId);
     List<UserInitiativeInstanceJpaEntity> findByUserKeyResultInstanceIdIn(List<Long> userKeyResultInstanceIds);
     Optional<UserInitiativeInstanceJpaEntity> findByUserKeyResultInstanceIdAndInitiativeId(Long userKeyResultInstanceId, Long initiativeId);
+    List<UserInitiativeInstanceJpaEntity> findByInitiativeId(Long initiativeId);
 }

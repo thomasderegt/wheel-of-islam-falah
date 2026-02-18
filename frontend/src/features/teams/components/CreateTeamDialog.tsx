@@ -127,7 +127,7 @@ export function CreateTeamDialog({ open, onOpenChange, onSuccess }: CreateTeamDi
             >
               {createTeamMutation.isPending ? (
                 <>
-                  <Loading className="mr-2" />
+                  <Loading />
                   Aanmaken...
                 </>
               ) : (

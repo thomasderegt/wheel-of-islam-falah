@@ -6,6 +6,7 @@
  * This is an alias for /goals-okr/kanban
  */
 
+import { Suspense, useEffect } from 'react'
 import { ProtectedRoute } from '@/features/auth'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
@@ -13,10 +14,10 @@ import { KanbanBoard } from '@/features/goals-okr/components/KanbanBoard'
 import { KanbanFilterPanel } from '@/features/goals-okr/components/KanbanFilterPanel'
 import { useKanbanFilters } from '@/features/goals-okr/hooks/useKanbanFilters'
 import { useModeContext } from '@/shared/hooks/useModeContext'
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Loading } from '@/shared/components/ui/Loading'
 
-export default function ExecutePage() {
+function ExecuteContent() {
   // TODO: Get from language context
   const language = 'en' as 'nl' | 'en'
   const { filters, setFilters } = useKanbanFilters()
@@ -55,5 +56,20 @@ export default function ExecutePage() {
         </main>
       </div>
     </ProtectedRoute>
+  )
+}
+
+export default function ExecutePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Navbar variant="landing" />
+        <main className="flex-1 flex items-center justify-center p-8">
+          <Loading />
+        </main>
+      </div>
+    }>
+      <ExecuteContent />
+    </Suspense>
   )
 }

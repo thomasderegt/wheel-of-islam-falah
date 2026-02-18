@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  */
 public record ObjectiveResult(
     Long id,
-    Long goalId,
+    Long lifeDomainId,
     String titleNl,
     String titleEn,
     String descriptionNl,
@@ -20,7 +20,7 @@ public record ObjectiveResult(
     public static ObjectiveResult from(com.woi.goalsokr.domain.entities.Objective objective) {
         return new ObjectiveResult(
             objective.getId(),
-            objective.getGoalId(),
+            objective.getLifeDomainId(),
             objective.getTitleNl(),
             objective.getTitleEn(),
             objective.getDescriptionNl(),

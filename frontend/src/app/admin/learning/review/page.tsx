@@ -231,9 +231,8 @@ export default function LearningReviewPage() {
                     sectionId: value && value !== '__all__' ? Number(value) : undefined,
                   })
                 }
-                disabled={loadingSections}
               >
-                <SelectTrigger>
+                <SelectTrigger disabled={loadingSections}>
                   <SelectValue placeholder="Select section" />
                 </SelectTrigger>
                 <SelectContent>

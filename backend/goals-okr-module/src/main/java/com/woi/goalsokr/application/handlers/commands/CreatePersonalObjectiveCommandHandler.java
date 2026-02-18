@@ -6,19 +6,15 @@ import com.woi.goalsokr.application.commands.CreatePersonalObjectiveCommand;
 import com.woi.goalsokr.application.commands.StartUserObjectiveInstanceCommand;
 import com.woi.goalsokr.application.results.UserObjectiveInstanceResult;
 import com.woi.goalsokr.domain.repositories.ObjectiveRepository;
-import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Command handler for creating a personal objective.
- * 
- * This handler:
- * 1. Gets the Goal ID from the UserGoalInstance
- * 2. Creates an Objective template
- * 3. Starts a UserObjectiveInstance for the user
- * 4. Adds the instance to the kanban board (type OBJECTIVE, itemId = userObjectiveInstanceId)
+ * 1. Creates an Objective template under the given life domain
+ * 2. Starts a UserObjectiveInstance for the user
+ * 3. Adds the instance to the kanban board (type OBJECTIVE, itemId = userObjectiveInstanceId)
  */
 @Component
 public class CreatePersonalObjectiveCommandHandler {
@@ -26,7 +22,6 @@ public class CreatePersonalObjectiveCommandHandler {
     private final StartUserObjectiveInstanceCommandHandler startInstanceHandler;
     private final AddKanbanItemCommandHandler addKanbanItemHandler;
     private final ObjectiveRepository objectiveRepository;
-    private final UserGoalInstanceRepository userGoalInstanceRepository;
     private final UserModuleInterface userModule;
 
     public CreatePersonalObjectiveCommandHandler(
@@ -34,13 +29,11 @@ public class CreatePersonalObjectiveCommandHandler {
             StartUserObjectiveInstanceCommandHandler startInstanceHandler,
             AddKanbanItemCommandHandler addKanbanItemHandler,
             ObjectiveRepository objectiveRepository,
-            UserGoalInstanceRepository userGoalInstanceRepository,
             UserModuleInterface userModule) {
         this.createObjectiveHandler = createObjectiveHandler;
         this.startInstanceHandler = startInstanceHandler;
         this.addKanbanItemHandler = addKanbanItemHandler;
         this.objectiveRepository = objectiveRepository;
-        this.userGoalInstanceRepository = userGoalInstanceRepository;
         this.userModule = userModule;
     }
 
@@ -51,24 +44,13 @@ public class CreatePersonalObjectiveCommandHandler {
             throw new IllegalArgumentException("User not found: " + command.userId());
         }
 
-        // Get UserGoalInstance to find the Goal ID
-        var userGoalInstance = userGoalInstanceRepository.findById(command.userGoalInstanceId())
-            .orElseThrow(() -> new IllegalArgumentException("User Goal Instance not found: " + command.userGoalInstanceId()));
-
-        // Validate that the UserGoalInstance belongs to the user
-        if (!userGoalInstance.getUserId().equals(command.userId())) {
-            throw new IllegalArgumentException("User Goal Instance does not belong to user: " + command.userId());
-        }
-
-        Long goalId = userGoalInstance.getGoalId();
-
-        // Calculate next orderIndex for this goal
-        var existingObjectives = objectiveRepository.findByGoalId(goalId);
+        // Calculate next orderIndex for this life domain
+        var existingObjectives = objectiveRepository.findByLifeDomainId(command.lifeDomainId());
         int nextOrderIndex = existingObjectives.size() + 1;
 
         // 1. Create Objective template
         var objectiveResult = createObjectiveHandler.handle(new CreateObjectiveCommand(
-            goalId,
+            command.lifeDomainId(),
             null, // titleNl - not provided for personal objectives
             command.title(), // titleEn
             null, // descriptionNl - not provided
@@ -80,7 +62,6 @@ public class CreatePersonalObjectiveCommandHandler {
         var instanceResult = startInstanceHandler.handle(
             new StartUserObjectiveInstanceCommand(
                 command.userId(),
-                command.userGoalInstanceId(),
                 objectiveResult.id()
             )
         );

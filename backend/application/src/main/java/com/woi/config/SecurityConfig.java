@@ -56,7 +56,7 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/v2/user/register", "/api/v2/user/login", 
                                 "/api/v2/user/forgot-password", "/api/v2/user/reset-password",
-                                "/api/v2/user/refresh-token").permitAll()
+                                "/api/v2/user/refresh", "/api/v2/user/refresh-token").permitAll()
                 // All other endpoints require authentication (will be configured later with JWT)
                 .anyRequest().permitAll() // Temporarily allow all for testing
             );

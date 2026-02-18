@@ -16,7 +16,6 @@ import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { ProtectedRoute } from '@/features/auth'
 import { NavBookCircle } from '@/features/content'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function BookPage() {
   const params = useParams()
@@ -38,9 +37,6 @@ export default function BookPage() {
                 Book {bookId}
               </h1>
             </div>
-
-            {/* Hierarchical Navigation */}
-            <AutoHierarchicalNavigation language={language} />
 
             {/* NavBookCircle */}
             <div className="flex items-center justify-center min-h-[600px]">

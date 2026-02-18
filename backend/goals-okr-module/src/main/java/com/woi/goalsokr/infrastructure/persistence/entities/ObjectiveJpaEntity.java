@@ -15,8 +15,8 @@ public class ObjectiveJpaEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "goal_id", nullable = false)
-    private Long goalId; // FK to goals_okr.goals (was life_domain_id)
+    @Column(name = "life_domain_id", nullable = false)
+    private Long lifeDomainId; // FK to goals_okr.life_domains
 
     @Column(name = "title_nl", nullable = false)
     private String titleNl;
@@ -49,8 +49,8 @@ public class ObjectiveJpaEntity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getGoalId() { return goalId; }
-    public void setGoalId(Long goalId) { this.goalId = goalId; }
+    public Long getLifeDomainId() { return lifeDomainId; }
+    public void setLifeDomainId(Long lifeDomainId) { this.lifeDomainId = lifeDomainId; }
 
     public String getTitleNl() { return titleNl; }
     public void setTitleNl(String titleNl) { this.titleNl = titleNl; }

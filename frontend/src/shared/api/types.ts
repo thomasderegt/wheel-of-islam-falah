@@ -35,6 +35,11 @@ export interface RefreshTokenRequest {
   refreshToken: string
 }
 
+export interface ChangePasswordRequest {
+  oldPassword: string
+  newPassword: string
+}
+
 export interface RefreshTokenResponse {
   token: string
   refreshToken: string

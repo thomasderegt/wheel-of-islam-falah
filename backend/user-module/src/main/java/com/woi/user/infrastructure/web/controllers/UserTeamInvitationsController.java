@@ -4,11 +4,13 @@ import com.woi.user.application.handlers.queries.GetInvitationsForUserQueryHandl
 import com.woi.user.application.queries.GetInvitationsForUserQuery;
 import com.woi.user.application.results.MyTeamInvitationResult;
 import com.woi.user.infrastructure.web.dtos.MyTeamInvitationResponseDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -31,8 +33,12 @@ public class UserTeamInvitationsController {
      * GET /api/v2/users/team-invitations
      */
     @GetMapping
-    public ResponseEntity<List<MyTeamInvitationResponseDTO>> getMyInvitations(
+    public ResponseEntity<?> getMyInvitations(
             @AuthenticationPrincipal Long userId) {
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Authentication required"));
+        }
         List<MyTeamInvitationResult> results = getInvitationsForUserHandler.handle(
             new GetInvitationsForUserQuery(userId)
         );

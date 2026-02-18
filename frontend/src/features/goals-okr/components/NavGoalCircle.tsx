@@ -2,26 +2,29 @@
 
 /**
  * NavGoalCircle Component
- * 
- * Grid navigation voor goals binnen een life domain
- * - Goals in een grid layout
- * - Click handlers voor navigatie naar objectives
+ *
+ * Grid navigation voor objectives binnen een life domain (goal layer removed).
+ * - Objectives in een grid layout
+ * - Create Personal Objective card
+ * - Add to Kanban = start user objective instance + add OBJECTIVE item
  */
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useGoalsByLifeDomain } from '../hooks/useGoalsByLifeDomain'
+import { useObjectivesByLifeDomain } from '../hooks/useObjectivesByLifeDomain'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useAuth } from '@/features/auth'
 import { useAddKanbanItem } from '../hooks/useKanbanItems'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
-import { CreateUserGoalDialog } from './CreateUserGoalDialog'
-import { Plus } from 'lucide-react'
+import { CreatePersonalObjectiveDialog } from './CreatePersonalObjectiveDialog'
+import { Plus, Trash2 } from 'lucide-react'
+import { useDeleteObjective } from '../hooks/useDeleteObjective'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { startUserGoalInstance } from '../api/goalsOkrApi'
-import type { GoalDTO } from '../api/goalsOkrApi'
+import { startUserObjectiveInstance } from '../api/goalsOkrApi'
+import type { ObjectiveDTO } from '../api/goalsOkrApi'
 
 interface NavGoalCircleProps {
   readonly lifeDomainId: number
@@ -30,97 +33,118 @@ interface NavGoalCircleProps {
 
 export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCircleProps) {
   const router = useRouter()
-  const { data: goals, isLoading } = useGoalsByLifeDomain(lifeDomainId)
+  const { data: objectives, isLoading } = useObjectivesByLifeDomain(lifeDomainId)
   const { userGroup } = useTheme()
   const { user } = useAuth()
   const addKanbanItem = useAddKanbanItem()
   const queryClient = useQueryClient()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
-  
-  // Modal state
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
-  const [selectedGoal, setSelectedGoal] = useState<GoalDTO | null>(null)
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
-  // Mutation for starting goal instance
-  const startGoalInstanceMutation = useMutation({
-    mutationFn: ({ userId, goalId }: { userId: number; goalId: number }) =>
-      startUserGoalInstance(userId, goalId),
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [selectedObjective, setSelectedObjective] = useState<ObjectiveDTO | null>(null)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [objectiveToDelete, setObjectiveToDelete] = useState<ObjectiveDTO | null>(null)
+  const deleteObjectiveMutation = useDeleteObjective()
+
+  const startObjectiveInstanceMutation = useMutation({
+    mutationFn: ({ userId, objectiveId }: { userId: number; objectiveId: number }) =>
+      startUserObjectiveInstance(userId, objectiveId),
   })
 
-  // Helper function to get goal title based on language
-  const getGoalTitle = (goal: GoalDTO): string => {
-    if (language === 'nl' && goal.titleNl) {
-      return goal.titleNl
-    }
-    return goal.titleEn || goal.titleNl || `Goal ${goal.id}`
+  const getObjectiveTitle = (obj: ObjectiveDTO): string => {
+    if (language === 'nl' && obj.titleNl) return obj.titleNl
+    return obj.titleEn || obj.titleNl || `Objective ${obj.id}`
   }
 
-  const handleGoalClick = (goalId: number) => {
-    router.push(`/goals-okr/goals/${goalId}/objectives`)
-  }
-
-  const handleAddToKanbanClick = (e: React.MouseEvent, goal: GoalDTO) => {
+  const handleAddToKanbanClick = (e: React.MouseEvent, objective: ObjectiveDTO) => {
+    e.preventDefault()
     e.stopPropagation()
     if (!user?.id) return
-    setSelectedGoal(goal)
+    setSelectedObjective(objective)
     setConfirmDialogOpen(true)
   }
 
   const handleConfirmAddToKanban = async () => {
-    if (!user?.id || !selectedGoal) return
-    
+    if (!user?.id || !selectedObjective) return
+
     try {
-      // 1. Start UserGoalInstance first
-      const userGoalInstance = await startGoalInstanceMutation.mutateAsync({
+      const instance = await startObjectiveInstanceMutation.mutateAsync({
         userId: user.id,
-        goalId: selectedGoal.id,
+        objectiveId: selectedObjective.id,
       })
-      
-      // Validate that we got a valid instance ID
-      if (!userGoalInstance?.id) {
-        console.error('Failed to get userGoalInstance ID:', userGoalInstance)
-        alert('Failed to start goal instance. Please try again.')
+
+      if (!instance?.id) {
+        console.error('Failed to get user objective instance ID:', instance)
+        alert('Failed to start objective. Please try again.')
         setConfirmDialogOpen(false)
-        setSelectedGoal(null)
+        setSelectedObjective(null)
         return
       }
-      
-      // Invalidate userGoalInstances query so NavObjectiveCircle can see it
-      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userGoalInstances'] })
-      
-      // 2. Add to Kanban with the instance ID (not template ID)
-      addKanbanItem.mutate({
-        userId: user.id,
-        itemType: 'GOAL',
-        itemId: userGoalInstance.id, // Use instance ID!
-      }, {
-        onSuccess: () => {
-          setConfirmDialogOpen(false)
-          setSelectedGoal(null)
-          // 3. Navigate to objectives page so user can see and select objectives
-          router.push(`/goals-okr/goals/${selectedGoal.id}/objectives`)
+
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-objective-instances'] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userObjectiveInstances'] })
+
+      addKanbanItem.mutate(
+        {
+          userId: user.id,
+          itemType: 'OBJECTIVE',
+          itemId: instance.id,
         },
-        onError: (error: any) => {
-          console.error('Failed to add kanban item:', error)
-          const errorMessage = error?.response?.data?.error || error?.message || 'Failed to add goal to kanban board'
-          alert(errorMessage)
-          setConfirmDialogOpen(false)
-          setSelectedGoal(null)
+        {
+          onSuccess: () => {
+            setConfirmDialogOpen(false)
+            setSelectedObjective(null)
+            router.push('/goals-okr/kanban')
+          },
+          onError: (error: unknown) => {
+            console.error('Failed to add kanban item:', error)
+            const err = error as { response?: { data?: { error?: string }; message?: string }; message?: string }
+            alert(err?.response?.data?.error || err?.message || 'Failed to add objective to kanban board')
+            setConfirmDialogOpen(false)
+            setSelectedObjective(null)
+          },
         }
-      })
-    } catch (error: any) {
-      console.error('Failed to start goal instance:', error)
-      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to start goal instance'
-      alert(errorMessage)
+      )
+    } catch (error: unknown) {
+      console.error('Failed to start objective instance:', error)
+      const err = error as { response?: { data?: { error?: string }; message?: string }; message?: string }
+      alert(err?.response?.data?.error || err?.message || 'Failed to start objective')
       setConfirmDialogOpen(false)
-      setSelectedGoal(null)
+      setSelectedObjective(null)
     }
   }
 
   const handleCancelAddToKanban = () => {
     setConfirmDialogOpen(false)
-    setSelectedGoal(null)
+    setSelectedObjective(null)
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent, objective: ObjectiveDTO) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setObjectiveToDelete(objective)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!objectiveToDelete) return
+    deleteObjectiveMutation.mutate(objectiveToDelete.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false)
+        setObjectiveToDelete(null)
+        queryClient.invalidateQueries({ queryKey: ['goals-okr', 'objectives', 'lifeDomain', lifeDomainId] })
+      },
+      onError: (err: unknown) => {
+        const message = (err as { response?: { data?: { error?: string } }; message?: string })?.response?.data?.error ?? (err as Error).message
+        alert(message ?? 'Could not delete objective')
+      },
+    })
+  }
+
+  const handleCreateSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['goals-okr', 'objectives', 'lifeDomain', lifeDomainId] })
+    queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-objective-instances'] })
   }
 
   if (isLoading) {
@@ -133,137 +157,156 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
     )
   }
 
-  if (!goals || goals.length === 0) {
-    return (
-      <div className="w-full">
-        <div className="relative w-full aspect-square flex items-center justify-center">
-          <div className="text-muted-foreground text-center">
-            <p>No goals found</p>
-            <p className="text-sm mt-2">Goals will appear here once templates are created</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const showEmpty = !objectives || objectives.length === 0
 
-  // Simple grid layout for goals
   return (
     <>
       <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Create Personal Goal Card - First in grid */}
+          {/* Create Personal Objective Card */}
           {user?.id && (
             <div
               onClick={() => setCreateDialogOpen(true)}
               className={`
                 p-6 rounded-lg border-2 border-dashed cursor-pointer transition-all bg-card relative
-                ${isWireframeTheme 
-                  ? 'border-border hover:border-foreground hover:bg-accent' 
+                ${isWireframeTheme
+                  ? 'border-border hover:border-foreground hover:bg-accent'
                   : 'border-primary/40 hover:border-primary hover:bg-primary/10'}
               `}
             >
               <div className="flex flex-col items-center justify-center text-center space-y-2 min-h-[120px]">
-                <div className={`
+                <div
+                  className={`
                   p-3 rounded-full
-                  ${isWireframeTheme 
-                    ? 'bg-muted' 
-                    : 'bg-primary/20'}
-                `}>
-                  <Plus className={`
-                    h-6 w-6
-                    ${isWireframeTheme 
-                      ? 'text-foreground' 
-                      : 'text-primary'}
-                  `} />
+                  ${isWireframeTheme ? 'bg-muted' : 'bg-primary/20'}
+                `}
+                >
+                  <Plus className={isWireframeTheme ? 'text-foreground h-6 w-6' : 'text-primary h-6 w-6'} />
                 </div>
-                <h3 className="text-xl font-bold">
-                  Create Personal Goal
-                </h3>
+                <h3 className="text-xl font-bold">Create Personal Objective</h3>
                 <p className="text-sm text-muted-foreground line-clamp-2">
-                  Add your own goal for this life domain
+                  Add your own objective for this life domain
                 </p>
               </div>
             </div>
           )}
 
-          {/* Template Goals */}
-          {goals.map((goal) => (
-            <div
-              key={goal.id}
-              onClick={() => handleGoalClick(goal.id)}
+          {/* Objective cards - waar je OKRs aanmaakt en weer kunt verwijderen */}
+          {objectives?.map((objective) => (
+            <Link
+              key={objective.id}
+              href={`/goals-okr/objectives/${objective.id}`}
               className={`
-                p-6 rounded-lg border-2 cursor-pointer transition-all bg-card relative
-                ${isWireframeTheme 
-                  ? 'border-border hover:border-foreground hover:bg-accent' 
+                block p-6 rounded-lg border-2 cursor-pointer transition-all bg-card relative
+                ${isWireframeTheme
+                  ? 'border-border hover:border-foreground hover:bg-accent'
                   : 'border-primary/20 hover:border-primary hover:bg-primary/10'}
               `}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
-                  {goal.number && (
+                  {objective.number && (
                     <span className="text-xs font-mono text-muted-foreground mb-1 block">
-                      {goal.number}
+                      {objective.number}
                     </span>
                   )}
-                  <h3 className="text-xl font-bold">
-                    {getGoalTitle(goal)}
-                  </h3>
+                  <h3 className="text-xl font-bold">{getObjectiveTitle(objective)}</h3>
                 </div>
                 {user?.id && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={(e) => handleAddToKanbanClick(e, goal)}
-                    className="h-6 w-6 p-0 flex-shrink-0"
+                    onClick={(e) => handleAddToKanbanClick(e, objective)}
+                    className="h-8 w-8 p-0 flex-shrink-0"
                     title="Add to Progress"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-              {(language === 'nl' ? goal.descriptionNl : goal.descriptionEn) && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {language === 'nl' ? goal.descriptionNl : goal.descriptionEn}
+              {(language === 'nl' ? objective.descriptionNl : objective.descriptionEn) && (
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                  {language === 'nl' ? objective.descriptionNl : objective.descriptionEn}
                 </p>
               )}
-            </div>
+              {/* Verwijderen-knop: aparte rij zodat hij altijd zichtbaar is */}
+              <div onClick={(e) => e.stopPropagation()} className="mt-2 pt-2 border-t border-border/50">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => handleDeleteClick(e, objective)}
+                  className="h-8 px-2 gap-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 w-full justify-start"
+                  title={language === 'nl' ? 'Objective verwijderen' : 'Remove objective'}
+                >
+                  <Trash2 className="h-4 w-4 shrink-0" />
+                  <span className="text-sm">{language === 'nl' ? 'Objective verwijderen' : 'Remove objective'}</span>
+                </Button>
+              </div>
+            </Link>
           ))}
         </div>
+
+        {showEmpty && !user?.id && (
+          <div className="relative w-full aspect-square flex items-center justify-center">
+            <div className="text-muted-foreground text-center">
+              <p>No objectives found</p>
+              <p className="text-sm mt-2">Objectives will appear here once templates are created</p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Confirmation Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Goal to Progress</DialogTitle>
+            <DialogTitle>Add Objective to Progress</DialogTitle>
             <DialogDescription>
-              Are you sure you want to add this goal to your progress board?
+              Add this objective to your kanban board and start tracking progress?
             </DialogDescription>
           </DialogHeader>
-
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={handleCancelAddToKanban}
-            >
+            <Button variant="outline" onClick={handleCancelAddToKanban}>
               Cancel
             </Button>
             <Button
               onClick={handleConfirmAddToKanban}
-              disabled={addKanbanItem.isPending || startGoalInstanceMutation.isPending}
+              disabled={addKanbanItem.isPending || startObjectiveInstanceMutation.isPending}
             >
-              {(addKanbanItem.isPending || startGoalInstanceMutation.isPending) ? 'Starting...' : 'Add to Progress'}
+              {addKanbanItem.isPending || startObjectiveInstanceMutation.isPending ? 'Adding...' : 'Add to Progress'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Create Personal Goal Dialog */}
-      <CreateUserGoalDialog
+      <CreatePersonalObjectiveDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         lifeDomainId={lifeDomainId}
+        onSuccess={handleCreateSuccess}
       />
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {language === 'nl' ? 'Objective verwijderen?' : 'Remove objective?'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'nl'
+                ? `Weet je zeker dat je "${objectiveToDelete ? getObjectiveTitle(objectiveToDelete) : ''}" wilt verwijderen? Alle key results onder dit objective worden ook verwijderd. Dit kan alleen als nog niemand het objective op het progress board heeft.`
+                : `Are you sure you want to remove "${objectiveToDelete ? getObjectiveTitle(objectiveToDelete) : ''}"? All key results under this objective will also be deleted. This is only possible if no one has added it to their progress board.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeleteDialogOpen(false); setObjectiveToDelete(null) }} disabled={deleteObjectiveMutation.isPending}>
+              {language === 'nl' ? 'Annuleren' : 'Cancel'}
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleteObjectiveMutation.isPending}>
+              {deleteObjectiveMutation.isPending ? (language === 'nl' ? 'Verwijderen...' : 'Removing...') : (language === 'nl' ? 'Verwijderen' : 'Remove')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

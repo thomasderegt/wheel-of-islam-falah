@@ -11,8 +11,8 @@ import java.util.Optional;
  */
 public interface ObjectiveRepository {
     Optional<Objective> findById(Long id);
-    List<Objective> findByGoalId(Long goalId);
-    List<Objective> findByGoalIdOrderedByOrderIndex(Long goalId);
+    List<Objective> findByLifeDomainId(Long lifeDomainId);
+    List<Objective> findByLifeDomainIdOrderedByOrderIndex(Long lifeDomainId);
     Objective save(Objective objective);
     void delete(Objective objective);
 }

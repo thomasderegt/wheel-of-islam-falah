@@ -6,7 +6,7 @@
  * Dit is de My Space pagina met een audio/video speler voor Omar Hisham
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
@@ -23,17 +23,17 @@ export default function MySpacePage() {
   // User can unmute manually after video starts
   const youtubeEmbedUrl = `https://www.youtube.com/embed/${omarHishamVideoId}?autoplay=1&mute=1`
 
-  // Player size state - default to large player
-  const [isMinimized, setIsMinimized] = useState(() => {
-    const saved = localStorage.getItem('mywoispace-player-minimized')
-    return saved === 'true'
-  })
+  // Player size state - default to large player (read localStorage only in browser to avoid SSR error)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [isQuoteMinimized, setIsQuoteMinimized] = useState(false)
 
-  // Quote banner state - default to minimized for subtlety
-  const [isQuoteMinimized, setIsQuoteMinimized] = useState(() => {
-    const saved = localStorage.getItem('mywoispace-quote-minimized')
-    return saved === 'true'
-  })
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const playerSaved = window.localStorage.getItem('mywoispace-player-minimized')
+    const quoteSaved = window.localStorage.getItem('mywoispace-quote-minimized')
+    if (playerSaved === 'true') setIsMinimized(true)
+    if (quoteSaved === 'true') setIsQuoteMinimized(true)
+  }, [])
 
 
   return (

@@ -8,7 +8,6 @@ import { getObjective } from '@/features/goals-okr/api/goalsOkrApi'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function OKRKeyResultPage() {
   const params = useParams()
@@ -57,7 +56,7 @@ export default function OKRKeyResultPage() {
                 <h1 className="text-2xl font-bold">Key result niet gevonden</h1>
                 {objectiveId && (
                   <button
-                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}/key-results`)}
+                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}`)}
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                   >
                     Terug naar Objective
@@ -85,7 +84,7 @@ export default function OKRKeyResultPage() {
               <div className="space-y-4">
                 {objectiveId && (
                   <button
-                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}/key-results`)}
+                    onClick={() => router.push(`/goals-okr/objectives/${objectiveId}`)}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     ← Terug naar Objective
@@ -102,9 +101,6 @@ export default function OKRKeyResultPage() {
                   )}
                 </div>
               </div>
-
-              {/* Hierarchical Navigation */}
-              <AutoHierarchicalNavigation />
 
               {/* Key Result Details */}
               <div className="space-y-6">

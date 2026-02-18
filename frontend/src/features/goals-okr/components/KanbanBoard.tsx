@@ -42,6 +42,7 @@ interface KanbanCardProps {
   language?: 'nl' | 'en'
   onNavigate?: () => void
   onNavigateToInstance?: () => void
+  readOnly?: boolean
 }
 
 function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, language = 'en', onNavigate, onNavigateToInstance, readOnly = false }: KanbanCardProps) {
@@ -379,7 +380,17 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   // Filter items based on filters AND goalsOkrContext
   const filteredItems = useMemo(() => {
     if (!kanbanItems) return []
-    
+    // Debug: trace kanban filtering for initiatives
+    if (process.env.NODE_ENV === 'development') {
+      const initiatives = kanbanItems.filter(i => i.itemType === 'INITIATIVE')
+      if (initiatives.length > 0) {
+        const withoutLifeDomain = initiatives.filter(i => !itemLifeDomainIds.get(`${i.itemType}-${i.itemId}`))
+        if (withoutLifeDomain.length > 0) {
+          console.log('[KanbanBoard] Initiatives without lifeDomainId (may be filtered out):', withoutLifeDomain.map(i => ({ id: i.id, itemId: i.itemId })))
+        }
+        console.log('[KanbanBoard] Filter context:', { goalsOkrContext, targetWheelId, totalItems: kanbanItems.length, initiativeCount: initiatives.length })
+      }
+    }
     // If goalsOkrContext is NONE, show nothing
     if (goalsOkrContext === 'NONE') {
       return []
@@ -389,21 +400,21 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     
     let filtered = kanbanItems
     
-    // Filter by showInitiatives toggle (if enabled, only show INITIATIVE items)
-    // If disabled, only show OKR items (GOAL, OBJECTIVE, KEY_RESULT)
-    if (filters.showInitiatives) {
+    // Filter by viewMode: 'all' = show everything (default), 'okrs' = only OKR items, 'initiatives' = only initiatives
+    const viewMode = filters.viewMode ?? 'all'
+    if (viewMode === 'initiatives') {
       filtered = filtered.filter(item => item.itemType === 'INITIATIVE')
-    } else {
-      // Show only OKR items (exclude INITIATIVE)
-      filtered = filtered.filter(item => 
-        item.itemType === 'GOAL' || 
-        item.itemType === 'OBJECTIVE' || 
+    } else if (viewMode === 'okrs') {
+      filtered = filtered.filter(item =>
+        item.itemType === 'GOAL' ||
+        item.itemType === 'OBJECTIVE' ||
         item.itemType === 'KEY_RESULT'
       )
     }
-    
-    // Filter by itemType (only if showInitiatives is not enabled and itemType is set)
-    if (filters.itemType && !filters.showInitiatives) {
+    // viewMode === 'all': no filter by type, show OKRs and initiatives
+
+    // Filter by itemType (only when not in initiatives-only view and itemType is set)
+    if (filters.itemType && viewMode !== 'initiatives') {
       filtered = filtered.filter(item => item.itemType === filters.itemType)
     }
     
@@ -503,12 +514,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
               const objective = await getObjective(userObjectiveInstance.objectiveId)
               if (isCancelled) return
               title = language === 'nl' ? (objective.titleNl || objective.titleEn) : (objective.titleEn || objective.titleNl)
-              // Get goal to find lifeDomainId
-              if (objective.goalId) {
-                const goal = await getGoal(objective.goalId)
-                if (isCancelled) return
-                lifeDomainId = goal.lifeDomainId
-              }
+              lifeDomainId = objective.lifeDomainId
               // Store user instance number
               if (userObjectiveInstance.number) {
                 numbers.set(`${item.itemType}-${item.itemId}`, userObjectiveInstance.number)
@@ -522,15 +528,11 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
               const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
               if (isCancelled) return
               title = language === 'nl' ? (keyResult.titleNl || keyResult.titleEn) : (keyResult.titleEn || keyResult.titleNl)
-              // Get objective -> goal to find lifeDomainId
+              // Get objective to find lifeDomainId
               if (keyResult.objectiveId) {
                 const objective = await getObjective(keyResult.objectiveId)
                 if (isCancelled) return
-                if (objective.goalId) {
-                  const goal = await getGoal(objective.goalId)
-                  if (isCancelled) return
-                  lifeDomainId = goal.lifeDomainId
-                }
+                lifeDomainId = objective.lifeDomainId
               }
               // Store user instance number
               if (userKeyResultInstance.number) {
@@ -554,18 +556,21 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                 const userInitiative = await getInitiative(userInitiativeInstance.initiativeId)
                 if (isCancelled) return
                 title = userInitiative.title
-                // Get keyResult -> objective -> goal to find lifeDomainId
-                if (userInitiative.keyResultId) {
-                  const keyResult = await getKeyResult(userInitiative.keyResultId)
+                // Get keyResult -> objective to find lifeDomainId (required for wheel/context filtering)
+                let keyResultId = userInitiative.keyResultId
+                if (!keyResultId) {
+                  // Fallback: get keyResultId from userKeyResultInstance (user-created initiatives may not have keyResultId set)
+                  const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
+                  if (isCancelled) return
+                  keyResultId = userKeyResultInstance.keyResultId
+                }
+                if (keyResultId) {
+                  const keyResult = await getKeyResult(keyResultId)
                   if (isCancelled) return
                   if (keyResult.objectiveId) {
                     const objective = await getObjective(keyResult.objectiveId)
                     if (isCancelled) return
-                    if (objective.goalId) {
-                      const goal = await getGoal(objective.goalId)
-                      if (isCancelled) return
-                      lifeDomainId = goal.lifeDomainId
-                    }
+                    lifeDomainId = objective.lifeDomainId
                   }
                 }
               } catch (userInitiativeError: any) {
@@ -590,15 +595,11 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                     ? (templateInitiative.titleNl || templateInitiative.titleEn)
                     : (templateInitiative.titleEn || templateInitiative.titleNl)
                   
-                  // Get keyResult -> objective -> goal to find lifeDomainId
+                  // Get keyResult -> objective to find lifeDomainId
                   if (keyResult.objectiveId) {
                     const objective = await getObjective(keyResult.objectiveId)
                     if (isCancelled) return
-                    if (objective.goalId) {
-                      const goal = await getGoal(objective.goalId)
-                      if (isCancelled) return
-                      lifeDomainId = goal.lifeDomainId
-                    }
+                    lifeDomainId = objective.lifeDomainId
                   }
                 } else {
                   throw new Error(`Template Initiative ${userInitiativeInstance.initiativeId} not found for key result ${keyResult.id}`)
@@ -775,10 +776,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   }
 
   const handleNavigateToInstance = (item: KanbanItemDTO) => {
-    // Navigate to the actual instance page (goal/objective/key result)
+    // Goal layer removed: GOAL items open kanban item detail. Others go to instance page.
     switch (item.itemType) {
       case 'GOAL':
-        router.push(`/goals-okr/user-goal-instances/${item.itemId}`)
+        handleNavigate(item)
         break
       case 'OBJECTIVE':
         router.push(`/goals-okr/user-objective-instances/${item.itemId}`)
@@ -830,7 +831,6 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        disabled={isReadOnly} // Disable drag & drop in read-only mode
       >
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

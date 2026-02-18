@@ -12,7 +12,6 @@ import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { getUserObjectiveEnrollment, getKeyResultsByObjective } from '@/features/goals-okr/api/goalsOkrApi'
 import { Loading } from '@/shared/components/ui/Loading'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function OKRUserObjectiveEnrollmentPage() {
   const params = useParams()
@@ -71,9 +70,6 @@ export default function OKRUserObjectiveEnrollmentPage() {
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
             <div className="space-y-8">
-              {/* Hierarchical Navigation */}
-              <AutoHierarchicalNavigation />
-
               {/* Header */}
               <div className="space-y-4">
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground">

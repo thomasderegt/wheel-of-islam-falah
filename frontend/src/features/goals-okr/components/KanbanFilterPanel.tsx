@@ -14,7 +14,7 @@ import { X, ChevronDown, ChevronUp } from 'lucide-react'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/components/ui/collapsible'
 import { ToggleGroup, ToggleGroupItem } from '@/shared/components/ui/toggle-group'
-import type { KanbanFilters } from '../hooks/useKanbanFilters'
+import type { KanbanFilters, KanbanViewMode } from '../hooks/useKanbanFilters'
 import { useLifeDomains } from '../hooks/useLifeDomains'
 import { useWheels } from '../hooks/useWheels'
 import { useModeContext } from '@/shared/hooks/useModeContext'
@@ -81,10 +81,10 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
   }
 
   const handleViewModeChange = (viewMode: string) => {
-    if (viewMode === 'OKRs' || viewMode === 'Initiatives') {
-      onChange({ 
-        ...value, 
-        showInitiatives: viewMode === 'Initiatives' 
+    if (viewMode === 'all' || viewMode === 'okrs' || viewMode === 'initiatives') {
+      onChange({
+        ...value,
+        viewMode: viewMode as KanbanViewMode,
       })
     }
   }
@@ -232,9 +232,8 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                   <Select
                     value={value.lifeDomainId?.toString() || 'ALL'}
                     onValueChange={handleLifeDomainChange}
-                    disabled={filteredLifeDomains.length === 0}
                   >
-                    <SelectTrigger id="life-domain-filter">
+                    <SelectTrigger id="life-domain-filter" disabled={filteredLifeDomains.length === 0}>
                       <SelectValue placeholder="All Life Domains" />
                     </SelectTrigger>
                     <SelectContent>
@@ -306,26 +305,33 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                 </div>
               )}
 
-              {/* OKRs / Initiatives Toggle - Under WIP Limits */}
+              {/* View Mode: All / OKRs / Initiatives */}
               <div className="border-t pt-4 mt-4">
                 <h4 className="text-sm font-semibold mb-3">
                   {language === 'nl' ? 'View Mode' : 'View Mode'}
                 </h4>
                 <ToggleGroup
                   type="single"
-                  value={value.showInitiatives ? 'Initiatives' : 'OKRs'}
+                  value={value.viewMode ?? 'all'}
                   onValueChange={handleViewModeChange}
-                  className="bg-muted rounded-full p-1"
+                  className="bg-muted rounded-full p-1 flex flex-wrap"
                 >
                   <ToggleGroupItem
-                    value="OKRs"
+                    value="all"
+                    aria-label={language === 'nl' ? 'Alles' : 'All'}
+                    className="rounded-full px-4 py-1.5"
+                  >
+                    {language === 'nl' ? 'Alles' : 'All'}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="okrs"
                     aria-label={language === 'nl' ? 'OKRs' : 'OKRs'}
                     className="rounded-full px-4 py-1.5"
                   >
                     {language === 'nl' ? 'OKRs' : 'OKRs'}
                   </ToggleGroupItem>
                   <ToggleGroupItem
-                    value="Initiatives"
+                    value="initiatives"
                     aria-label={language === 'nl' ? 'Initiatives' : 'Initiatives'}
                     className="rounded-full px-4 py-1.5"
                   >
@@ -333,9 +339,9 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                   </ToggleGroupItem>
                 </ToggleGroup>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {language === 'nl' 
-                    ? 'Kies tussen OKRs (Goals, Objectives, Key Results) of Initiatives weergave.'
-                    : 'Choose between OKRs (Goals, Objectives, Key Results) or Initiatives view.'}
+                  {language === 'nl'
+                    ? 'Alles: OKRs en initiatives. OKRs: alleen doelen, objectieven en kernresultaten. Initiatives: alleen initiatieven.'
+                    : 'All: OKRs and initiatives. OKRs: goals, objectives and key results only. Initiatives: initiatives only.'}
                 </p>
               </div>
             </div>

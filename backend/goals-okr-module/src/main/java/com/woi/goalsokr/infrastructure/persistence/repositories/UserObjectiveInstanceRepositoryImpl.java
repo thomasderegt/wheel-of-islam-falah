@@ -32,25 +32,25 @@ public class UserObjectiveInstanceRepositoryImpl implements UserObjectiveInstanc
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserObjectiveInstance> findByUserGoalInstanceId(Long userGoalInstanceId) {
-        return jpaRepository.findByUserGoalInstanceId(userGoalInstanceId).stream()
+    public List<UserObjectiveInstance> findByUserId(Long userId) {
+        return jpaRepository.findByUserId(userId).stream()
             .map(UserObjectiveInstanceEntityMapper::toDomain)
             .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserObjectiveInstance> findByUserGoalInstanceIdIn(List<Long> userGoalInstanceIds) {
-        return jpaRepository.findByUserGoalInstanceIdIn(userGoalInstanceIds).stream()
-            .map(UserObjectiveInstanceEntityMapper::toDomain)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<UserObjectiveInstance> findByUserGoalInstanceIdAndObjectiveId(Long userGoalInstanceId, Long objectiveId) {
-        return jpaRepository.findByUserGoalInstanceIdAndObjectiveId(userGoalInstanceId, objectiveId)
+    public Optional<UserObjectiveInstance> findByUserIdAndObjectiveId(Long userId, Long objectiveId) {
+        return jpaRepository.findByUserIdAndObjectiveId(userId, objectiveId)
             .map(UserObjectiveInstanceEntityMapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserObjectiveInstance> findByObjectiveId(Long objectiveId) {
+        return jpaRepository.findByObjectiveId(objectiveId).stream()
+            .map(UserObjectiveInstanceEntityMapper::toDomain)
+            .collect(Collectors.toList());
     }
 
     @Override

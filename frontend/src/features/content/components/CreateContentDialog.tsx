@@ -49,12 +49,6 @@ export function CreateContentDialog({ filters }: CreateContentDialogProps = {}) 
     queryKey: ['categories'],
     queryFn: getAllCategories,
     enabled: open,
-    onSuccess: (data) => {
-      console.log('Categories loaded:', data?.length || 0, data)
-    },
-    onError: (error) => {
-      console.error('Error loading categories:', error)
-    },
   })
 
   // Fetch books for CHAPTER, SECTION, and PARAGRAPH types
@@ -309,9 +303,8 @@ export function CreateContentDialog({ filters }: CreateContentDialogProps = {}) 
                 <Select
                   value={categoryId?.toString() || ''}
                   onValueChange={(value) => setCategoryId(Number(value))}
-                  disabled={isLoadingCategories}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger disabled={isLoadingCategories}>
                     <SelectValue placeholder={isLoadingCategories ? "Loading categories..." : "Select a category"} />
                   </SelectTrigger>
                   <SelectContent>

@@ -32,16 +32,16 @@ public class ObjectiveRepositoryImpl implements ObjectiveRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Objective> findByGoalId(Long goalId) {
-        return jpaRepository.findByGoalId(goalId).stream()
+    public List<Objective> findByLifeDomainId(Long lifeDomainId) {
+        return jpaRepository.findByLifeDomainId(lifeDomainId).stream()
             .map(ObjectiveEntityMapper::toDomain)
             .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Objective> findByGoalIdOrderedByOrderIndex(Long goalId) {
-        return jpaRepository.findByGoalIdOrderedByOrderIndex(goalId).stream()
+    public List<Objective> findByLifeDomainIdOrderedByOrderIndex(Long lifeDomainId) {
+        return jpaRepository.findByLifeDomainIdOrderedByOrderIndex(lifeDomainId).stream()
             .map(ObjectiveEntityMapper::toDomain)
             .collect(Collectors.toList());
     }

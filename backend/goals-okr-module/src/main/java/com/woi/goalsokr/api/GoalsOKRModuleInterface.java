@@ -10,56 +10,31 @@ import java.util.Optional;
  * This is the contract that other modules can use to interact with OKR goals
  *
  * OKR Structure:
- * Life Domain → Goal → Objective → KeyResult → Initiative
+ * Life Domain → Objective → KeyResult → Initiative
  */
 public interface GoalsOKRModuleInterface {
-
-    // ========== Goals (Templates) ==========
-
-    /**
-     * Create a new goal
-     * @param lifeDomainId Life domain ID
-     * @param titleNl Dutch title
-     * @param titleEn English title
-     * @param descriptionNl Dutch description (optional)
-     * @param descriptionEn English description (optional)
-     * @param orderIndex Order index within the life domain
-     * @param quarter Program Increment quarter (1-4, optional)
-     * @param year Program Increment year (e.g., 2025, optional)
-     * @return The created goal summary
-     */
-    GoalSummary createGoal(Long lifeDomainId, String titleNl, String titleEn,
-                          String descriptionNl, String descriptionEn, Integer orderIndex,
-                          Integer quarter, Integer year);
-
-    /**
-     * Get a goal by ID
-     * @param goalId Goal ID
-     * @return Optional containing the goal if found
-     */
-    Optional<GoalSummary> getGoal(Long goalId);
-
-    /**
-     * Get all goals for a life domain
-     * @param lifeDomainId Life domain ID
-     * @return List of goals for that life domain
-     */
-    List<GoalSummary> getGoalsByLifeDomain(Long lifeDomainId);
 
     // ========== Objectives (Templates) ==========
 
     /**
      * Create a new objective
-     * @param goalId Goal ID
+     * @param lifeDomainId Life Domain ID
      * @param titleNl Dutch title
      * @param titleEn English title
      * @param descriptionNl Dutch description (optional)
      * @param descriptionEn English description (optional)
-     * @param orderIndex Order index within the goal
+     * @param orderIndex Order index within the life domain
      * @return The created objective summary
      */
-    ObjectiveSummary createObjective(Long goalId, String titleNl, String titleEn, 
+    ObjectiveSummary createObjective(Long lifeDomainId, String titleNl, String titleEn, 
                                      String descriptionNl, String descriptionEn, Integer orderIndex);
+
+    /**
+     * Get all objectives for a life domain
+     * @param lifeDomainId Life Domain ID
+     * @return List of objectives for that life domain
+     */
+    List<ObjectiveSummary> getObjectivesByLifeDomain(Long lifeDomainId);
 
     /**
      * Get an objective by ID
@@ -67,13 +42,6 @@ public interface GoalsOKRModuleInterface {
      * @return Optional containing the objective if found
      */
     Optional<ObjectiveSummary> getObjective(Long objectiveId);
-
-    /**
-     * Get all objectives for a goal
-     * @param goalId Goal ID
-     * @return List of objectives for that goal
-     */
-    List<ObjectiveSummary> getObjectivesByGoal(Long goalId);
 
     // ========== Key Results (Templates) ==========
 
@@ -107,54 +75,15 @@ public interface GoalsOKRModuleInterface {
      */
     List<KeyResultSummary> getKeyResultsByObjective(Long objectiveId);
 
-    // ========== User Goal Instances (User-specific - Aggregate Root) ==========
-
-    /**
-     * Start a new user goal instance (subscription/enrollment)
-     * @param userId User ID
-     * @param goalId Goal ID (template)
-     * @return The created user goal instance summary
-     */
-    UserGoalInstanceSummary startUserGoalInstance(Long userId, Long goalId);
-
-    /**
-     * Get a user goal instance by ID
-     * @param userGoalInstanceId User goal instance ID
-     * @return Optional containing the user goal instance if found
-     */
-    Optional<UserGoalInstanceSummary> getUserGoalInstance(Long userGoalInstanceId);
-
-    /**
-     * Get all user goal instances for a user (in which goals is user subscribed?)
-     * @param userId User ID
-     * @return List of user goal instances for that user
-     */
-    List<UserGoalInstanceSummary> getUserGoalInstancesForUser(Long userId);
-
-    /**
-     * Get all user goal instances for a goal (which users are subscribed to this goal?)
-     * @param goalId Goal ID
-     * @return List of user goal instances for that goal
-     */
-    List<UserGoalInstanceSummary> getUserGoalInstancesByGoal(Long goalId);
-
-    /**
-     * Complete a user goal instance
-     * @param userGoalInstanceId User goal instance ID
-     * @return Updated user goal instance summary
-     */
-    UserGoalInstanceSummary completeUserGoalInstance(Long userGoalInstanceId);
-
     // ========== User Objective Instances (User-specific) ==========
 
     /**
      * Start a new user objective instance
-     * @param userId User ID (for validation)
-     * @param userGoalInstanceId User goal instance ID (aggregate root)
+     * @param userId User ID
      * @param objectiveId Objective ID (template)
      * @return The created user objective instance summary
      */
-    UserObjectiveInstanceSummary startUserObjectiveInstance(Long userId, Long userGoalInstanceId, Long objectiveId);
+    UserObjectiveInstanceSummary startUserObjectiveInstance(Long userId, Long objectiveId);
 
     /**
      * Get a user objective instance by ID

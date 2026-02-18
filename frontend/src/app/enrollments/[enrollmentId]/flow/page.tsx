@@ -25,15 +25,14 @@ import {
   completeEnrollment
 } from '@/features/learning/api/learningApi'
 import { getParagraphPublishedVersion } from '@/features/content/api/contentApi'
-import type { ParagraphVersionDTO } from '@/shared/api/types'
 import { getAllCategories, getBooksByCategory, getChaptersByBook, getSectionsByChapter } from '@/features/content/api/contentApi'
 import type { 
+  ParagraphVersionDTO,
   LearningFlowEnrollmentDTO, 
   LearningFlowStepDTO, 
   EnrollmentStepProgressDTO,
   EnrollmentAnswerDTO 
 } from '@/shared/api/types'
-import type { ParagraphVersionDTO } from '@/shared/api/types'
 
 export default function EnrollmentFlowPage() {
   const router = useRouter()
@@ -155,15 +154,17 @@ export default function EnrollmentFlowPage() {
       // Load paragraph content
       const content = await getParagraphPublishedVersion(currentStep.paragraphId)
       setParagraphContent(content)
-      
+
+      if (!content) return
+
       // Load answers for current step
       const stepAnswers = allAnswers.get(currentStep.id) || []
       const impressions = stepAnswers.filter(a => a.type === 'PICTURE_QUESTION')
       const reflections = stepAnswers.filter(a => a.type === 'REFLECTION')
-      
+
       setImpressionText(impressions.length > 0 ? impressions[0].answerText : '')
       setReflectionText(reflections.length > 0 ? reflections[0].answerText : '')
-      
+
       // Set initial substep
       const title = (content.titleEn || content.titleNl || '').toLowerCase()
       const isIntroOrConclusion = title.includes('introduction') || title.includes('conclusion')

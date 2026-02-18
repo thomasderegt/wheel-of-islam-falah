@@ -13,8 +13,8 @@ import java.util.List;
  */
 @Repository
 public interface ObjectiveJpaRepository extends JpaRepository<ObjectiveJpaEntity, Long> {
-    List<ObjectiveJpaEntity> findByGoalId(Long goalId);
+    List<ObjectiveJpaEntity> findByLifeDomainId(Long lifeDomainId);
 
-    @Query("SELECT o FROM ObjectiveJpaEntity o WHERE o.goalId = :goalId ORDER BY o.orderIndex ASC")
-    List<ObjectiveJpaEntity> findByGoalIdOrderedByOrderIndex(@Param("goalId") Long goalId);
+    @Query("SELECT o FROM ObjectiveJpaEntity o WHERE o.lifeDomainId = :lifeDomainId ORDER BY o.orderIndex ASC")
+    List<ObjectiveJpaEntity> findByLifeDomainIdOrderedByOrderIndex(@Param("lifeDomainId") Long lifeDomainId);
 }

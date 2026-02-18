@@ -12,7 +12,8 @@ import java.util.Optional;
  */
 @Repository
 public interface UserObjectiveInstanceJpaRepository extends JpaRepository<UserObjectiveInstanceJpaEntity, Long> {
-    List<UserObjectiveInstanceJpaEntity> findByUserGoalInstanceId(Long userGoalInstanceId);
-    List<UserObjectiveInstanceJpaEntity> findByUserGoalInstanceIdIn(List<Long> userGoalInstanceIds);
-    Optional<UserObjectiveInstanceJpaEntity> findByUserGoalInstanceIdAndObjectiveId(Long userGoalInstanceId, Long objectiveId);
+
+    List<UserObjectiveInstanceJpaEntity> findByUserId(Long userId);
+    Optional<UserObjectiveInstanceJpaEntity> findByUserIdAndObjectiveId(Long userId, Long objectiveId);
+    List<UserObjectiveInstanceJpaEntity> findByObjectiveId(Long objectiveId);
 }

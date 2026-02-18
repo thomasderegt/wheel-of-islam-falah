@@ -3,28 +3,23 @@
 /**
  * CreateInitiativeDialog Component
  * 
- * Dialog for creating a new initiative, with suggestions support
+ * Dialog for creating a new initiative for a Key Result
  */
 
 import { useState, useEffect } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth'
 import { useCreateInitiative } from '../hooks/useCreateInitiative'
-import { useInitiativeSuggestions } from '../hooks/useInitiativeSuggestions'
-import { useAddKanbanItem } from '../hooks/useKanbanItems'
-import { getUserInitiativeInstances } from '../api/goalsOkrApi'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Textarea } from '@/shared/components/ui/textarea'
-import { InitiativeSuggestions } from './InitiativeSuggestions'
-import type { InitiativeDTO } from '../api/goalsOkrApi'
 
 interface CreateInitiativeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   keyResultId?: number | null
+  keyResultTitle?: string | null
   userKeyResultInstanceId: number
   language?: 'nl' | 'en'
   onSuccess?: () => void
@@ -34,18 +29,16 @@ export function CreateInitiativeDialog({
   open, 
   onOpenChange, 
   keyResultId,
+  keyResultTitle,
   userKeyResultInstanceId,
   language = 'en',
   onSuccess 
 }: CreateInitiativeDialogProps) {
   const { user } = useAuth()
-  const queryClient = useQueryClient()
   const createInitiative = useCreateInitiative()
-  const addKanbanItem = useAddKanbanItem()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [targetDate, setTargetDate] = useState('')
-  const [selectedSuggestion, setSelectedSuggestion] = useState<InitiativeDTO | null>(null)
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -53,15 +46,8 @@ export function CreateInitiativeDialog({
       setTitle('')
       setDescription('')
       setTargetDate('')
-      setSelectedSuggestion(null)
     }
   }, [open])
-
-  const handleSelectSuggestion = (suggestion: InitiativeDTO) => {
-    setSelectedSuggestion(suggestion)
-    setTitle(language === 'nl' ? suggestion.titleNl : suggestion.titleEn)
-    setDescription(language === 'nl' ? suggestion.descriptionNl || '' : suggestion.descriptionEn || '')
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,41 +64,17 @@ export function CreateInitiativeDialog({
         learningFlowEnrollmentId: null, // Will be set when starting learning flow
       },
       {
-        onSuccess: async (createdInitiative) => {
-          // Add to kanban board after creating the initiative
-          // The backend creates a UserInitiativeInstance automatically, so we need to find it
-          if (user?.id) {
-            try {
-              // Get all initiative instances for this user key result instance
-              const instances = await getUserInitiativeInstances(user.id)
-              // Find the instance that matches this initiative
-              const instance = instances.find(
-                inst => inst.userKeyResultInstanceId === userKeyResultInstanceId &&
-                        // The initiativeId in the instance refers to the UserInitiative ID
-                        inst.initiativeId === createdInitiative.id
-              )
-              
-              if (instance?.id) {
-                await addKanbanItem.mutateAsync({
-                  userId: user.id,
-                  itemType: 'INITIATIVE',
-                  itemId: instance.id, // Use the UserInitiativeInstance ID
-                })
-                // Invalidate kanban items query
-                queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', user.id] })
-              }
-            } catch (error) {
-              console.error('Failed to add initiative to kanban board:', error)
-              // Don't fail the whole operation if kanban add fails
-            }
-          }
-          
+        onSuccess: () => {
           setTitle('')
           setDescription('')
           setTargetDate('')
-          setSelectedSuggestion(null)
           onOpenChange(false)
           onSuccess?.()
+          alert(
+            language === 'nl'
+              ? 'Initiative aangemaakt! Voeg het toe aan je kanban board met de + knop om het op je progress board te volgen.'
+              : 'Initiative created! Add it to your kanban board with the + button to track it on your progress board.'
+          )
         },
       }
     )
@@ -122,7 +84,6 @@ export function CreateInitiativeDialog({
     setTitle('')
     setDescription('')
     setTargetDate('')
-    setSelectedSuggestion(null)
     onOpenChange(false)
   }
 
@@ -142,17 +103,25 @@ export function CreateInitiativeDialog({
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {/* Suggestions */}
-            {keyResultId && (
-              <InitiativeSuggestions
-                keyResultId={keyResultId}
-                language={language}
-                onSelectSuggestion={handleSelectSuggestion}
-              />
+            {/* Key Result (read-only) */}
+            {(keyResultId != null || keyResultTitle) && (
+              <div className="space-y-2">
+                <Label>
+                  {language === 'nl' ? 'Key Result' : 'Key Result'}
+                </Label>
+                <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                  {keyResultId != null && (
+                    <span className="text-muted-foreground mr-2">ID: {keyResultId}</span>
+                  )}
+                  {keyResultTitle && (
+                    <span className="font-medium">{keyResultTitle}</span>
+                  )}
+                </div>
+              </div>
             )}
 
-            {/* Custom Form */}
-            <div className="space-y-4 border-t pt-4">
+            {/* Form */}
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="initiative-title">
                   {language === 'nl' ? 'Titel' : 'Title'} *

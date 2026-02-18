@@ -18,9 +18,6 @@ public record CreateInitiativeCommand(
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-        if (keyResultId == null) {
-            throw new IllegalArgumentException("Key Result ID cannot be null");
-        }
         if (userKeyResultInstanceId == null) {
             throw new IllegalArgumentException("User Key Result Instance ID cannot be null");
         }

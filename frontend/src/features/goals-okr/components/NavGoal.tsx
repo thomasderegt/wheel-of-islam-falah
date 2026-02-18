@@ -40,8 +40,9 @@ export function NavGoal({ lifeDomainId, language = 'en' }: NavGoalProps) {
     return goal.titleEn || goal.titleNl || `Goal ${goal.id}`
   }
 
-  const handleGoalClick = (goalId: number) => {
-    router.push(`/goals-okr/goals/${goalId}/objectives`)
+  // Goal layer removed: navigate to life domain (objectives are shown there)
+  const handleGoalClick = (_goalId: number) => {
+    router.push(`/goals-okr/life-domains/${lifeDomainId}`)
   }
 
   const handleAddToCart = (e: React.MouseEvent, goal: GoalDTO) => {
@@ -52,7 +53,7 @@ export function NavGoal({ lifeDomainId, language = 'en' }: NavGoalProps) {
       type: 'GOAL',
       id: goal.id,
       title: getGoalTitle(goal),
-      description: language === 'nl' ? goal.descriptionNl : goal.descriptionEn,
+      description: (language === 'nl' ? goal.descriptionNl : goal.descriptionEn) ?? undefined,
       parentId: lifeDomainId,
     })
   }

@@ -14,6 +14,7 @@ public interface UserInitiativeInstanceRepository {
     List<UserInitiativeInstance> findByUserKeyResultInstanceId(Long userKeyResultInstanceId);
     List<UserInitiativeInstance> findByUserKeyResultInstanceIdIn(List<Long> userKeyResultInstanceIds);
     Optional<UserInitiativeInstance> findByUserKeyResultInstanceIdAndInitiativeId(Long userKeyResultInstanceId, Long initiativeId);
+    List<UserInitiativeInstance> findByInitiativeId(Long initiativeId);
     UserInitiativeInstance save(UserInitiativeInstance userInitiativeInstance);
     void delete(UserInitiativeInstance userInitiativeInstance);
 }

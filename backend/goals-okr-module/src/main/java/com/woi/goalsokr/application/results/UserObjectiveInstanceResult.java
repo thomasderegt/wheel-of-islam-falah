@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  */
 public record UserObjectiveInstanceResult(
     Long id,
-    Long userGoalInstanceId,
+    Long userId,
     Long objectiveId,
     String number,
     LocalDateTime startedAt,
@@ -16,7 +16,7 @@ public record UserObjectiveInstanceResult(
     public static UserObjectiveInstanceResult from(com.woi.goalsokr.domain.entities.UserObjectiveInstance instance) {
         return new UserObjectiveInstanceResult(
             instance.getId(),
-            instance.getUserGoalInstanceId(),
+            instance.getUserId(),
             instance.getObjectiveId(),
             instance.getNumber(),
             instance.getStartedAt(),

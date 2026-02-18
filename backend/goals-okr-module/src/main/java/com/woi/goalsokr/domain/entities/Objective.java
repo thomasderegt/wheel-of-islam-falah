@@ -6,16 +6,16 @@ import java.time.LocalDateTime;
  * Objective domain entity - Pure POJO (no JPA annotations)
  *
  * Represents a specific, measurable goal within a Goal (template).
- * Part of OKR structure: Life Domain → Goal → Objective → Key Result → Initiative
+ * Part of OKR structure: Life Domain → Objective → Key Result → Initiative
  *
  * Business rules:
- * - goalId is required
+ * - lifeDomainId is required
  * - titleNl/En are required (with fallback logic)
  * - orderIndex is required and unique within a goal
  */
 public class Objective {
     private Long id;
-    private Long goalId; // Required - FK to Goal (was lifeDomainId)
+    private Long lifeDomainId; // Required - FK to Life Domain
     private String titleNl;
     private String titleEn;
     private String descriptionNl;
@@ -31,16 +31,16 @@ public class Objective {
     /**
      * Factory method: Create a new objective
      *
-     * @param goalId Goal ID (required)
+     * @param lifeDomainId Life Domain ID (required)
      * @param titleNl Dutch title (can be null)
      * @param titleEn English title (can be null)
-     * @param orderIndex Order index within the goal (required)
+     * @param orderIndex Order index within the life domain (required)
      * @return New Objective instance
      * @throws IllegalArgumentException if required fields are null or invalid
      */
-    public static Objective create(Long goalId, String titleNl, String titleEn, Integer orderIndex) {
-        if (goalId == null) {
-            throw new IllegalArgumentException("Goal ID cannot be null");
+    public static Objective create(Long lifeDomainId, String titleNl, String titleEn, Integer orderIndex) {
+        if (lifeDomainId == null) {
+            throw new IllegalArgumentException("Life Domain ID cannot be null");
         }
         if ((titleNl == null || titleNl.trim().isEmpty()) && 
             (titleEn == null || titleEn.trim().isEmpty())) {
@@ -51,7 +51,7 @@ public class Objective {
         }
 
         Objective objective = new Objective();
-        objective.goalId = goalId;
+        objective.lifeDomainId = lifeDomainId;
         objective.titleNl = (titleNl != null && !titleNl.trim().isEmpty()) ? titleNl : titleEn;
         objective.titleEn = (titleEn != null && !titleEn.trim().isEmpty()) ? titleEn : titleNl;
         objective.orderIndex = orderIndex;
@@ -72,7 +72,7 @@ public class Objective {
 
     // Getters
     public Long getId() { return id; }
-    public Long getGoalId() { return goalId; }
+    public Long getLifeDomainId() { return lifeDomainId; }
     public String getTitleNl() { return titleNl; }
     public String getTitleEn() { return titleEn; }
     public String getDescriptionNl() { return descriptionNl; }
@@ -84,7 +84,7 @@ public class Objective {
 
     // Setters for entity mapping (infrastructure layer only)
     public void setId(Long id) { this.id = id; }
-    public void setGoalId(Long goalId) { this.goalId = goalId; }
+    public void setLifeDomainId(Long lifeDomainId) { this.lifeDomainId = lifeDomainId; }
     public void setTitleNl(String titleNl) { this.titleNl = titleNl; }
     public void setTitleEn(String titleEn) { this.titleEn = titleEn; }
     public void setDescriptionNl(String descriptionNl) { this.descriptionNl = descriptionNl; }

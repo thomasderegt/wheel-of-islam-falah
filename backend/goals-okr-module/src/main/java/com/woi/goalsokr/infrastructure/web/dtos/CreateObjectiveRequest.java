@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Positive;
  * Request DTO for creating an objective
  */
 public record CreateObjectiveRequest(
-    @NotNull(message = "Goal ID is required")
-    Long goalId,
+    @NotNull(message = "Life Domain ID is required")
+    Long lifeDomainId,
     
     String titleNl,
     String titleEn,

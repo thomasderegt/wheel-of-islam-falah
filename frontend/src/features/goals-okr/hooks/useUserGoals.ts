@@ -19,7 +19,8 @@ export function useUserGoals(userId: number | null) {
 }
 
 /**
- * Hook for creating a personal goal (NEW APPROACH: Goal template + UserGoalInstance + Kanban item)
+ * Hook for creating a personal goal.
+ * @deprecated Goal layer removed – this mutation will throw. Use Kanban to add objectives.
  */
 export function useCreatePersonalGoal() {
   const queryClient = useQueryClient()
@@ -43,7 +44,7 @@ export function useCreatePersonalObjective() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, ...request }: { userId: number; userGoalInstanceId: number; title: string; description?: string }) =>
+    mutationFn: ({ userId, ...request }: { userId: number; lifeDomainId: number; title: string; description?: string }) =>
       createPersonalObjective(userId, request),
     onSuccess: (_, variables) => {
       // Invalidate kanban items since a new item is automatically added

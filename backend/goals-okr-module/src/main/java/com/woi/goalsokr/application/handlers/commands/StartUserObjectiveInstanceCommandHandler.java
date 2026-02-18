@@ -5,7 +5,6 @@ import com.woi.goalsokr.application.results.UserObjectiveInstanceResult;
 import com.woi.goalsokr.domain.entities.UserObjectiveInstance;
 import com.woi.goalsokr.domain.enums.EntityType;
 import com.woi.goalsokr.domain.repositories.ObjectiveRepository;
-import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
 import com.woi.goalsokr.domain.services.EntityNumberGenerator;
 import com.woi.user.api.UserModuleInterface;
@@ -19,19 +18,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class StartUserObjectiveInstanceCommandHandler {
     private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
     private final ObjectiveRepository objectiveRepository;
-    private final UserGoalInstanceRepository userGoalInstanceRepository;
     private final UserModuleInterface userModule;
     private final EntityNumberGenerator numberGenerator;
 
     public StartUserObjectiveInstanceCommandHandler(
             UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             ObjectiveRepository objectiveRepository,
-            UserGoalInstanceRepository userGoalInstanceRepository,
             UserModuleInterface userModule,
             EntityNumberGenerator numberGenerator) {
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.objectiveRepository = objectiveRepository;
-        this.userGoalInstanceRepository = userGoalInstanceRepository;
         this.userModule = userModule;
         this.numberGenerator = numberGenerator;
     }
@@ -47,26 +43,17 @@ public class StartUserObjectiveInstanceCommandHandler {
         objectiveRepository.findById(command.objectiveId())
             .orElseThrow(() -> new IllegalArgumentException("Objective not found: " + command.objectiveId()));
 
-        // Validate user goal instance exists and belongs to user
-        var userGoalInstance = userGoalInstanceRepository.findById(command.userGoalInstanceId())
-            .orElseThrow(() -> new IllegalArgumentException("User goal instance not found: " + command.userGoalInstanceId()));
-
-        if (!userGoalInstance.getUserId().equals(command.userId())) {
-            throw new IllegalArgumentException("User goal instance does not belong to user: " + command.userId());
-        }
-
         // Check if instance already exists
-        var existingInstance = userObjectiveInstanceRepository.findByUserGoalInstanceIdAndObjectiveId(
-            command.userGoalInstanceId(), command.objectiveId());
+        var existingInstance = userObjectiveInstanceRepository.findByUserIdAndObjectiveId(
+            command.userId(), command.objectiveId());
         
         if (existingInstance.isPresent()) {
-            // Return existing instance
             return UserObjectiveInstanceResult.from(existingInstance.get());
         }
 
-        // Create new instance (domain factory method validates - userId removed)
+        // Create new instance
         UserObjectiveInstance instance = UserObjectiveInstance.start(
-            command.userGoalInstanceId(),
+            command.userId(),
             command.objectiveId()
         );
 

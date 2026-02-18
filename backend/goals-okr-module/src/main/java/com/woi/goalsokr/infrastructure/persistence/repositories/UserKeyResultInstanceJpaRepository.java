@@ -15,4 +15,5 @@ public interface UserKeyResultInstanceJpaRepository extends JpaRepository<UserKe
     List<UserKeyResultInstanceJpaEntity> findByUserObjectiveInstanceId(Long userObjectiveInstanceId);
     List<UserKeyResultInstanceJpaEntity> findByUserObjectiveInstanceIdIn(List<Long> userObjectiveInstanceIds);
     Optional<UserKeyResultInstanceJpaEntity> findByUserObjectiveInstanceIdAndKeyResultId(Long userObjectiveInstanceId, Long keyResultId);
+    List<UserKeyResultInstanceJpaEntity> findByKeyResultId(Long keyResultId);
 }

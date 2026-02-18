@@ -12,14 +12,14 @@ import { Textarea } from '@/shared/components/ui/textarea'
 interface CreatePersonalObjectiveDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  userGoalInstanceId: number
+  lifeDomainId: number
   onSuccess?: () => void
 }
 
 export function CreatePersonalObjectiveDialog({ 
   open, 
   onOpenChange, 
-  userGoalInstanceId,
+  lifeDomainId,
   onSuccess 
 }: CreatePersonalObjectiveDialogProps) {
   const { user } = useAuth()
@@ -34,7 +34,7 @@ export function CreatePersonalObjectiveDialog({
     createPersonalObjective.mutate(
       {
         userId: user.id,
-        userGoalInstanceId,
+        lifeDomainId,
         title: title.trim(),
         description: description.trim() || undefined,
       },
@@ -62,7 +62,7 @@ export function CreatePersonalObjectiveDialog({
           <DialogHeader>
             <DialogTitle>Create Personal Objective</DialogTitle>
             <DialogDescription>
-              Create your own personal objective for this goal.
+              Create your own personal objective for this life domain.
             </DialogDescription>
           </DialogHeader>
 

@@ -16,9 +16,8 @@ import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { getUserObjectiveInstance, getKeyResultsByObjective } from '@/features/goals-okr/api/goalsOkrApi'
+import { getUserObjectiveInstance, getKeyResultsByObjective, getUserKeyResultInstancesByUserObjectiveInstance } from '@/features/goals-okr/api/goalsOkrApi'
 import { Loading } from '@/shared/components/ui/Loading'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function OKRUserObjectiveInstancePage() {
   const params = useParams()
@@ -40,6 +39,24 @@ export default function OKRUserObjectiveInstancePage() {
     queryFn: () => getKeyResultsByObjective(userInstance!.objectiveId),
     enabled: !!userInstance?.objectiveId,
   })
+
+  // Get user key result instances for this user objective instance (needed for CreateInitiativeDialog)
+  const { data: userKeyResultInstances } = useQuery({
+    queryKey: ['goals-okr', 'userKeyResultInstances', 'userObjectiveInstance', instanceId],
+    queryFn: () => getUserKeyResultInstancesByUserObjectiveInstance(instanceId),
+    enabled: !!instanceId,
+  })
+
+  const selectedUserKeyResultInstanceId = selectedKeyResultId && userKeyResultInstances
+    ? userKeyResultInstances.find(ukri => ukri.keyResultId === selectedKeyResultId)?.id ?? null
+    : null
+
+  const selectedKeyResult = selectedKeyResultId && keyResults
+    ? keyResults.find(kr => kr.id === selectedKeyResultId)
+    : undefined
+  const selectedKeyResultTitle = selectedKeyResult
+    ? (language === 'nl' ? (selectedKeyResult.titleNl || selectedKeyResult.titleEn) : (selectedKeyResult.titleEn || selectedKeyResult.titleNl))
+    : undefined
 
   const handleCreateInitiative = (keyResultId: number) => {
     setSelectedKeyResultId(keyResultId)
@@ -92,9 +109,6 @@ export default function OKRUserObjectiveInstancePage() {
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
             <div className="space-y-8">
-              {/* Hierarchical Navigation */}
-              <AutoHierarchicalNavigation />
-
               {/* Header */}
               <div className="space-y-4">
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground">
@@ -161,12 +175,13 @@ export default function OKRUserObjectiveInstancePage() {
         </main>
 
         {/* Create Initiative Dialog */}
-        {selectedKeyResultId && (
+        {selectedKeyResultId && selectedUserKeyResultInstanceId != null && (
           <CreateInitiativeDialog
             open={createDialogOpen}
             onOpenChange={setCreateDialogOpen}
             keyResultId={selectedKeyResultId}
-            userObjectiveInstanceId={instanceId}
+            keyResultTitle={selectedKeyResultTitle}
+            userKeyResultInstanceId={selectedUserKeyResultInstanceId}
             language={language}
             onSuccess={handleDialogClose}
           />

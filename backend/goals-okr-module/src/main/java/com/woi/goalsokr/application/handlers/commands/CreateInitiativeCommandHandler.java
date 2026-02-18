@@ -1,5 +1,6 @@
 package com.woi.goalsokr.application.handlers.commands;
 
+import com.woi.goalsokr.application.commands.AddKanbanItemCommand;
 import com.woi.goalsokr.application.commands.CreateInitiativeCommand;
 import com.woi.goalsokr.application.results.UserInitiativeResult;
 import com.woi.goalsokr.domain.entities.UserInitiative;
@@ -23,6 +24,7 @@ public class CreateInitiativeCommandHandler {
     private final KeyResultRepository keyResultRepository;
     private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
     private final UserInitiativeInstanceRepository userInitiativeInstanceRepository;
+    private final AddKanbanItemCommandHandler addKanbanItemHandler;
     private final UserModuleInterface userModule;
     private final EntityNumberGenerator numberGenerator;
 
@@ -31,12 +33,14 @@ public class CreateInitiativeCommandHandler {
             KeyResultRepository keyResultRepository,
             UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             UserInitiativeInstanceRepository userInitiativeInstanceRepository,
+            AddKanbanItemCommandHandler addKanbanItemHandler,
             UserModuleInterface userModule,
             EntityNumberGenerator numberGenerator) {
         this.userInitiativeRepository = userInitiativeRepository;
         this.keyResultRepository = keyResultRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
+        this.addKanbanItemHandler = addKanbanItemHandler;
         this.userModule = userModule;
         this.numberGenerator = numberGenerator;
     }
@@ -93,7 +97,24 @@ public class CreateInitiativeCommandHandler {
         );
         
         // Save instance
-        userInitiativeInstanceRepository.save(instance);
+        UserInitiativeInstance savedInstance = userInitiativeInstanceRepository.save(instance);
+        
+        // Add to kanban board so it appears on the progress board (same as StartUserInitiativeInstance)
+        try {
+            addKanbanItemHandler.handle(new AddKanbanItemCommand(
+                command.userId(),
+                "INITIATIVE",
+                savedInstance.getId()
+            ));
+            org.slf4j.LoggerFactory.getLogger(CreateInitiativeCommandHandler.class)
+                .debug("Added user-created initiative to kanban: userId={}, instanceId={}", command.userId(), savedInstance.getId());
+        } catch (IllegalArgumentException e) {
+            if (!"Item already exists in kanban board".equals(e.getMessage())) {
+                org.slf4j.LoggerFactory.getLogger(CreateInitiativeCommandHandler.class)
+                    .warn("Failed to add initiative to kanban: {}", e.getMessage());
+                throw e;
+            }
+        }
         
         // Link learning flow enrollment if provided
         if (command.learningFlowEnrollmentId() != null) {
@@ -101,7 +122,7 @@ public class CreateInitiativeCommandHandler {
             savedInitiative = userInitiativeRepository.save(savedInitiative);
         }
 
-        // Return result
-        return UserInitiativeResult.from(savedInitiative);
+        // Return result (include userInitiativeInstanceId for frontend kanban add)
+        return UserInitiativeResult.from(savedInitiative, savedInstance.getId());
     }
 }

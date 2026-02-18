@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  */
 public record ObjectiveSummary(
     Long id,
-    Long goalId,
+    Long lifeDomainId,
     String titleNl,
     String titleEn,
     String descriptionNl,

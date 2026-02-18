@@ -106,12 +106,12 @@ async function createFalahContent() {
       bookId: falahBook.id,
       position: 0,
     })
-    const dashboardChapter = chapterResponse.data
-    console.log(`✅ Created Dashboard chapter (ID: ${dashboardChapter.id})\n`)
+    const createdChapter = chapterResponse.data
+    console.log(`✅ Created Dashboard chapter (ID: ${createdChapter.id})\n`)
 
     // Step 4: Create ChapterVersion
     console.log('📝 Step 4: Creating ChapterVersion...')
-    await apiClient.post(`/api/v2/content/chapters/${dashboardChapter.id}/versions`, {
+    await apiClient.post(`/api/v2/content/chapters/${createdChapter.id}/versions`, {
       titleEn: 'Dashboard',
       titleNl: 'Dashboard',
       introEn: 'Your central dashboard to track progress across all three pillars: Dunya, Inner World, and Akhirah.',
@@ -121,7 +121,7 @@ async function createFalahContent() {
     console.log('✅ Created ChapterVersion\n')
 
     console.log('🎉 Falah content setup complete!')
-    console.log(`\n📊 Dashboard URL: /chapter/${dashboardChapter.id}/overview`)
+    console.log(`\n📊 Dashboard URL: /chapter/${createdChapter.id}/overview`)
   } catch (error: any) {
     console.error('❌ Error creating Falah content:')
     if (error.response) {

@@ -5,7 +5,6 @@ import com.woi.goalsokr.application.results.KeyResultProgressResult;
 import com.woi.goalsokr.domain.entities.KeyResultProgress;
 import com.woi.goalsokr.domain.repositories.KeyResultProgressRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
-import com.woi.goalsokr.domain.repositories.UserGoalInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
@@ -19,19 +18,16 @@ public class UpdateKeyResultProgressCommandHandler {
     private final KeyResultProgressRepository progressRepository;
     private final KeyResultRepository keyResultRepository;
     private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
-    private final UserGoalInstanceRepository userGoalInstanceRepository;
     private final UserModuleInterface userModule;
 
     public UpdateKeyResultProgressCommandHandler(
             KeyResultProgressRepository progressRepository,
             KeyResultRepository keyResultRepository,
             UserKeyResultInstanceRepository userKeyResultInstanceRepository,
-            UserGoalInstanceRepository userGoalInstanceRepository,
             UserModuleInterface userModule) {
         this.progressRepository = progressRepository;
         this.keyResultRepository = keyResultRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
-        this.userGoalInstanceRepository = userGoalInstanceRepository;
         this.userModule = userModule;
     }
 

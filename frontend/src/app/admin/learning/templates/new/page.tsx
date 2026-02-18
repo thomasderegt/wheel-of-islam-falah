@@ -170,7 +170,6 @@ export default function CreateTemplatePage() {
                 <Select
                   value={sectionId?.toString() || ''}
                   onValueChange={(value) => setSectionId(Number.parseInt(value, 10))}
-                  required
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a section" />

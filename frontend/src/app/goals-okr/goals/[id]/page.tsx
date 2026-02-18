@@ -1,24 +1,19 @@
 'use client'
 
 /**
- * OKR Goal Page - Redirect to objectives
- * 
- * Redirects to the objectives page for this goal
+ * OKR Goal Page – goal layer removed.
+ * Redirect to kanban (objectives are now the main unit).
  */
 
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 export default function OKRGoalPage() {
-  const params = useParams()
   const router = useRouter()
-  const goalId = params?.id ? Number(params.id) : null
 
   useEffect(() => {
-    if (goalId) {
-      router.replace(`/goals-okr/goals/${goalId}/objectives`)
-    }
-  }, [goalId, router])
+    router.replace('/goals-okr/kanban')
+  }, [router])
 
   return null
 }

@@ -19,9 +19,14 @@ public record UserInitiativeResult(
     String number,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
-    LocalDateTime completedAt
+    LocalDateTime completedAt,
+    Long userInitiativeInstanceId
 ) {
     public static UserInitiativeResult from(com.woi.goalsokr.domain.entities.UserInitiative initiative) {
+        return from(initiative, null);
+    }
+
+    public static UserInitiativeResult from(com.woi.goalsokr.domain.entities.UserInitiative initiative, Long userInitiativeInstanceId) {
         if (initiative == null) {
             throw new IllegalArgumentException("UserInitiative cannot be null");
         }
@@ -41,7 +46,8 @@ public record UserInitiativeResult(
             initiative.getNumber(),
             initiative.getCreatedAt(),
             initiative.getUpdatedAt(),
-            initiative.getCompletedAt()
+            initiative.getCompletedAt(),
+            userInitiativeInstanceId
         );
     }
 }

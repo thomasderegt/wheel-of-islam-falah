@@ -45,7 +45,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
     if (pathname.startsWith('/goals-okr/insight')) return 'Insight'
     if (pathname.startsWith('/goals-okr/execute')) return 'Execute'
     if (pathname.startsWith('/goals-okr/kanban')) return 'Progress'
-    if (pathname.startsWith('/goals-okr')) return 'Goal'
+    if (pathname === '/goal' || pathname.startsWith('/goals-okr')) return 'Goal'
     return null
   }
 

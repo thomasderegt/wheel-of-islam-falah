@@ -59,33 +59,39 @@ apiClient.interceptors.response.use(
         const errorData = error.response.data
         
         if (status !== 404 && !isPublicEndpoint && !shouldSuppress404) {
-          // Try to extract error message from various possible formats
+          // Try to extract error message from various possible formats (including Spring validation)
           let errorMessage = 'Unknown error'
           if (errorData) {
             if (typeof errorData === 'string') {
               errorMessage = errorData
             } else if (typeof errorData === 'object') {
-              // Try common error message fields
-              errorMessage = (errorData as any).error || 
-                           (errorData as any).message || 
-                           (errorData as any).detail ||
-                           JSON.stringify(errorData)
+              const d = errorData as unknown as Record<string, unknown>
+              // Backend Map.of("error", ...) and Spring validation / ProblemDetail
+              const single = d.error ?? d.message ?? d.detail
+              if (typeof single === 'string') {
+                errorMessage = single
+              } else if (Array.isArray(d.errors) && d.errors.length > 0) {
+                errorMessage = (d.errors as string[]).join('; ')
+              } else if (Array.isArray(d.fieldErrors)) {
+                errorMessage = (d.fieldErrors as Array<{ field?: string; message?: string }>)
+                  .map((e) => `${e.field ?? 'field'}: ${e.message ?? ''}`).join('; ')
+              } else {
+                errorMessage = JSON.stringify(errorData)
+              }
             }
           }
-          
-          console.error('API Error Response:', {
-            status: status,
-            statusText: statusText || '(no status text)',
-            errorMessage: errorMessage,
-            data: errorData,
-            dataType: typeof errorData,
-            dataString: errorData ? (typeof errorData === 'string' ? errorData : JSON.stringify(errorData)) : '(null/undefined/empty)',
-            dataLength: errorData ? (typeof errorData === 'string' ? errorData.length : JSON.stringify(errorData).length) : 0,
-            headers: error.response.headers,
-            url: error.config?.url || url,
-            method: error.config?.method || 'GET',
-            requestData: error.config?.data ? (typeof error.config.data === 'string' ? JSON.parse(error.config.data) : error.config.data) : undefined
-          })
+          // Single-line log so the message is always visible (no collapsed {})
+          const method = error.config?.method ?? 'GET'
+          const requestPayload = error.config?.data
+            ? (typeof error.config.data === 'string' ? error.config.data : JSON.stringify(error.config.data))
+            : undefined
+          console.error(
+            `API Error: ${status} ${statusText || ''} | ${errorMessage} | ${method} ${url}` +
+              (requestPayload ? ` | body: ${requestPayload}` : '')
+          )
+          if (typeof errorData !== 'undefined' && errorData !== null) {
+            console.error('API Error response body:', typeof errorData === 'string' ? errorData : JSON.stringify(errorData))
+          }
         }
         // 404 errors are silently ignored (expected for missing resources)
     } else if (error.request) {
@@ -126,16 +132,17 @@ apiClient.interceptors.response.use(
     }
 
     // Handle 401 Unauthorized - Token expired or invalid
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true
 
       try {
         const refreshToken = localStorage.getItem('refresh_token')
         if (refreshToken) {
-          // Try to refresh token
+          // Try to refresh token (use raw axios - no auth header needed)
           const response = await axios.post(
             `${config.api.baseUrl}/api/v2/user/refresh`,
-            { refreshToken }
+            { refreshToken },
+            { headers: { 'Content-Type': 'application/json' }, timeout: config.api.timeout }
           )
           
           // Update tokens
@@ -159,16 +166,18 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest)
         }
       } catch (refreshError) {
-        // Refresh failed - clear auth and redirect to login
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user')
-        
-        // Clear auth store
-        const authStore = (await import('@/features/auth/store/authStore')).useAuthStore.getState()
-        authStore.clearAuth()
-        
-        window.location.href = '/login'
+        const refreshStatus = axios.isAxiosError(refreshError) ? refreshError.response?.status : undefined
+        // Only redirect when refresh failed due to auth (400 invalid token, 401 unauthorized)
+        // For network errors or 500, reject so the UI can show the error - avoid unexpected redirect
+        const isAuthFailure = refreshStatus === 400 || refreshStatus === 401
+        if (isAuthFailure) {
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('user')
+          const authStore = (await import('@/features/auth/store/authStore')).useAuthStore.getState()
+          authStore.clearAuth()
+          window.location.href = '/login'
+        }
         return Promise.reject(refreshError)
       }
     }

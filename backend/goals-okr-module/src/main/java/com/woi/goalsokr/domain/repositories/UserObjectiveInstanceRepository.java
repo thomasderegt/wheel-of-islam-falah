@@ -11,9 +11,9 @@ import java.util.Optional;
  */
 public interface UserObjectiveInstanceRepository {
     Optional<UserObjectiveInstance> findById(Long id);
-    List<UserObjectiveInstance> findByUserGoalInstanceId(Long userGoalInstanceId);
-    List<UserObjectiveInstance> findByUserGoalInstanceIdIn(List<Long> userGoalInstanceIds);
-    Optional<UserObjectiveInstance> findByUserGoalInstanceIdAndObjectiveId(Long userGoalInstanceId, Long objectiveId);
+    List<UserObjectiveInstance> findByUserId(Long userId);
+    Optional<UserObjectiveInstance> findByUserIdAndObjectiveId(Long userId, Long objectiveId);
+    List<UserObjectiveInstance> findByObjectiveId(Long objectiveId);
     UserObjectiveInstance save(UserObjectiveInstance userObjectiveInstance);
     void delete(UserObjectiveInstance userObjectiveInstance);
 }

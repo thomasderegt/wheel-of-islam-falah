@@ -1,24 +1,120 @@
 'use client'
 
 /**
- * OKR Objective Page - Redirect to key results
- * 
- * Redirects to the key results page for this objective
+ * OKR Objective Detail Page
+ *
+ * Shows the objective (title, description) and key results as cards.
+ * Clicking a key result card navigates to the key result detail page.
  */
 
-import { useEffect } from 'react'
+import { ProtectedRoute } from '@/features/auth'
+import Navbar from '@/shared/components/navigation/Navbar'
+import { Container } from '@/shared/components/ui/container'
+import { Button } from '@/shared/components/ui/button'
+import { KeyResultList } from '@/features/goals-okr/components/KeyResultList'
+import { getObjective } from '@/features/goals-okr/api/goalsOkrApi'
+import { Loading } from '@/shared/components/ui/Loading'
 import { useParams, useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 
-export default function OKRObjectivePage() {
+export default function OKRObjectiveDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const objectiveId = params?.id ? Number(params.id) : null
+  const router = useRouter()
 
-  useEffect(() => {
-    if (objectiveId) {
-      router.replace(`/goals-okr/objectives/${objectiveId}/key-results`)
-    }
-  }, [objectiveId, router])
+  const { data: objective, isLoading: isLoadingObjective } = useQuery({
+    queryKey: ['goals-okr', 'objective', objectiveId],
+    queryFn: () => getObjective(objectiveId!),
+    enabled: objectiveId !== null,
+  })
 
-  return null
+  const lifeDomainId = objective?.lifeDomainId
+
+  if (isLoadingObjective || !objectiveId) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen flex flex-col">
+          <Navbar variant="landing" />
+          <main className="flex-1 flex flex-col p-8">
+            <Container className="max-w-6xl mx-auto">
+              <div className="flex items-center justify-center min-h-[600px]">
+                <Loading />
+              </div>
+            </Container>
+          </main>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!objective) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen flex flex-col">
+          <Navbar variant="landing" />
+          <main className="flex-1 flex flex-col p-8">
+            <Container className="max-w-6xl mx-auto">
+              <div className="flex flex-col items-center justify-center min-h-[600px] space-y-4">
+                <h1 className="text-2xl font-bold">Objective not found</h1>
+                {lifeDomainId && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="h-12 px-8 text-base"
+                    onClick={() => router.push(`/goals-okr/life-domains/${lifeDomainId}`)}
+                  >
+                    Back
+                  </Button>
+                )}
+              </div>
+            </Container>
+          </main>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen flex flex-col">
+        <Navbar variant="landing" />
+        <main className="flex-1 flex flex-col p-8">
+          <Container className="max-w-6xl mx-auto">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                {lifeDomainId && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="h-12 px-8 text-base"
+                    onClick={() => router.push(`/goals-okr/life-domains/${lifeDomainId}`)}
+                  >
+                    Back
+                  </Button>
+                )}
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-muted-foreground uppercase tracking-wide">
+                    Objective
+                  </p>
+                  <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+                    {objective.titleEn || objective.titleNl}
+                  </h1>
+                  {objective.descriptionEn && (
+                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                      {objective.descriptionEn}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-2xl font-semibold">Key Results</h2>
+                <KeyResultList objectiveId={objectiveId} />
+              </div>
+            </div>
+          </Container>
+        </main>
+      </div>
+    </ProtectedRoute>
+  )
 }

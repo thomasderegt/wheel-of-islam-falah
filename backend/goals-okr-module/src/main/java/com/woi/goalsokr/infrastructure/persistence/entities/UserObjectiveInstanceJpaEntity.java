@@ -15,8 +15,8 @@ public class UserObjectiveInstanceJpaEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "user_goal_instance_id", nullable = false)
-    private Long userGoalInstanceId; // FK to goals_okr.user_goal_instances (aggregate root)
+    @Column(name = "user_id", nullable = false)
+    private Long userId; // Soft reference to users.users
 
     @Column(name = "objective_id", nullable = false)
     private Long objectiveId; // FK to goals_okr.objectives
@@ -37,8 +37,8 @@ public class UserObjectiveInstanceJpaEntity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getUserGoalInstanceId() { return userGoalInstanceId; }
-    public void setUserGoalInstanceId(Long userGoalInstanceId) { this.userGoalInstanceId = userGoalInstanceId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public Long getObjectiveId() { return objectiveId; }
     public void setObjectiveId(Long objectiveId) { this.objectiveId = objectiveId; }

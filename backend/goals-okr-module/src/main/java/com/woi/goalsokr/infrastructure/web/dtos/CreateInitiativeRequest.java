@@ -11,8 +11,7 @@ public record CreateInitiativeRequest(
     @NotNull(message = "User ID is required")
     Long userId,
     
-    @NotNull(message = "Key Result ID is required")
-    Long keyResultId,
+    Long keyResultId, // Optional - template reference for context/filtering
     
     @NotNull(message = "User Key Result Instance ID is required")
     Long userKeyResultInstanceId,

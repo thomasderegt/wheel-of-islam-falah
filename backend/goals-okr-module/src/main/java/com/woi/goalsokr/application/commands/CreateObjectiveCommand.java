@@ -4,7 +4,7 @@ package com.woi.goalsokr.application.commands;
  * Command to create a new objective (template)
  */
 public record CreateObjectiveCommand(
-    Long goalId,
+    Long lifeDomainId,
     String titleNl,
     String titleEn,
     String descriptionNl,
@@ -12,8 +12,8 @@ public record CreateObjectiveCommand(
     Integer orderIndex
 ) {
     public CreateObjectiveCommand {
-        if (goalId == null) {
-            throw new IllegalArgumentException("Goal ID cannot be null");
+        if (lifeDomainId == null) {
+            throw new IllegalArgumentException("Life Domain ID cannot be null");
         }
         if ((titleNl == null || titleNl.trim().isEmpty()) && 
             (titleEn == null || titleEn.trim().isEmpty())) {

@@ -53,14 +53,15 @@ function CollapsibleTrigger({ asChild, children, className, ...props }: Collapsi
   const { open, onOpenChange } = context
 
   if (asChild && React.isValidElement(children)) {
+    const childProps = (children as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void; className?: string }>).props
     return React.cloneElement(children, {
       ...props,
       onClick: (e: React.MouseEvent) => {
         onOpenChange(!open)
-        children.props.onClick?.(e)
+        childProps.onClick?.(e)
       },
-      className: cn(className, children.props.className),
-    } as any)
+      className: cn(className, childProps.className),
+    } as React.HTMLAttributes<HTMLElement>)
   }
 
   return (

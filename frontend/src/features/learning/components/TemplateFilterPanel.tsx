@@ -114,9 +114,8 @@ export function TemplateFilterPanel({ value, onChange }: TemplateFilterPanelProp
           <Select
             value={value.sectionId?.toString() || '__all__'}
             onValueChange={handleSectionChange}
-            disabled={loading}
           >
-            <SelectTrigger>
+            <SelectTrigger disabled={loading}>
               <SelectValue placeholder="Select section" />
             </SelectTrigger>
             <SelectContent>

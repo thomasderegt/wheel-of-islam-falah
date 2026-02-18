@@ -9,10 +9,10 @@
 import { ProtectedRoute } from '@/features/auth'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
+import { Button } from '@/shared/components/ui/button'
 import { InitiativeListForKeyResult } from '@/features/goals-okr/components/InitiativeListForKeyResult'
 import { CreateInitiativeDialog } from '@/features/goals-okr/components/CreateInitiativeDialog'
 import { InitiativeSuggestions } from '@/features/goals-okr/components/InitiativeSuggestions'
-import { Button } from '@/shared/components/ui/button'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -20,7 +20,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getUserKeyResultInstance, getKeyResult, startUserInitiativeInstance } from '@/features/goals-okr/api/goalsOkrApi'
 import type { InitiativeDTO } from '@/features/goals-okr/api/goalsOkrApi'
 import { Loading } from '@/shared/components/ui/Loading'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useAddKanbanItem } from '@/features/goals-okr/hooks/useKanbanItems'
@@ -204,12 +203,14 @@ export default function OKRUserKeyResultInstancePage() {
               {/* Header */}
               <div className="space-y-4">
                 {keyResult.objectiveId && (
-                  <button
-                    onClick={() => router.push(`/goals-okr/objectives/${keyResult.objectiveId}/key-results`)}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="h-12 px-8 text-base"
+                    onClick={() => router.push(`/goals-okr/objectives/${keyResult.objectiveId}`)}
                   >
-                    ← {language === 'nl' ? 'Terug naar Key Results' : 'Back to Key Results'}
-                  </button>
+                    Back
+                  </Button>
                 )}
                 <div className="text-center space-y-2">
                   <p className="text-sm text-muted-foreground uppercase tracking-wide">
@@ -228,9 +229,6 @@ export default function OKRUserKeyResultInstancePage() {
                   </p>
                 </div>
               </div>
-
-              {/* Hierarchical Navigation */}
-              <AutoHierarchicalNavigation />
 
               {/* Suggested Initiatives */}
               {keyResult && (
@@ -257,8 +255,9 @@ export default function OKRUserKeyResultInstancePage() {
                     {language === 'nl' ? 'Nieuw Initiative' : 'New Initiative'}
                   </Button>
                 </div>
-                <InitiativeListForKeyResult 
-                  userKeyResultInstanceId={instanceId} 
+                <InitiativeListForKeyResult
+                  userKeyResultInstanceId={instanceId}
+                  keyResultId={keyResult?.id}
                   language={language}
                 />
               </div>
@@ -270,7 +269,8 @@ export default function OKRUserKeyResultInstancePage() {
         <CreateInitiativeDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          keyResultId={keyResult.id}
+          keyResultId={userInstance?.keyResultId ?? undefined}
+          keyResultTitle={keyResultTitle}
           userKeyResultInstanceId={instanceId}
           language={language}
           onSuccess={handleDialogClose}

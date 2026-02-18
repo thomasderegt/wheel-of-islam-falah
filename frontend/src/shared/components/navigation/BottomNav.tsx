@@ -63,7 +63,7 @@ export function BottomNav() {
 
     // Only add Goal, Execute, Insight if Goals-OKR context is not NONE
     // Default is NONE, so by default these items are NOT shown
-    if (showGoalExecuteInsight && goalsOkrContext !== 'NONE') {
+    if (showGoalExecuteInsight) {
       items.push(
         { href: '/goals-okr', label: 'Goal', icon: Target },
         { href: '/goals-okr/execute', label: 'Execute', icon: TrendingUp },

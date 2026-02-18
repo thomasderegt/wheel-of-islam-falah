@@ -20,7 +20,8 @@ import { useUserPreferences, useUpdateUserPreferences } from '@/features/auth/ho
 import { GoalsOkrContext } from '@/shared/api/types'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Users } from 'lucide-react'
+import Link from 'next/link'
+import { Users, Lock } from 'lucide-react'
 
 export default function UserSettingsPage() {
   const { user } = useAuth()
@@ -126,6 +127,27 @@ export default function UserSettingsPage() {
                       {user?.email || 'Not available'}
                     </p>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Change Password Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="h-5 w-5" />
+                    Wachtwoord
+                  </CardTitle>
+                  <CardDescription>
+                    Wijzig je wachtwoord. Minimaal 8 tekens.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/user/settings/change-password">
+                    <Button variant="outline" className="w-full">
+                      <Lock className="mr-2 h-4 w-4" />
+                      Verander wachtwoord
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
 

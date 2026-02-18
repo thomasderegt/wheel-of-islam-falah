@@ -13,7 +13,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { getUserKeyResultEnrollment, getKeyResult } from '@/features/goals-okr/api/goalsOkrApi'
 import { Loading } from '@/shared/components/ui/Loading'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function OKRUserKeyResultEnrollmentPage() {
   const params = useParams()
@@ -100,9 +99,6 @@ export default function OKRUserKeyResultEnrollmentPage() {
                   )}
                 </div>
               </div>
-
-              {/* Hierarchical Navigation */}
-              <AutoHierarchicalNavigation />
             </div>
           </Container>
         </main>

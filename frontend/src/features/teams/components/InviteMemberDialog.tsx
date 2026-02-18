@@ -113,10 +113,9 @@ export function InviteMemberDialog({ open, onOpenChange, teamId, onSuccess }: In
               <Label htmlFor="member-role">Rol</Label>
               <Select
                 value={role}
-                onValueChange={(value: 'OWNER' | 'ADMIN' | 'MEMBER') => setRole(value)}
-                disabled={inviteMutation.isPending}
+                onValueChange={(value: string) => setRole(value as 'OWNER' | 'ADMIN' | 'MEMBER')}
               >
-                <SelectTrigger id="member-role">
+                <SelectTrigger id="member-role" disabled={inviteMutation.isPending}>
                   <SelectValue placeholder="Selecteer rol" />
                 </SelectTrigger>
                 <SelectContent>
@@ -146,7 +145,7 @@ export function InviteMemberDialog({ open, onOpenChange, teamId, onSuccess }: In
             >
               {inviteMutation.isPending ? (
                 <>
-                  <Loading className="mr-2" />
+                  <Loading />
                   Uitnodigen...
                 </>
               ) : (

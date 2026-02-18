@@ -54,6 +54,14 @@ public class UserKeyResultInstanceRepositoryImpl implements UserKeyResultInstanc
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UserKeyResultInstance> findByKeyResultId(Long keyResultId) {
+        return jpaRepository.findByKeyResultId(keyResultId).stream()
+            .map(UserKeyResultInstanceEntityMapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public UserKeyResultInstance save(UserKeyResultInstance userKeyResultInstance) {
         UserKeyResultInstanceJpaEntity jpaEntity = UserKeyResultInstanceEntityMapper.toJpa(userKeyResultInstance);

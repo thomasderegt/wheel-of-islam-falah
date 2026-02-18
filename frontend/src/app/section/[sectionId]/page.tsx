@@ -17,7 +17,6 @@ import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { ProtectedRoute } from '@/features/auth'
 import { SectionViewer } from '@/features/content'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function SectionViewerPage() {
   const params = useParams()
@@ -33,9 +32,6 @@ export default function SectionViewerPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-4xl mx-auto">
-            {/* Hierarchical Navigation */}
-            <AutoHierarchicalNavigation language={language} />
-            
             <SectionViewer sectionId={sectionId} language={language} />
           </Container>
         </main>

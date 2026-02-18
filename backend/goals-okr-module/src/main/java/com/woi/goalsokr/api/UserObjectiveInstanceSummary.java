@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  */
 public record UserObjectiveInstanceSummary(
     Long id,
-    Long userGoalInstanceId,
+    Long userId,
     Long objectiveId,
     String number,
     LocalDateTime startedAt,

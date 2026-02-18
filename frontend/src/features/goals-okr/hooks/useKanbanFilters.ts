@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
+export type KanbanViewMode = 'all' | 'okrs' | 'initiatives'
+
 export interface KanbanFilters {
   itemType?: 'GOAL' | 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
   lifeDomainId?: number
   wheelType?: 'life' | 'business'
+  /** @deprecated Use viewMode instead. Kept for URL backward compatibility. */
   showInitiatives?: boolean
+  /** View mode: 'all' = OKRs + Initiatives (default), 'okrs' = only Goals/Objectives/Key Results, 'initiatives' = only Initiatives */
+  viewMode?: KanbanViewMode
   columnName?: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'
   wipLimits?: {
     life?: {
@@ -80,11 +85,16 @@ export function useKanbanFilters(initialFilters: KanbanFilters = {}) {
       filters.wheelType = wheelType as 'life' | 'business'
     }
     
-    const showInitiatives = params.get('showInitiatives')
-    if (showInitiatives === 'true') {
-      filters.showInitiatives = true
+    const viewMode = params.get('viewMode')
+    if (viewMode === 'all' || viewMode === 'okrs' || viewMode === 'initiatives') {
+      filters.viewMode = viewMode as KanbanFilters['viewMode']
     }
-    
+    // Legacy: showInitiatives=true in URL → viewMode=initiatives
+    const showInitiatives = params.get('showInitiatives')
+    if (showInitiatives === 'true' && !filters.viewMode) {
+      filters.viewMode = 'initiatives'
+    }
+
     const columnName = params.get('columnName')
     if (columnName && ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE'].includes(columnName)) {
       filters.columnName = columnName as KanbanFilters['columnName']
@@ -141,8 +151,8 @@ export function useKanbanFilters(initialFilters: KanbanFilters = {}) {
       params.set('wheelType', updatedFilters.wheelType)
     }
     
-    if (updatedFilters.showInitiatives) {
-      params.set('showInitiatives', 'true')
+    if (updatedFilters.viewMode && updatedFilters.viewMode !== 'all') {
+      params.set('viewMode', updatedFilters.viewMode)
     }
     
     if (updatedFilters.columnName) {

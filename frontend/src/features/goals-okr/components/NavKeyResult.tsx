@@ -53,7 +53,7 @@ function KeyResultCard({ keyResult, userObjectiveEnrollmentId, userId, language,
   // Find UserKeyResultEnrollment for this key result and objective enrollment
   const userKeyResultEnrollment = userKeyResultEnrollments?.find(
     ukre => ukre.keyResultId === keyResult.id && 
-            ukre.userObjectiveEnrollmentId === userObjectiveEnrollmentId
+            ukre.userObjectiveInstanceId === userObjectiveEnrollmentId
   )
 
   const startKeyResultEnrollmentMutation = useMutation({
@@ -250,8 +250,8 @@ export function NavKeyResult({ objectiveId, language = 'en' }: NavKeyResultProps
     enabled: !!user?.id,
   })
 
-  // Find UserGoalEnrollment for this objective's goal
-  const userGoalEnrollment = objective && userGoalEnrollments?.find(uge => uge.goalId === objective.goalId)
+  // Goal layer removed: no userGoalEnrollment needed to start an objective
+  const userGoalEnrollment = undefined
 
   const startEnrollmentMutation = useMutation({
     mutationFn: ({ userId, userGoalEnrollmentId, objectiveId }: { userId: number; userGoalEnrollmentId: number; objectiveId: number }) =>
@@ -268,14 +268,14 @@ export function NavKeyResult({ objectiveId, language = 'en' }: NavKeyResultProps
   })
 
   const handleStartObjective = (objectiveId: number) => {
-    if (!user?.id || !userGoalEnrollment) {
-      alert('Please start the goal first by clicking the + button on the goal')
+    if (!user?.id) {
+      alert('Please log in to start an objective')
       return
     }
     setStartingObjectiveId(objectiveId)
     startEnrollmentMutation.mutate({ 
       userId: user.id, 
-      userGoalEnrollmentId: userGoalEnrollment.id,
+      userGoalEnrollmentId: 0, // ignored by API after goal layer removal
       objectiveId 
     })
   }
@@ -324,7 +324,7 @@ export function NavKeyResult({ objectiveId, language = 'en' }: NavKeyResultProps
           >
             {isStarting ? (
               <>
-                <Loading className="h-4 w-4" />
+                <Loading />
                 Starting Objective...
               </>
             ) : (

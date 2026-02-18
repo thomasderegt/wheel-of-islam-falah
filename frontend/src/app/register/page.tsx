@@ -167,9 +167,8 @@ export default function RegisterPage() {
               <Select
                 value={selectedTheme}
                 onValueChange={setSelectedTheme}
-                disabled={registerMutation.isPending}
               >
-                <SelectTrigger id="theme" className="w-full">
+                <SelectTrigger id="theme" className="w-full" disabled={registerMutation.isPending}>
                   <SelectValue placeholder="Selecteer een theme" />
                 </SelectTrigger>
                 <SelectContent>

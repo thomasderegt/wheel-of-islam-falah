@@ -23,7 +23,6 @@ import { Loading } from '@/shared/components/ui/Loading'
 import { Error } from '@/shared/components/ui/Error'
 import { useQuery } from '@tanstack/react-query'
 import { FalahDashboard } from '@/features/falah/components/FalahDashboard'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
 
 export default function ChapterOverviewPage() {
   const params = useParams()
@@ -103,9 +102,6 @@ export default function ChapterOverviewPage() {
               chapterVersion={chapterVersion || null}
               language={language}
             />
-
-            {/* Hierarchical Navigation */}
-            <AutoHierarchicalNavigation language={language} />
 
             {/* Sections List */}
             <SectionsList chapterId={chapterId} language={language} />

@@ -11,7 +11,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useKeyResultsByObjective } from '../hooks/useKeyResultsByObjective'
-import { startUserObjectiveInstance, getUserObjectiveInstances, getKeyResultProgress, getObjective, getUserGoalInstances, startUserKeyResultInstance, getUserKeyResultInstances } from '../api/goalsOkrApi'
+import { getUserObjectiveInstances, getKeyResultProgress, getObjective, startUserKeyResultInstance, getUserKeyResultInstances } from '../api/goalsOkrApi'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useAddKanbanItem } from '../hooks/useKanbanItems'
 import { Button } from '@/shared/components/ui/button'
@@ -19,7 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Progress } from '@/shared/components/ui/progress'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
-import { CheckCircle2, PlayCircle, Target, Plus } from 'lucide-react'
+import { CheckCircle2, PlayCircle, Target, Plus, Trash2 } from 'lucide-react'
+import { useDeleteKeyResult } from '../hooks/useDeleteKeyResult'
 import type { KeyResultDTO } from '../api/goalsOkrApi'
 
 /**
@@ -39,7 +40,9 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
   const { user } = useAuth()
   const addKanbanItem = useAddKanbanItem()
   const queryClient = useQueryClient()
+  const deleteKeyResultMutation = useDeleteKeyResult()
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // Get user key result instances to find the one for this key result
   // Only fetch if we have a user and a userObjectiveInstanceId (meaning the objective is started)
@@ -127,6 +130,24 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
     setConfirmDialogOpen(false)
   }
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    deleteKeyResultMutation.mutate(keyResult.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false)
+        queryClient.invalidateQueries({ queryKey: ['goals-okr', 'keyResults', 'objective', keyResult.objectiveId] })
+      },
+      onError: (err: unknown) => {
+        const msg = (err as { response?: { data?: { error?: string } }; message?: string })?.response?.data?.error ?? (err as Error).message
+        alert(msg ?? 'Could not delete key result')
+      },
+    })
+  }
+
   // Get progress for this key result - only if we have a UserKeyResultInstance
   const shouldFetch = !!userId && !!userKeyResultInstance?.id
   
@@ -167,7 +188,13 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
   }
 
   const handleCardClick = async () => {
-    if (!isStarted || !user?.id || !userObjectiveInstanceId) {
+    // When not started: navigate to key result template page (browse mode)
+    if (!isStarted) {
+      router.push(`/goals-okr/key-results/${keyResult.id}`)
+      return
+    }
+
+    if (!user?.id || !userObjectiveInstanceId) {
       return
     }
 
@@ -205,7 +232,7 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
   return (
     <>
       <Card 
-        className={`hover:shadow-lg transition-shadow ${isStarted ? 'cursor-pointer' : ''}`}
+        className="hover:shadow-lg transition-shadow cursor-pointer"
         onClick={handleCardClick}
       >
         <CardHeader>
@@ -223,18 +250,29 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
             </div>
             <div className="flex items-center gap-2">
               {user?.id && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleAddToKanban(e)
-                  }}
-                  className="h-6 w-6 p-0"
-                  title="Add to Progress"
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleAddToKanban(e)
+                    }}
+                    className="h-6 w-6 p-0"
+                    title="Add to Progress"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDeleteClick}
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    title={language === 'nl' ? 'Key result verwijderen' : 'Remove key result'}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </>
               )}
               {isCompleted && (
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -278,7 +316,7 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
+      {/* Add to Progress Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -286,7 +324,7 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
               {language === 'nl' ? 'Voeg Key Result toe aan Progress' : 'Add Key Result to Progress'}
             </DialogTitle>
             <DialogDescription>
-              {language === 'nl' 
+              {language === 'nl'
                 ? 'Dit zal dit key result starten en toevoegen aan je progress board.'
                 : 'This will start working on this key result and add it to your progress board.'}
             </DialogDescription>
@@ -303,9 +341,33 @@ function KeyResultCard({ keyResult, userObjectiveInstanceId, userId, language, i
               onClick={handleConfirmAddToKanban}
               disabled={addKanbanItem.isPending || startKeyResultInstanceMutation.isPending}
             >
-              {(addKanbanItem.isPending || startKeyResultInstanceMutation.isPending) 
-                ? (language === 'nl' ? 'Bezig...' : 'Starting...') 
+              {(addKanbanItem.isPending || startKeyResultInstanceMutation.isPending)
+                ? (language === 'nl' ? 'Bezig...' : 'Starting...')
                 : (language === 'nl' ? 'Voeg toe aan Progress' : 'Add to Progress')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Key Result Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {language === 'nl' ? 'Key result verwijderen?' : 'Remove key result?'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'nl'
+                ? `Weet je zeker dat je "${getKeyResultTitle()}" wilt verwijderen? Dit kan alleen als nog niemand dit key result op het progress board heeft.`
+                : `Are you sure you want to remove "${getKeyResultTitle()}"? This is only possible if no one has added it to their progress board.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleteKeyResultMutation.isPending}>
+              {language === 'nl' ? 'Annuleren' : 'Cancel'}
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleteKeyResultMutation.isPending}>
+              {deleteKeyResultMutation.isPending ? (language === 'nl' ? 'Verwijderen...' : 'Removing...') : (language === 'nl' ? 'Verwijderen' : 'Remove')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -324,57 +386,24 @@ export function KeyResultList({ objectiveId, language = 'en' }: KeyResultListPro
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { data: keyResults, isLoading } = useKeyResultsByObjective(objectiveId)
-  const [startingObjectiveId, setStartingObjectiveId] = useState<number | null>(null)
 
-  // Get objective to find goalId
+  // Get objective (for display)
   const { data: objective } = useQuery({
     queryKey: ['goals-okr', 'objective', objectiveId],
     queryFn: () => getObjective(objectiveId),
     enabled: !!objectiveId,
   })
 
-  // Get user goal instances
-  const { data: userGoalInstances } = useQuery({
-    queryKey: ['goals-okr', 'userGoalInstances', 'user', user?.id],
-    queryFn: () => getUserGoalInstances(user?.id || 0),
-    enabled: !!user?.id,
-  })
-
-  // Get user objective instances to check which objectives are already started
+  // User objective instances – goal layer removed; start objective only via Kanban
   const { data: userObjectiveInstances } = useQuery({
     queryKey: ['goals-okr', 'userObjectiveInstances', 'user', user?.id],
     queryFn: () => getUserObjectiveInstances(user?.id || 0),
     enabled: !!user?.id,
   })
 
-  // Find UserGoalInstance for this objective's goal
-  const userGoalInstance = objective && userGoalInstances?.find(ugi => ugi.goalId === objective.goalId)
-
-  const startInstanceMutation = useMutation({
-    mutationFn: ({ userId, userGoalInstanceId, objectiveId }: { userId: number; userGoalInstanceId: number; objectiveId: number }) =>
-      startUserObjectiveInstance(userId, userGoalInstanceId, objectiveId),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userObjectiveInstances'] })
-      // Navigate to the user objective instance
-      router.push(`/goals-okr/user-objective-instances/${data.id}`)
-    },
-    onError: (error) => {
-      console.error('Failed to start objective instance:', error)
-      setStartingObjectiveId(null)
-    },
-  })
-
-  const handleStartObjective = (objectiveId: number) => {
-    if (!user?.id || !userGoalInstance) {
-      alert('Please start the goal first by clicking the + button on the goal')
-      return
-    }
-    setStartingObjectiveId(objectiveId)
-    startInstanceMutation.mutate({ 
-      userId: user.id, 
-      userGoalInstanceId: userGoalInstance.id,
-      objectiveId 
-    })
+  const handleStartObjective = (_objectiveId: number) => {
+    // Goal layer removed – start objectives via Kanban board (personal objective or add from board)
+    router.push('/goals-okr/kanban')
   }
 
   const isObjectiveStarted = (objectiveId: number): boolean => {
@@ -406,7 +435,6 @@ export function KeyResultList({ objectiveId, language = 'en' }: KeyResultListPro
 
   const instanceId = getStartedInstanceId(objectiveId)
   const isStarted = isObjectiveStarted(objectiveId)
-  const isStarting = startingObjectiveId === objectiveId
 
   return (
     <div className="w-full space-y-6">
@@ -415,21 +443,12 @@ export function KeyResultList({ objectiveId, language = 'en' }: KeyResultListPro
         <div className="flex justify-center">
           <Button
             onClick={() => handleStartObjective(objectiveId)}
-            disabled={isStarting || !user?.id}
+            variant="outline"
             size="lg"
             className="gap-2"
           >
-            {isStarting ? (
-              <>
-                <Loading className="h-4 w-4" />
-                Starting Objective...
-              </>
-            ) : (
-              <>
-                <PlayCircle className="h-4 w-4" />
-                Start Working on This Objective
-              </>
-            )}
+            <PlayCircle className="h-4 w-4" />
+            Add via Kanban board
           </Button>
         </div>
       )}

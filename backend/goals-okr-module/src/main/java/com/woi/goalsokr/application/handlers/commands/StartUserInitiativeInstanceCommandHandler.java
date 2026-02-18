@@ -1,5 +1,6 @@
 package com.woi.goalsokr.application.handlers.commands;
 
+import com.woi.goalsokr.application.commands.AddKanbanItemCommand;
 import com.woi.goalsokr.application.commands.StartUserInitiativeInstanceCommand;
 import com.woi.goalsokr.application.results.UserInitiativeInstanceResult;
 import com.woi.goalsokr.domain.entities.UserInitiativeInstance;
@@ -20,6 +21,7 @@ public class StartUserInitiativeInstanceCommandHandler {
     private final UserInitiativeInstanceRepository userInitiativeInstanceRepository;
     private final InitiativeRepository initiativeRepository;
     private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
+    private final AddKanbanItemCommandHandler addKanbanItemHandler;
     private final UserModuleInterface userModule;
     private final EntityNumberGenerator numberGenerator;
 
@@ -27,11 +29,13 @@ public class StartUserInitiativeInstanceCommandHandler {
             UserInitiativeInstanceRepository userInitiativeInstanceRepository,
             InitiativeRepository initiativeRepository,
             UserKeyResultInstanceRepository userKeyResultInstanceRepository,
+            AddKanbanItemCommandHandler addKanbanItemHandler,
             UserModuleInterface userModule,
             EntityNumberGenerator numberGenerator) {
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
         this.initiativeRepository = initiativeRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
+        this.addKanbanItemHandler = addKanbanItemHandler;
         this.userModule = userModule;
         this.numberGenerator = numberGenerator;
     }
@@ -72,6 +76,19 @@ public class StartUserInitiativeInstanceCommandHandler {
 
         // Save instance
         UserInitiativeInstance savedInstance = userInitiativeInstanceRepository.save(instance);
+
+        // Add to kanban board so it appears on the progress board
+        try {
+            addKanbanItemHandler.handle(new AddKanbanItemCommand(
+                command.userId(),
+                "INITIATIVE",
+                savedInstance.getId()
+            ));
+        } catch (IllegalArgumentException e) {
+            if (!"Item already exists in kanban board".equals(e.getMessage())) {
+                throw e;
+            }
+        }
 
         // Return result
         return UserInitiativeInstanceResult.from(savedInstance);

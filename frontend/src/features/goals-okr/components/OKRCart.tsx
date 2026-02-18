@@ -16,21 +16,16 @@ import { Badge } from '@/shared/components/ui/badge'
 import { Card, CardContent } from '@/shared/components/ui/card'
 import { Loading } from '@/shared/components/ui/Loading'
 import { AlertCircle, ShoppingCart, X, CheckCircle2 } from 'lucide-react'
-import { 
-  getGoal, 
-  createGoal, 
-  getGoalsByLifeDomain,
-  createObjective, 
-  getObjectivesByGoal,
-  createKeyResult, 
+import {
+  createObjective,
+  getObjectivesByLifeDomain,
+  createKeyResult,
   getKeyResultsByObjective,
-  startUserGoalInstance,
   startUserObjectiveInstance,
   startUserKeyResultInstance,
-  addKanbanItem
+  addKanbanItem,
 } from '../api/goalsOkrApi'
 import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
 
 interface OKRCartProps {
   open: boolean
@@ -46,63 +41,34 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
 
   const validationErrors = getValidationErrors()
 
-  // Group items by type for better display
+  // Group items by type for better display (goal layer removed – cart uses objective + key result)
   const goals = items.filter((i) => i.type === 'GOAL')
   const objectives = items.filter((i) => i.type === 'OBJECTIVE')
   const keyResults = items.filter((i) => i.type === 'KEY_RESULT')
-
-  // Fetch goal to get lifeDomainId
-  const goalId = goals[0]?.id
-  const { data: goalData } = useQuery({
-    queryKey: ['goals-okr', 'goal', goalId],
-    queryFn: () => getGoal(goalId!),
-    enabled: !!goalId && !goals[0]?.isNew,
-  })
 
   const checkoutMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('User not found')
 
-      // Full hierarchy (Goal -> Objective -> Key Result)
-      const goal = goals[0]
-      if (!goal) throw new Error('No goal selected')
+      // Hierarchy: Objective (+ optional Key Result). lifeDomainId from first objective's parentId.
+      const objective = objectives[0]
+      if (!objective) throw new Error('Add at least one Objective')
 
-      const objective = objectives.find((o) => o.parentId === goal.id) || objectives[0]
-      if (!objective) throw new Error('No objective selected')
+      const lifeDomainId = objective.parentId
+      if (!lifeDomainId) {
+        throw new Error('Objective must have a life domain (add from a life domain view)')
+      }
 
       const keyResult = keyResults.find((kr) => kr.parentId === objective.id) || keyResults[0]
-      if (!keyResult) throw new Error('No key result selected')
+      if (!keyResult) throw new Error('Add at least one Key Result')
 
-      // Get lifeDomainId from goal data or parentId
-      const lifeDomainId = goalData?.lifeDomainId || goal.parentId
-      if (!lifeDomainId) {
-        throw new Error('Could not determine life domain for goal')
-      }
-
-      // Step 1: Create templates if needed (only templates, no user-created)
-      let finalGoalId: number
-      if (goal.isNew && goal.data) {
-        // Create new goal template
-        const existingGoals = await getGoalsByLifeDomain(lifeDomainId)
-        const newGoal = await createGoal({
-          lifeDomainId,
-          titleEn: goal.data.title || goal.title,
-          descriptionEn: goal.data.description || goal.description,
-          orderIndex: existingGoals.length + 1,
-        })
-        finalGoalId = newGoal.id
-      } else if (goal.id) {
-        finalGoalId = goal.id
-      } else {
-        throw new Error('Goal ID is required')
-      }
-
+      // Step 1: Create templates if needed
       let finalObjectiveId: number
       if (objective.isNew && objective.data) {
-        // Create new objective template
-        const existingObjectives = await getObjectivesByGoal(finalGoalId)
+        // Create new objective template (under life domain)
+        const existingObjectives = await getObjectivesByLifeDomain(lifeDomainId)
         const newObjective = await createObjective({
-          goalId: finalGoalId,
+          lifeDomainId,
           titleEn: objective.data.title || objective.title,
           descriptionEn: objective.data.description || objective.description,
           orderIndex: existingObjectives.length + 1,
@@ -133,11 +99,9 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
         throw new Error('Key Result ID is required')
       }
 
-      // Step 2: Start instances
-      const userGoalInstance = await startUserGoalInstance(user.id, finalGoalId)
+      // Step 2: Start instances (goal layer removed – start objective and key result only)
       const userObjectiveInstance = await startUserObjectiveInstance(
         user.id,
-        userGoalInstance.id,
         finalObjectiveId
       )
       const userKeyResultInstance = await startUserKeyResultInstance(
@@ -146,12 +110,7 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
         finalKeyResultId
       )
 
-      // Step 3: Add to kanban
-      await addKanbanItem({
-        userId: user.id,
-        itemType: 'GOAL',
-        itemId: userGoalInstance.id,
-      })
+      // Step 3: Add to kanban (no GOAL item – goal layer removed)
       await addKanbanItem({
         userId: user.id,
         itemType: 'OBJECTIVE',
@@ -164,7 +123,6 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
       })
 
       return {
-        userGoalInstanceId: userGoalInstance.id,
         userObjectiveInstanceId: userObjectiveInstance.id,
         userKeyResultInstanceId: userKeyResultInstance.id,
       }
@@ -266,7 +224,7 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <Badge className={getTypeColor(item.type)} variant="default" className="text-[10px] px-1.5 py-0">{getTypeLabel(item.type)}</Badge>
+                              <Badge className={`${getTypeColor(item.type)} text-[10px] px-1.5 py-0`} variant="default">{getTypeLabel(item.type)}</Badge>
                               {item.isNew && <Badge variant="outline" className="text-[10px] px-1.5 py-0">New</Badge>}
                             </div>
                             <p className="font-medium text-sm truncate">{item.title}</p>
@@ -299,7 +257,7 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <Badge className={getTypeColor(item.type)} variant="default" className="text-[10px] px-1.5 py-0">{getTypeLabel(item.type)}</Badge>
+                              <Badge className={`${getTypeColor(item.type)} text-[10px] px-1.5 py-0`} variant="default">{getTypeLabel(item.type)}</Badge>
                               {item.isNew && <Badge variant="outline" className="text-[10px] px-1.5 py-0">New</Badge>}
                             </div>
                             <p className="font-medium text-sm truncate">{item.title}</p>
@@ -332,7 +290,7 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <Badge className={getTypeColor(item.type)} variant="default" className="text-[10px] px-1.5 py-0">{getTypeLabel(item.type)}</Badge>
+                              <Badge className={`${getTypeColor(item.type)} text-[10px] px-1.5 py-0`} variant="default">{getTypeLabel(item.type)}</Badge>
                               {item.isNew && <Badge variant="outline" className="text-[10px] px-1.5 py-0">New</Badge>}
                             </div>
                             <p className="font-medium text-sm truncate">{item.title}</p>

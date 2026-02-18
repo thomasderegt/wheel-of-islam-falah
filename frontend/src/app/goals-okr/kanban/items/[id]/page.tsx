@@ -20,7 +20,7 @@ import { getKanbanItem } from '@/features/goals-okr/api/goalsOkrApi'
 import { useUpdateKanbanItemNotes, useKanbanItems } from '@/features/goals-okr/hooks/useKanbanItems'
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/features/auth'
-import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getObjectivesByGoal, getKeyResultsByObjective, getUserObjectiveInstancesByUserGoalInstance, getUserKeyResultInstancesByUserObjectiveInstance, getUserInitiativeInstancesByUserKeyResultInstance, updateGoal, type ObjectiveDTO, type KeyResultDTO, type InitiativeDTO, type GoalDTO } from '@/features/goals-okr/api/goalsOkrApi'
+import { getGoal, getLifeDomain, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult, getKeyResultsByObjective, getUserObjectiveInstancesByUserGoalInstance, getUserKeyResultInstancesByUserObjectiveInstance, getUserInitiativeInstancesByUserKeyResultInstance, updateGoal, type ObjectiveDTO, type KeyResultDTO, type InitiativeDTO, type GoalDTO } from '@/features/goals-okr/api/goalsOkrApi'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/components/ui/select'
 import { Label } from '@/shared/components/ui/label'
 
@@ -189,14 +189,16 @@ export default function KanbanItemDetailPage() {
           case 'OBJECTIVE': {
             const userObjectiveInstance = await getUserObjectiveInstance(kanbanItem.itemId)
             const objective = await getObjective(userObjectiveInstance.objectiveId)
-            goal = await getGoal(objective.goalId)
+            const lifeDomain = await getLifeDomain(objective.lifeDomainId)
+            goal = lifeDomain ? { id: 0, lifeDomainId: objective.lifeDomainId, titleNl: lifeDomain.titleNl, titleEn: lifeDomain.titleEn, descriptionNl: null, descriptionEn: null, orderIndex: 0, number: null, createdAt: '', updatedAt: '', quarter: null, year: null } as GoalDTO : null
             break
           }
           case 'KEY_RESULT': {
             const userKeyResultInstance = await getUserKeyResultInstance(kanbanItem.itemId)
             const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
             const objective = await getObjective(keyResult.objectiveId)
-            goal = await getGoal(objective.goalId)
+            const lifeDomain = await getLifeDomain(objective.lifeDomainId)
+            goal = lifeDomain ? { id: 0, lifeDomainId: objective.lifeDomainId, titleNl: lifeDomain.titleNl, titleEn: lifeDomain.titleEn, descriptionNl: null, descriptionEn: null, orderIndex: 0, number: null, createdAt: '', updatedAt: '', quarter: null, year: null } as GoalDTO : null
             break
           }
           case 'INITIATIVE': {
@@ -204,7 +206,8 @@ export default function KanbanItemDetailPage() {
             const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
             const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
             const objective = await getObjective(keyResult.objectiveId)
-            goal = await getGoal(objective.goalId)
+            const lifeDomain = await getLifeDomain(objective.lifeDomainId)
+            goal = lifeDomain ? { id: 0, lifeDomainId: objective.lifeDomainId, titleNl: lifeDomain.titleNl, titleEn: lifeDomain.titleEn, descriptionNl: null, descriptionEn: null, orderIndex: 0, number: null, createdAt: '', updatedAt: '', quarter: null, year: null } as GoalDTO : null
             break
           }
         }
@@ -290,13 +293,17 @@ export default function KanbanItemDetailPage() {
             const initiatives = await Promise.all(
               userInitiativeInstances.map(async (instance) => {
                 try {
-                  // Try to get user-created initiative first
+                  // Try to get user-created initiative first (UserInitiativeDTO → InitiativeDTO shape)
                   const userInitiative = await getInitiative(instance.initiativeId)
+                  const krId = userInitiative.keyResultId ?? (await getUserKeyResultInstance(instance.userKeyResultInstanceId)).keyResultId
                   return {
                     id: userInitiative.id,
-                    title: userInitiative.title,
-                    description: userInitiative.description,
-                    keyResultId: userInitiative.userKeyResultInstanceId
+                    keyResultId: krId,
+                    titleNl: userInitiative.title,
+                    titleEn: userInitiative.title,
+                    descriptionNl: userInitiative.description ?? null,
+                    descriptionEn: userInitiative.description ?? null,
+                    displayOrder: 0
                   } as InitiativeDTO
                 } catch {
                   // If not found, try template initiative
@@ -428,11 +435,11 @@ export default function KanbanItemDetailPage() {
                       ? 'Er is een fout opgetreden bij het ophalen van het kanban item. Controleer of de backend draait.'
                       : 'An error occurred while fetching the kanban item. Please check if the backend is running.'}
                   </p>
-                  {error && 'response' in error && error.response && (
+                  {error && typeof error === 'object' && 'response' in error && error.response ? (
                     <p className="text-xs text-muted-foreground mt-2">
-                      Status: {error.response.status} - {error.response.statusText || 'Unknown error'}
+                      Status: {(error as { response: { status: number; statusText?: string } }).response.status} - {(error as { response: { status: number; statusText?: string } }).response.statusText || 'Unknown error'}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </Container>
@@ -465,6 +472,19 @@ export default function KanbanItemDetailPage() {
                 </div>
               </div>
             </Container>
+          </main>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!kanbanItem) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen flex flex-col">
+          <Navbar variant="landing" />
+          <main className="flex-1 flex flex-col p-8 flex items-center justify-center">
+            <Loading />
           </main>
         </div>
       </ProtectedRoute>
@@ -517,7 +537,7 @@ export default function KanbanItemDetailPage() {
                   <CardContent className="space-y-4">
                     {isLoadingGoalData ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loading className="h-6 w-6" />
+                        <Loading />
                         <span className="ml-2 text-sm text-muted-foreground">Loading goal data...</span>
                       </div>
                     ) : goalDataError ? (
@@ -563,9 +583,8 @@ export default function KanbanItemDetailPage() {
                             <Select
                               value={selectedQuarter?.toString() || ''}
                               onValueChange={(v) => setSelectedQuarter(v ? parseInt(v) : null)}
-                              disabled={isUpdatingPI}
                             >
-                              <SelectTrigger id="quarter">
+                              <SelectTrigger id="quarter" disabled={isUpdatingPI}>
                                 <SelectValue placeholder="Select quarter" />
                               </SelectTrigger>
                               <SelectContent>
@@ -582,9 +601,8 @@ export default function KanbanItemDetailPage() {
                             <Select
                               value={selectedYear?.toString() || ''}
                               onValueChange={(v) => setSelectedYear(v ? parseInt(v) : null)}
-                              disabled={isUpdatingPI}
                             >
-                              <SelectTrigger id="year">
+                              <SelectTrigger id="year" disabled={isUpdatingPI}>
                                 <SelectValue placeholder="Select year" />
                               </SelectTrigger>
                               <SelectContent>
@@ -639,17 +657,14 @@ export default function KanbanItemDetailPage() {
                   <CardContent>
                     {isLoadingChildren ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loading className="h-6 w-6" />
+                        <Loading />
                       </div>
                     ) : (
                       <div className="space-y-2">
                         {children.map((child, index) => {
-                          const title = language === 'nl' 
-                            ? ('titleNl' in child ? child.titleNl || child.titleEn : child.title)
-                            : ('titleEn' in child ? child.titleEn || child.titleNl : child.title)
-                          const description = language === 'nl'
-                            ? ('descriptionNl' in child ? child.descriptionNl : child.description)
-                            : ('descriptionEn' in child ? child.descriptionEn : child.description)
+                          const c = child as { titleNl?: string; titleEn?: string; descriptionNl?: string | null; descriptionEn?: string | null }
+                          const title = language === 'nl' ? ((c.titleNl || c.titleEn) ?? '') : ((c.titleEn || c.titleNl) ?? '')
+                          const description = language === 'nl' ? (c.descriptionNl ?? c.descriptionEn ?? '') : (c.descriptionEn ?? c.descriptionNl ?? '')
                           const hasKanbanItem = childrenInstances[index] && allKanbanItems?.some(
                             item => item.itemType === childrenType && item.itemId === childrenInstances[index].instanceId
                           )
@@ -710,7 +725,7 @@ export default function KanbanItemDetailPage() {
                     >
                       {updateNotesMutation.isPending ? (
                         <>
-                          <Loading className="mr-2 h-4 w-4" />
+                          <Loading />
                           {language === 'nl' ? 'Opslaan...' : 'Saving...'}
                         </>
                       ) : (

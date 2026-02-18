@@ -10,14 +10,15 @@
 import { ProtectedRoute } from '@/features/auth'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
+import { Button } from '@/shared/components/ui/button'
 import { NavGoalCircle } from '@/features/goals-okr/components/NavGoalCircle'
 import { useLifeDomains } from '@/features/goals-okr/hooks/useLifeDomains'
 import { Loading } from '@/shared/components/ui/Loading'
-import { useParams } from 'next/navigation'
-import { AutoHierarchicalNavigation } from '@/shared/components/navigation/HierarchicalNavigation'
+import { useParams, useRouter } from 'next/navigation'
 
 export default function OKRLifeDomainPage() {
   const params = useParams()
+  const router = useRouter()
   const lifeDomainId = params?.id ? Number(params.id) : null
   const { data: lifeDomains, isLoading: isLoadingDomains } = useLifeDomains()
   
@@ -47,6 +48,14 @@ export default function OKRLifeDomainPage() {
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
             <div className="space-y-8">
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-12 px-8 text-base"
+                onClick={() => router.push('/goals-okr')}
+              >
+                Back
+              </Button>
               {/* Header */}
               <div className="text-center space-y-2">
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground">
@@ -58,9 +67,6 @@ export default function OKRLifeDomainPage() {
                   </p>
                 )}
               </div>
-
-              {/* Hierarchical Navigation */}
-              <AutoHierarchicalNavigation />
 
               {/* Goals Grid - Includes Create Personal Goal card */}
               <NavGoalCircle lifeDomainId={lifeDomainId} />

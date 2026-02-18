@@ -7,14 +7,24 @@
  * Met progress tracking en status indicators
  */
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useInitiativesByUserObjectiveInstance } from '../hooks/useInitiativesByUserObjectiveInstance'
+import { useDeleteInitiative } from '../hooks/useDeleteInitiative'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
 import { Button } from '@/shared/components/ui/button'
 import { Loading } from '@/shared/components/ui/Loading'
-import { CheckCircle2, Circle, Archive, BookOpen } from 'lucide-react'
-import type { InitiativeDTO } from '../api/goalsOkrApi'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/ui/dialog'
+import { CheckCircle2, Circle, Archive, BookOpen, Trash2 } from 'lucide-react'
+import type { UserInitiativeDTO } from '../api/goalsOkrApi'
 
 interface InitiativeListProps {
   readonly userObjectiveInstanceId: number
@@ -24,8 +34,11 @@ interface InitiativeListProps {
 export function InitiativeList({ userObjectiveInstanceId, language = 'en' }: InitiativeListProps) {
   const router = useRouter()
   const { data: initiatives, isLoading } = useInitiativesByUserObjectiveInstance(userObjectiveInstanceId)
+  const deleteInitiativeMutation = useDeleteInitiative()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [initiativeToDelete, setInitiativeToDelete] = useState<UserInitiativeDTO | null>(null)
 
-  const getStatusBadge = (status: InitiativeDTO['status']) => {
+  const getStatusBadge = (status: UserInitiativeDTO['status']) => {
     switch (status) {
       case 'COMPLETED':
         return (
@@ -51,9 +64,24 @@ export function InitiativeList({ userObjectiveInstanceId, language = 'en' }: Ini
     }
   }
 
-  const handleInitiativeClick = (initiativeId: number) => {
+  const handleInitiativeClick = (_initiativeId: number) => {
     // Could navigate to initiative detail page if needed
-    // router.push(`/goals-okr/initiatives/${initiativeId}`)
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent, initiative: UserInitiativeDTO) => {
+    e.stopPropagation()
+    setInitiativeToDelete(initiative)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!initiativeToDelete) return
+    deleteInitiativeMutation.mutate(initiativeToDelete.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false)
+        setInitiativeToDelete(null)
+      },
+    })
   }
 
   if (isLoading) {
@@ -94,7 +122,18 @@ export function InitiativeList({ userObjectiveInstanceId, language = 'en' }: Ini
                     {initiative.title}
                   </CardTitle>
                 </div>
-                {getStatusBadge(initiative.status)}
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(initiative.status)}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => handleDeleteClick(e, initiative)}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    title={language === 'nl' ? 'Initiatief verwijderen' : 'Remove initiative'}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -133,6 +172,42 @@ export function InitiativeList({ userObjectiveInstanceId, language = 'en' }: Ini
           </Card>
         ))}
       </div>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {language === 'nl' ? 'Initiatief verwijderen?' : 'Remove initiative?'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'nl'
+                ? `Weet je zeker dat je "${initiativeToDelete?.title ?? ''}" wilt verwijderen? Dit verwijdert het initiatief en het van je progress board.`
+                : `Are you sure you want to remove "${initiativeToDelete?.title ?? ''}"? This will delete the initiative and remove it from your progress board.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setInitiativeToDelete(null)
+              }}
+              disabled={deleteInitiativeMutation.isPending}
+            >
+              {language === 'nl' ? 'Annuleren' : 'Cancel'}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={deleteInitiativeMutation.isPending}
+            >
+              {deleteInitiativeMutation.isPending
+                ? (language === 'nl' ? 'Verwijderen...' : 'Removing...')
+                : (language === 'nl' ? 'Verwijderen' : 'Remove')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

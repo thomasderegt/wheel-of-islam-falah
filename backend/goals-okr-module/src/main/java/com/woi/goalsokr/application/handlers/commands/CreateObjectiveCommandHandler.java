@@ -28,7 +28,7 @@ public class CreateObjectiveCommandHandler {
     public ObjectiveResult handle(CreateObjectiveCommand command) {
         // Create objective (domain factory method validates)
         Objective objective = Objective.create(
-            command.goalId(),
+            command.lifeDomainId(),
             command.titleNl(),
             command.titleEn(),
             command.orderIndex()

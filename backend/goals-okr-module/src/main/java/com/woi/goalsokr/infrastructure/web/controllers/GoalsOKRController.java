@@ -27,12 +27,10 @@ import java.util.Optional;
 public class GoalsOKRController {
 
     // Command handlers
-    private final CreateGoalCommandHandler createGoalHandler;
-    private final UpdateGoalCommandHandler updateGoalHandler;
     private final CreateObjectiveCommandHandler createObjectiveHandler;
     private final CreateKeyResultCommandHandler createKeyResultHandler;
-    private final StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler;
-    private final CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler;
+    private final DeleteObjectiveCommandHandler deleteObjectiveHandler;
+    private final DeleteKeyResultCommandHandler deleteKeyResultHandler;
     private final StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler;
     private final StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler;
     private final StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler;
@@ -42,26 +40,23 @@ public class GoalsOKRController {
     private final UpdateKeyResultProgressCommandHandler updateKeyResultProgressHandler;
     private final UpdateInitiativeCommandHandler updateInitiativeHandler;
     private final CompleteInitiativeCommandHandler completeInitiativeHandler;
+    private final DeleteUserInitiativeCommandHandler deleteUserInitiativeHandler;
     private final CompleteUserObjectiveInstanceCommandHandler completeUserObjectiveInstanceHandler;
 
     // Query handlers
     private final GetWheelsQueryHandler getWheelsHandler;
     private final GetLifeDomainsQueryHandler getLifeDomainsHandler;
-    private final GetGoalQueryHandler getGoalHandler;
-    private final GetGoalsByLifeDomainQueryHandler getGoalsByLifeDomainHandler;
     private final GetObjectiveQueryHandler getObjectiveHandler;
-    private final GetObjectivesByGoalQueryHandler getObjectivesByGoalHandler;
+    private final GetObjectivesByLifeDomainQueryHandler getObjectivesByLifeDomainHandler;
     private final GetKeyResultQueryHandler getKeyResultHandler;
     private final GetKeyResultsByObjectiveQueryHandler getKeyResultsByObjectiveHandler;
-    private final GetUserGoalInstanceQueryHandler getUserGoalInstanceHandler;
-    private final GetUserGoalInstancesByUserQueryHandler getUserGoalInstancesByUserHandler;
-    private final GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler;
     private final GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler;
     private final GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler;
     private final GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler;
     private final GetUserKeyResultInstancesQueryHandler getUserKeyResultInstancesHandler;
     private final GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler;
     private final GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler;
+    private final DeleteUserInitiativeInstanceCommandHandler deleteUserInitiativeInstanceHandler;
     private final GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler;
     private final GetInitiativesByUserQueryHandler getInitiativesByUserHandler;
     private final GetKeyResultProgressQueryHandler getKeyResultProgressHandler;
@@ -81,16 +76,13 @@ public class GoalsOKRController {
     private final com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository;
     
     // User-specific command handlers
-    private final CreatePersonalGoalCommandHandler createPersonalGoalHandler;
     private final CreatePersonalObjectiveCommandHandler createPersonalObjectiveHandler;
 
     public GoalsOKRController(
-            CreateGoalCommandHandler createGoalHandler,
-            UpdateGoalCommandHandler updateGoalHandler,
             CreateObjectiveCommandHandler createObjectiveHandler,
             CreateKeyResultCommandHandler createKeyResultHandler,
-            StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler,
-            CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler,
+            DeleteObjectiveCommandHandler deleteObjectiveHandler,
+            DeleteKeyResultCommandHandler deleteKeyResultHandler,
             StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler,
             StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler,
             StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler,
@@ -100,24 +92,21 @@ public class GoalsOKRController {
             UpdateKeyResultProgressCommandHandler updateKeyResultProgressHandler,
             UpdateInitiativeCommandHandler updateInitiativeHandler,
             CompleteInitiativeCommandHandler completeInitiativeHandler,
+            DeleteUserInitiativeCommandHandler deleteUserInitiativeHandler,
             CompleteUserObjectiveInstanceCommandHandler completeUserObjectiveInstanceHandler,
             GetWheelsQueryHandler getWheelsHandler,
             GetLifeDomainsQueryHandler getLifeDomainsHandler,
-            GetGoalQueryHandler getGoalHandler,
-            GetGoalsByLifeDomainQueryHandler getGoalsByLifeDomainHandler,
             GetObjectiveQueryHandler getObjectiveHandler,
-            GetObjectivesByGoalQueryHandler getObjectivesByGoalHandler,
+            GetObjectivesByLifeDomainQueryHandler getObjectivesByLifeDomainHandler,
             GetKeyResultQueryHandler getKeyResultHandler,
             GetKeyResultsByObjectiveQueryHandler getKeyResultsByObjectiveHandler,
-            GetUserGoalInstanceQueryHandler getUserGoalInstanceHandler,
-            GetUserGoalInstancesByUserQueryHandler getUserGoalInstancesByUserHandler,
-            GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler,
             GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler,
             GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler,
             GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler,
             GetUserKeyResultInstancesQueryHandler getUserKeyResultInstancesHandler,
             GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler,
             GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler,
+            DeleteUserInitiativeInstanceCommandHandler deleteUserInitiativeInstanceHandler,
             GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler,
             GetInitiativesByUserQueryHandler getInitiativesByUserHandler,
             GetKeyResultProgressQueryHandler getKeyResultProgressHandler,
@@ -133,15 +122,12 @@ public class GoalsOKRController {
             com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository,
-            CreatePersonalGoalCommandHandler createPersonalGoalHandler,
             CreatePersonalObjectiveCommandHandler createPersonalObjectiveHandler
 ) {
-        this.createGoalHandler = createGoalHandler;
-        this.updateGoalHandler = updateGoalHandler;
         this.createObjectiveHandler = createObjectiveHandler;
         this.createKeyResultHandler = createKeyResultHandler;
-        this.startUserGoalInstanceHandler = startUserGoalInstanceHandler;
-        this.completeUserGoalInstanceHandler = completeUserGoalInstanceHandler;
+        this.deleteObjectiveHandler = deleteObjectiveHandler;
+        this.deleteKeyResultHandler = deleteKeyResultHandler;
         this.startUserObjectiveInstanceHandler = startUserObjectiveInstanceHandler;
         this.startUserKeyResultInstanceHandler = startUserKeyResultInstanceHandler;
         this.startUserInitiativeInstanceHandler = startUserInitiativeInstanceHandler;
@@ -151,24 +137,21 @@ public class GoalsOKRController {
         this.updateKeyResultProgressHandler = updateKeyResultProgressHandler;
         this.updateInitiativeHandler = updateInitiativeHandler;
         this.completeInitiativeHandler = completeInitiativeHandler;
+        this.deleteUserInitiativeHandler = deleteUserInitiativeHandler;
         this.completeUserObjectiveInstanceHandler = completeUserObjectiveInstanceHandler;
         this.getWheelsHandler = getWheelsHandler;
         this.getLifeDomainsHandler = getLifeDomainsHandler;
-        this.getGoalHandler = getGoalHandler;
-        this.getGoalsByLifeDomainHandler = getGoalsByLifeDomainHandler;
         this.getObjectiveHandler = getObjectiveHandler;
-        this.getObjectivesByGoalHandler = getObjectivesByGoalHandler;
+        this.getObjectivesByLifeDomainHandler = getObjectivesByLifeDomainHandler;
         this.getKeyResultHandler = getKeyResultHandler;
         this.getKeyResultsByObjectiveHandler = getKeyResultsByObjectiveHandler;
-        this.getUserGoalInstanceHandler = getUserGoalInstanceHandler;
-        this.getUserGoalInstancesByUserHandler = getUserGoalInstancesByUserHandler;
-        this.getUserGoalInstancesByGoalHandler = getUserGoalInstancesByGoalHandler;
         this.getUserObjectiveInstanceHandler = getUserObjectiveInstanceHandler;
         this.getUserObjectiveInstancesHandler = getUserObjectiveInstancesHandler;
         this.getUserKeyResultInstanceHandler = getUserKeyResultInstanceHandler;
         this.getUserKeyResultInstancesHandler = getUserKeyResultInstancesHandler;
         this.getUserInitiativeInstanceHandler = getUserInitiativeInstanceHandler;
         this.getUserInitiativeInstancesHandler = getUserInitiativeInstancesHandler;
+        this.deleteUserInitiativeInstanceHandler = deleteUserInitiativeInstanceHandler;
         this.getInitiativesByUserKeyResultInstanceHandler = getInitiativesByUserKeyResultInstanceHandler;
         this.getInitiativesByUserHandler = getInitiativesByUserHandler;
         this.getKeyResultProgressHandler = getKeyResultProgressHandler;
@@ -184,7 +167,6 @@ public class GoalsOKRController {
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
-        this.createPersonalGoalHandler = createPersonalGoalHandler;
         this.createPersonalObjectiveHandler = createPersonalObjectiveHandler;
     }
 
@@ -212,96 +194,6 @@ public class GoalsOKRController {
         return ResponseEntity.ok(results);
     }
 
-    // ========== Goals ==========
-
-    /**
-     * Create a new goal
-     * POST /api/v2/goals-okr/goals
-     */
-    @PostMapping("/goals")
-    @Transactional
-    public ResponseEntity<?> createGoal(@Valid @RequestBody CreateGoalRequest request) {
-        try {
-            CreateGoalCommand command = new CreateGoalCommand(
-                request.lifeDomainId(),
-                request.titleNl(),
-                request.titleEn(),
-                request.descriptionNl(),
-                request.descriptionEn(),
-                request.orderIndex(),
-                request.quarter(),
-                request.year()
-            );
-            GoalResult result = createGoalHandler.handle(command);
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    /**
-     * Get a goal by ID
-     * GET /api/v2/goals-okr/goals/{id}
-     */
-    @GetMapping("/goals/{goalId}")
-    public ResponseEntity<?> getGoal(@PathVariable Long goalId) {
-        try {
-            Optional<GoalResult> result = getGoalHandler.handle(new GetGoalQuery(goalId));
-            return result.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    /**
-     * Get all goals for a life domain
-     * GET /api/v2/goals-okr/life-domains/{lifeDomainId}/goals
-     */
-    @GetMapping("/life-domains/{lifeDomainId}/goals")
-    public ResponseEntity<List<GoalResult>> getGoalsByLifeDomain(@PathVariable Long lifeDomainId) {
-        List<GoalResult> results = getGoalsByLifeDomainHandler.handle(
-            new GetGoalsByLifeDomainQuery(lifeDomainId));
-        return ResponseEntity.ok(results);
-    }
-
-    /**
-     * Update a goal
-     * PUT /api/v2/goals-okr/goals/{goalId}
-     */
-    @PutMapping("/goals/{goalId}")
-    @Transactional
-    public ResponseEntity<?> updateGoal(
-        @PathVariable Long goalId,
-        @Valid @RequestBody UpdateGoalRequest request
-    ) {
-        try {
-            UpdateGoalCommand command = new UpdateGoalCommand(
-                goalId,
-                request.titleNl(),
-                request.titleEn(),
-                request.descriptionNl(),
-                request.descriptionEn(),
-                request.quarter(),
-                request.year()
-            );
-            GoalResult result = updateGoalHandler.handle(command);
-            return ResponseEntity.ok(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
     // ========== Objectives ==========
 
     /**
@@ -313,7 +205,7 @@ public class GoalsOKRController {
     public ResponseEntity<?> createObjective(@Valid @RequestBody CreateObjectiveRequest request) {
         try {
             CreateObjectiveCommand command = new CreateObjectiveCommand(
-                request.goalId(),
+                request.lifeDomainId(),
                 request.titleNl(),
                 request.titleEn(),
                 request.descriptionNl(),
@@ -335,6 +227,17 @@ public class GoalsOKRController {
      * Get an objective by ID
      * GET /api/v2/goals-okr/objectives/{id}
      */
+    /**
+     * Get all objectives for a life domain
+     * GET /api/v2/goals-okr/life-domains/{lifeDomainId}/objectives
+     */
+    @GetMapping("/life-domains/{lifeDomainId}/objectives")
+    public ResponseEntity<List<ObjectiveResult>> getObjectivesByLifeDomain(@PathVariable Long lifeDomainId) {
+        List<ObjectiveResult> results = getObjectivesByLifeDomainHandler.handle(
+            new GetObjectivesByLifeDomainQuery(lifeDomainId));
+        return ResponseEntity.ok(results);
+    }
+
     @GetMapping("/objectives/{objectiveId}")
     public ResponseEntity<?> getObjective(@PathVariable Long objectiveId) {
         try {
@@ -349,14 +252,21 @@ public class GoalsOKRController {
     }
 
     /**
-     * Get all objectives for a goal
-     * GET /api/v2/goals-okr/goals/{goalId}/objectives
+     * Delete an objective (only when no user has started it). Also deletes all its key results.
+     * DELETE /api/v2/goals-okr/objectives/{objectiveId}
      */
-    @GetMapping("/goals/{goalId}/objectives")
-    public ResponseEntity<List<ObjectiveResult>> getObjectivesByGoal(@PathVariable Long goalId) {
-        List<ObjectiveResult> results = getObjectivesByGoalHandler.handle(
-            new GetObjectivesByGoalQuery(goalId));
-        return ResponseEntity.ok(results);
+    @DeleteMapping("/objectives/{objectiveId}")
+    public ResponseEntity<?> deleteObjective(@PathVariable Long objectiveId) {
+        try {
+            deleteObjectiveHandler.handle(new DeleteObjectiveCommand(objectiveId));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
     }
 
     // ========== Key Results ==========
@@ -380,6 +290,24 @@ public class GoalsOKRController {
             );
             KeyResultResult result = createKeyResultHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Delete a key result (only when no user has started it).
+     * DELETE /api/v2/goals-okr/key-results/{keyResultId}
+     */
+    @RequestMapping(path = "/key-results/{keyResultId}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteKeyResult(@PathVariable Long keyResultId) {
+        try {
+            deleteKeyResultHandler.handle(new DeleteKeyResultCommand(keyResultId));
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
@@ -417,116 +345,23 @@ public class GoalsOKRController {
         return ResponseEntity.ok(results);
     }
 
-    // ========== User Goal Instances (User-specific - Aggregate Root) ==========
+    // ========== User Objective Instances ==========
 
     /**
-     * Start a new user goal instance (subscription/enrollment)
-     * POST /api/v2/goals-okr/user-goal-instances
+     * Get all user objective instances for a user
+     * GET /api/v2/goals-okr/users/{userId}/user-objective-instances
      */
-    @PostMapping("/user-goal-instances")
-    @Transactional
-    public ResponseEntity<?> startUserGoalInstance(@RequestBody Map<String, Long> request) {
+    @GetMapping("/users/{userId}/user-objective-instances")
+    public ResponseEntity<List<UserObjectiveInstanceResult>> getUserObjectiveInstancesByUser(@PathVariable Long userId) {
         try {
-            Long userId = request.get("userId");
-            Long goalId = request.get("goalId");
-            
-            if (userId == null || goalId == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "User ID and Goal ID are required"));
-            }
-            
-            UserGoalInstanceResult result = startUserGoalInstanceHandler.handle(
-                new StartUserGoalInstanceCommand(userId, goalId));
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    /**
-     * Get a user goal instance by ID
-     * GET /api/v2/goals-okr/user-goal-instances/{id}
-     */
-    @GetMapping("/user-goal-instances/{id}")
-    public ResponseEntity<?> getUserGoalInstance(@PathVariable Long id) {
-        try {
-            Optional<UserGoalInstanceResult> result = getUserGoalInstanceHandler.handle(
-                new GetUserGoalInstanceQuery(id));
-            return result.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    /**
-     * Get all user goal instances for a user (in which goals is user subscribed?)
-     * GET /api/v2/goals-okr/users/{userId}/user-goal-instances
-     */
-    @GetMapping("/users/{userId}/user-goal-instances")
-    public ResponseEntity<List<UserGoalInstanceResult>> getUserGoalInstancesForUser(@PathVariable Long userId) {
-        List<UserGoalInstanceResult> results = getUserGoalInstancesByUserHandler.handle(
-            new GetUserGoalInstancesByUserQuery(userId));
-        return ResponseEntity.ok(results);
-    }
-
-    /**
-     * Get all user goal instances for a goal (which users are subscribed to this goal?)
-     * GET /api/v2/goals-okr/goals/{goalId}/user-goal-instances
-     */
-    @GetMapping("/goals/{goalId}/user-goal-instances")
-    public ResponseEntity<List<UserGoalInstanceResult>> getUserGoalInstancesByGoal(@PathVariable Long goalId) {
-        List<UserGoalInstanceResult> results = getUserGoalInstancesByGoalHandler.handle(
-            new GetUserGoalInstancesByGoalQuery(goalId));
-        return ResponseEntity.ok(results);
-    }
-
-    /**
-     * Get all user objective instances for a user goal instance
-     * GET /api/v2/goals-okr/user-goal-instances/{userGoalInstanceId}/user-objective-instances
-     */
-    @GetMapping("/user-goal-instances/{userGoalInstanceId}/user-objective-instances")
-    public ResponseEntity<List<UserObjectiveInstanceResult>> getUserObjectiveInstancesByUserGoalInstance(
-            @PathVariable Long userGoalInstanceId) {
-        try {
-            List<UserObjectiveInstanceResult> results = userObjectiveInstanceRepository
-                .findByUserGoalInstanceId(userGoalInstanceId).stream()
-                .map(UserObjectiveInstanceResult::from)
-                .toList();
+            List<UserObjectiveInstanceResult> results = getUserObjectiveInstancesHandler.handle(
+                new GetUserObjectiveInstancesQuery(userId));
             return ResponseEntity.ok(results);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(List.of());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
         }
     }
-
-    /**
-     * Complete a user goal instance
-     * POST /api/v2/goals-okr/user-goal-instances/{id}/complete
-     */
-    @PostMapping("/user-goal-instances/{id}/complete")
-    @Transactional
-    public ResponseEntity<?> completeUserGoalInstance(@PathVariable Long id) {
-        try {
-            UserGoalInstanceResult result = completeUserGoalInstanceHandler.handle(
-                new CompleteUserGoalInstanceCommand(id));
-            return ResponseEntity.ok(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
-
-    // ========== User Objective Instances ==========
 
     /**
      * Start a new user objective instance
@@ -536,15 +371,14 @@ public class GoalsOKRController {
     public ResponseEntity<?> startUserObjectiveInstance(@RequestBody Map<String, Long> request) {
         try {
             Long userId = request.get("userId");
-            Long userGoalInstanceId = request.get("userGoalInstanceId");
             Long objectiveId = request.get("objectiveId");
             
-            if (userId == null || userGoalInstanceId == null || objectiveId == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "User ID, User Goal Instance ID, and Objective ID are required"));
+            if (userId == null || objectiveId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User ID and Objective ID are required"));
             }
             
             UserObjectiveInstanceResult result = startUserObjectiveInstanceHandler.handle(
-                new StartUserObjectiveInstanceCommand(userId, userGoalInstanceId, objectiveId));
+                new StartUserObjectiveInstanceCommand(userId, objectiveId));
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -571,17 +405,6 @@ public class GoalsOKRController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
-    }
-
-    /**
-     * Get all user objective instances for a user
-     * GET /api/v2/goals-okr/users/{userId}/user-objective-instances
-     */
-    @GetMapping("/users/{userId}/user-objective-instances")
-    public ResponseEntity<List<UserObjectiveInstanceResult>> getUserObjectiveInstancesForUser(@PathVariable Long userId) {
-        List<UserObjectiveInstanceResult> results = getUserObjectiveInstancesHandler.handle(
-            new GetUserObjectiveInstancesQuery(userId));
-        return ResponseEntity.ok(results);
     }
 
     /**
@@ -677,9 +500,14 @@ public class GoalsOKRController {
      */
     @GetMapping("/users/{userId}/user-key-result-instances")
     public ResponseEntity<List<UserKeyResultInstanceResult>> getUserKeyResultInstancesForUser(@PathVariable Long userId) {
-        List<UserKeyResultInstanceResult> results = getUserKeyResultInstancesHandler.handle(
-            new GetUserKeyResultInstancesQuery(userId));
-        return ResponseEntity.ok(results);
+        try {
+            List<UserKeyResultInstanceResult> results = getUserKeyResultInstancesHandler.handle(
+                new GetUserKeyResultInstancesQuery(userId));
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
     }
 
     /**
@@ -763,6 +591,24 @@ public class GoalsOKRController {
                 new GetUserInitiativeInstanceQuery(userInitiativeInstanceId));
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Delete a user initiative instance (and its kanban item if present)
+     * DELETE /api/v2/goals-okr/user-initiative-instances/{userInitiativeInstanceId}
+     */
+    @DeleteMapping("/user-initiative-instances/{userInitiativeInstanceId}")
+    public ResponseEntity<?> deleteUserInitiativeInstance(@PathVariable Long userInitiativeInstanceId) {
+        try {
+            deleteUserInitiativeInstanceHandler.handle(new DeleteUserInitiativeInstanceCommand(userInitiativeInstanceId));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -907,6 +753,24 @@ public class GoalsOKRController {
             UserInitiativeResult result = completeInitiativeHandler.handle(
                 new CompleteInitiativeCommand(initiativeId));
             return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Delete a user initiative (and its instance(s) and kanban item(s))
+     * DELETE /api/v2/goals-okr/initiatives/{initiativeId}
+     */
+    @DeleteMapping("/initiatives/{initiativeId}")
+    public ResponseEntity<?> deleteInitiative(@PathVariable Long initiativeId) {
+        try {
+            deleteUserInitiativeHandler.handle(new DeleteUserInitiativeCommand(initiativeId));
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
@@ -1140,37 +1004,7 @@ public class GoalsOKRController {
         }
     }
 
-    // ========== Personal Goals ==========
-
-    /**
-     * Create a new personal goal (Goal template + UserGoalInstance + Kanban item)
-     * POST /api/v2/goals-okr/users/{userId}/personal-goals
-     * 
-     * This is the new approach: creates a Goal template, starts a UserGoalInstance,
-     * and adds it to the kanban board automatically.
-     */
-    @PostMapping("/users/{userId}/personal-goals")
-    @Transactional
-    public ResponseEntity<?> createPersonalGoal(
-            @PathVariable Long userId,
-            @Valid @RequestBody CreatePersonalGoalRequest request) {
-        try {
-            CreatePersonalGoalCommand command = new CreatePersonalGoalCommand(
-                userId,
-                request.lifeDomainId(),
-                request.title(),
-                request.description()
-            );
-            UserGoalInstanceResult result = createPersonalGoalHandler.handle(command);
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred."));
-        }
-    }
+    // ========== Personal Objectives ==========
 
     /**
      * Create a new personal objective (Objective template + UserObjectiveInstance + Kanban item)
@@ -1187,7 +1021,7 @@ public class GoalsOKRController {
         try {
             CreatePersonalObjectiveCommand command = new CreatePersonalObjectiveCommand(
                 userId,
-                request.userGoalInstanceId(),
+                request.lifeDomainId(),
                 request.title(),
                 request.description()
             );

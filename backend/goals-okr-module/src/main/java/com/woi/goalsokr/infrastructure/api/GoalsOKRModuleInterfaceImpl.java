@@ -22,11 +22,8 @@ import java.util.stream.Collectors;
 public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
 
     // Command handlers
-    private final CreateGoalCommandHandler createGoalHandler;
     private final CreateObjectiveCommandHandler createObjectiveHandler;
     private final CreateKeyResultCommandHandler createKeyResultHandler;
-    private final StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler;
-    private final CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler;
     private final StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler;
     private final StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler;
     private final StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler;
@@ -39,15 +36,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     private final CompleteUserObjectiveInstanceCommandHandler completeUserObjectiveInstanceHandler;
 
     // Query handlers
-    private final GetGoalQueryHandler getGoalHandler;
-    private final GetGoalsByLifeDomainQueryHandler getGoalsByLifeDomainHandler;
     private final GetObjectiveQueryHandler getObjectiveHandler;
-    private final GetObjectivesByGoalQueryHandler getObjectivesByGoalHandler;
+    private final GetObjectivesByLifeDomainQueryHandler getObjectivesByLifeDomainHandler;
     private final GetKeyResultQueryHandler getKeyResultHandler;
     private final GetKeyResultsByObjectiveQueryHandler getKeyResultsByObjectiveHandler;
-    private final GetUserGoalInstanceQueryHandler getUserGoalInstanceHandler;
-    private final GetUserGoalInstancesByUserQueryHandler getUserGoalInstancesByUserHandler;
-    private final GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler;
     private final GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler;
     private final GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler;
     private final GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler;
@@ -64,11 +56,8 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     private final GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler;
 
     public GoalsOKRModuleInterfaceImpl(
-            CreateGoalCommandHandler createGoalHandler,
             CreateObjectiveCommandHandler createObjectiveHandler,
             CreateKeyResultCommandHandler createKeyResultHandler,
-            StartUserGoalInstanceCommandHandler startUserGoalInstanceHandler,
-            CompleteUserGoalInstanceCommandHandler completeUserGoalInstanceHandler,
             StartUserObjectiveInstanceCommandHandler startUserObjectiveInstanceHandler,
             StartUserKeyResultInstanceCommandHandler startUserKeyResultInstanceHandler,
             StartUserInitiativeInstanceCommandHandler startUserInitiativeInstanceHandler,
@@ -79,15 +68,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             UpdateInitiativeCommandHandler updateInitiativeHandler,
             CompleteInitiativeCommandHandler completeInitiativeHandler,
             CompleteUserObjectiveInstanceCommandHandler completeUserObjectiveInstanceHandler,
-            GetGoalQueryHandler getGoalHandler,
-            GetGoalsByLifeDomainQueryHandler getGoalsByLifeDomainHandler,
             GetObjectiveQueryHandler getObjectiveHandler,
-            GetObjectivesByGoalQueryHandler getObjectivesByGoalHandler,
+            GetObjectivesByLifeDomainQueryHandler getObjectivesByLifeDomainHandler,
             GetKeyResultQueryHandler getKeyResultHandler,
             GetKeyResultsByObjectiveQueryHandler getKeyResultsByObjectiveHandler,
-            GetUserGoalInstanceQueryHandler getUserGoalInstanceHandler,
-            GetUserGoalInstancesByUserQueryHandler getUserGoalInstancesByUserHandler,
-            GetUserGoalInstancesByGoalQueryHandler getUserGoalInstancesByGoalHandler,
             GetUserObjectiveInstanceQueryHandler getUserObjectiveInstanceHandler,
             GetUserObjectiveInstancesQueryHandler getUserObjectiveInstancesHandler,
             GetUserKeyResultInstanceQueryHandler getUserKeyResultInstanceHandler,
@@ -102,11 +86,8 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             UpdateKanbanItemPositionCommandHandler updateKanbanItemPositionHandler,
             DeleteKanbanItemCommandHandler deleteKanbanItemHandler,
             GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler) {
-        this.createGoalHandler = createGoalHandler;
         this.createObjectiveHandler = createObjectiveHandler;
         this.createKeyResultHandler = createKeyResultHandler;
-        this.startUserGoalInstanceHandler = startUserGoalInstanceHandler;
-        this.completeUserGoalInstanceHandler = completeUserGoalInstanceHandler;
         this.startUserObjectiveInstanceHandler = startUserObjectiveInstanceHandler;
         this.startUserKeyResultInstanceHandler = startUserKeyResultInstanceHandler;
         this.startUserInitiativeInstanceHandler = startUserInitiativeInstanceHandler;
@@ -117,15 +98,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         this.updateInitiativeHandler = updateInitiativeHandler;
         this.completeInitiativeHandler = completeInitiativeHandler;
         this.completeUserObjectiveInstanceHandler = completeUserObjectiveInstanceHandler;
-        this.getGoalHandler = getGoalHandler;
-        this.getGoalsByLifeDomainHandler = getGoalsByLifeDomainHandler;
         this.getObjectiveHandler = getObjectiveHandler;
-        this.getObjectivesByGoalHandler = getObjectivesByGoalHandler;
+        this.getObjectivesByLifeDomainHandler = getObjectivesByLifeDomainHandler;
         this.getKeyResultHandler = getKeyResultHandler;
         this.getKeyResultsByObjectiveHandler = getKeyResultsByObjectiveHandler;
-        this.getUserGoalInstanceHandler = getUserGoalInstanceHandler;
-        this.getUserGoalInstancesByUserHandler = getUserGoalInstancesByUserHandler;
-        this.getUserGoalInstancesByGoalHandler = getUserGoalInstancesByGoalHandler;
         this.getUserObjectiveInstanceHandler = getUserObjectiveInstanceHandler;
         this.getUserObjectiveInstancesHandler = getUserObjectiveInstancesHandler;
         this.getUserKeyResultInstanceHandler = getUserKeyResultInstanceHandler;
@@ -142,55 +118,27 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         this.getKanbanItemsByUserHandler = getKanbanItemsByUserHandler;
     }
 
-    // ========== Goals ==========
-
-    @Override
-    public GoalSummary createGoal(Long lifeDomainId, String titleNl, String titleEn,
-                                  String descriptionNl, String descriptionEn, Integer orderIndex,
-                                  Integer quarter, Integer year) {
-        GoalResult result = createGoalHandler.handle(
-            new CreateGoalCommand(lifeDomainId, titleNl, titleEn, descriptionNl, descriptionEn, orderIndex, quarter, year));
-        return toGoalSummary(result);
-    }
-
-    @Override
-    public Optional<GoalSummary> getGoal(Long goalId) {
-        return getGoalHandler.handle(new GetGoalQuery(goalId))
-            .map(this::toGoalSummary);
-    }
-
-    @Override
-    public List<GoalSummary> getGoalsByLifeDomain(Long lifeDomainId) {
-        List<GoalResult> results = getGoalsByLifeDomainHandler.handle(
-            new GetGoalsByLifeDomainQuery(lifeDomainId));
-        return results.stream()
-            .map(this::toGoalSummary)
-            .collect(Collectors.toList());
-    }
-
     // ========== Objectives ==========
 
     @Override
-    public ObjectiveSummary createObjective(Long goalId, String titleNl, String titleEn,
+    public ObjectiveSummary createObjective(Long lifeDomainId, String titleNl, String titleEn,
                                             String descriptionNl, String descriptionEn, Integer orderIndex) {
         ObjectiveResult result = createObjectiveHandler.handle(
-            new CreateObjectiveCommand(goalId, titleNl, titleEn, descriptionNl, descriptionEn, orderIndex));
+            new CreateObjectiveCommand(lifeDomainId, titleNl, titleEn, descriptionNl, descriptionEn, orderIndex));
         return toObjectiveSummary(result);
+    }
+
+    @Override
+    public List<ObjectiveSummary> getObjectivesByLifeDomain(Long lifeDomainId) {
+        List<ObjectiveResult> results = getObjectivesByLifeDomainHandler.handle(
+            new GetObjectivesByLifeDomainQuery(lifeDomainId));
+        return results.stream().map(this::toObjectiveSummary).collect(Collectors.toList());
     }
 
     @Override
     public Optional<ObjectiveSummary> getObjective(Long objectiveId) {
         return getObjectiveHandler.handle(new GetObjectiveQuery(objectiveId))
             .map(this::toObjectiveSummary);
-    }
-
-    @Override
-    public List<ObjectiveSummary> getObjectivesByGoal(Long goalId) {
-        List<ObjectiveResult> results = getObjectivesByGoalHandler.handle(
-            new GetObjectivesByGoalQuery(goalId));
-        return results.stream()
-            .map(this::toObjectiveSummary)
-            .collect(Collectors.toList());
     }
 
     // ========== Key Results ==========
@@ -220,52 +168,12 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
             .collect(Collectors.toList());
     }
 
-    // ========== User Goal Instances (User-specific - Aggregate Root) ==========
-
-    @Override
-    public UserGoalInstanceSummary startUserGoalInstance(Long userId, Long goalId) {
-        UserGoalInstanceResult result = startUserGoalInstanceHandler.handle(
-            new StartUserGoalInstanceCommand(userId, goalId));
-        return toUserGoalInstanceSummary(result);
-    }
-
-    @Override
-    public Optional<UserGoalInstanceSummary> getUserGoalInstance(Long userGoalInstanceId) {
-        return getUserGoalInstanceHandler.handle(new GetUserGoalInstanceQuery(userGoalInstanceId))
-            .map(this::toUserGoalInstanceSummary);
-    }
-
-    @Override
-    public List<UserGoalInstanceSummary> getUserGoalInstancesForUser(Long userId) {
-        List<UserGoalInstanceResult> results = getUserGoalInstancesByUserHandler.handle(
-            new GetUserGoalInstancesByUserQuery(userId));
-        return results.stream()
-            .map(this::toUserGoalInstanceSummary)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<UserGoalInstanceSummary> getUserGoalInstancesByGoal(Long goalId) {
-        List<UserGoalInstanceResult> results = getUserGoalInstancesByGoalHandler.handle(
-            new GetUserGoalInstancesByGoalQuery(goalId));
-        return results.stream()
-            .map(this::toUserGoalInstanceSummary)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public UserGoalInstanceSummary completeUserGoalInstance(Long userGoalInstanceId) {
-        UserGoalInstanceResult result = completeUserGoalInstanceHandler.handle(
-            new CompleteUserGoalInstanceCommand(userGoalInstanceId));
-        return toUserGoalInstanceSummary(result);
-    }
-
     // ========== User Objective Instances ==========
 
     @Override
-    public UserObjectiveInstanceSummary startUserObjectiveInstance(Long userId, Long userGoalInstanceId, Long objectiveId) {
+    public UserObjectiveInstanceSummary startUserObjectiveInstance(Long userId, Long objectiveId) {
         UserObjectiveInstanceResult result = startUserObjectiveInstanceHandler.handle(
-            new StartUserObjectiveInstanceCommand(userId, userGoalInstanceId, objectiveId));
+            new StartUserObjectiveInstanceCommand(userId, objectiveId));
         return toUserObjectiveInstanceSummary(result);
     }
 
@@ -419,25 +327,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
 
     // Helper methods
 
-    private GoalSummary toGoalSummary(GoalResult result) {
-        return new GoalSummary(
-            result.id(),
-            result.lifeDomainId(),
-            result.titleNl(),
-            result.titleEn(),
-            result.descriptionNl(),
-            result.descriptionEn(),
-            result.orderIndex(),
-            result.number(),
-            result.createdAt(),
-            result.updatedAt()
-        );
-    }
-
     private ObjectiveSummary toObjectiveSummary(ObjectiveResult result) {
         return new ObjectiveSummary(
             result.id(),
-            result.goalId(),
+            result.lifeDomainId(),
             result.titleNl(),
             result.titleEn(),
             result.descriptionNl(),
@@ -506,21 +399,10 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
         );
     }
 
-    private UserGoalInstanceSummary toUserGoalInstanceSummary(UserGoalInstanceResult result) {
-        return new UserGoalInstanceSummary(
-            result.id(),
-            result.userId(),
-            result.goalId(),
-            result.number(),
-            result.startedAt(),
-            result.completedAt()
-        );
-    }
-
     private UserObjectiveInstanceSummary toUserObjectiveInstanceSummary(UserObjectiveInstanceResult result) {
         return new UserObjectiveInstanceSummary(
             result.id(),
-            result.userGoalInstanceId(),
+            result.userId(),
             result.objectiveId(),
             result.number(),
             result.startedAt(),

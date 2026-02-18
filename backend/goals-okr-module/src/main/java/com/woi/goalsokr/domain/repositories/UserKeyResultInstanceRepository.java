@@ -14,6 +14,7 @@ public interface UserKeyResultInstanceRepository {
     List<UserKeyResultInstance> findByUserObjectiveInstanceId(Long userObjectiveInstanceId);
     List<UserKeyResultInstance> findByUserObjectiveInstanceIdIn(List<Long> userObjectiveInstanceIds);
     Optional<UserKeyResultInstance> findByUserObjectiveInstanceIdAndKeyResultId(Long userObjectiveInstanceId, Long keyResultId);
+    List<UserKeyResultInstance> findByKeyResultId(Long keyResultId);
     UserKeyResultInstance save(UserKeyResultInstance userKeyResultInstance);
     void delete(UserKeyResultInstance userKeyResultInstance);
 }
