@@ -5,22 +5,28 @@
  *
  * Shows the objective (title, description) and key results as cards.
  * Clicking a key result card navigates to the key result detail page.
+ * When the user has a UserObjectiveInstance for this objective, shows "Add custom key result".
  */
 
-import { ProtectedRoute } from '@/features/auth'
+import { useState } from 'react'
+import { ProtectedRoute, useAuth } from '@/features/auth'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { Button } from '@/shared/components/ui/button'
 import { KeyResultList } from '@/features/goals-okr/components/KeyResultList'
-import { getObjective } from '@/features/goals-okr/api/goalsOkrApi'
+import { CreateCustomKeyResultDialog } from '@/features/goals-okr/components/CreateCustomKeyResultDialog'
+import { getObjective, getUserObjectiveInstances } from '@/features/goals-okr/api/goalsOkrApi'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
 
 export default function OKRObjectiveDetailPage() {
   const params = useParams()
   const objectiveId = params?.id ? Number(params.id) : null
   const router = useRouter()
+  const { user } = useAuth()
+  const [createKeyResultDialogOpen, setCreateKeyResultDialogOpen] = useState(false)
 
   const { data: objective, isLoading: isLoadingObjective } = useQuery({
     queryKey: ['goals-okr', 'objective', objectiveId],
@@ -28,6 +34,15 @@ export default function OKRObjectiveDetailPage() {
     enabled: objectiveId !== null,
   })
 
+  const { data: userObjectiveInstances } = useQuery({
+    queryKey: ['goals-okr', 'userObjectiveInstances', user?.id],
+    queryFn: () => getUserObjectiveInstances(user!.id),
+    enabled: !!user?.id,
+  })
+
+  const userInstance = userObjectiveInstances?.find(
+    (inst) => inst.objectiveId === objectiveId
+  )
   const lifeDomainId = objective?.lifeDomainId
 
   if (isLoadingObjective || !objectiveId) {
@@ -108,12 +123,33 @@ export default function OKRObjectiveDetailPage() {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold">Key Results</h2>
+                <div className="flex items-center justify-between gap-4">
+                  <h2 className="text-2xl font-semibold">Key Results</h2>
+                  {userInstance && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setCreateKeyResultDialogOpen(true)}
+                      className="gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add custom key result
+                    </Button>
+                  )}
+                </div>
                 <KeyResultList objectiveId={objectiveId} />
               </div>
             </div>
           </Container>
         </main>
+
+        {userInstance && (
+          <CreateCustomKeyResultDialog
+            open={createKeyResultDialogOpen}
+            onOpenChange={setCreateKeyResultDialogOpen}
+            userObjectiveInstanceId={userInstance.id}
+            onSuccess={() => setCreateKeyResultDialogOpen(false)}
+          />
+        )}
       </div>
     </ProtectedRoute>
   )

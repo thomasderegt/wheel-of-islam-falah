@@ -2,36 +2,40 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/features/auth'
-import { useCreatePersonalObjective } from '../hooks/useUserGoals'
+import { useCreateCustomObjective } from '../hooks/useUserGoals'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Textarea } from '@/shared/components/ui/textarea'
 
-interface CreatePersonalObjectiveDialogProps {
+interface CreateCustomObjectiveDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   lifeDomainId: number
   onSuccess?: () => void
 }
 
-export function CreatePersonalObjectiveDialog({ 
-  open, 
-  onOpenChange, 
+export function CreateCustomObjectiveDialog({
+  open,
+  onOpenChange,
   lifeDomainId,
-  onSuccess 
-}: CreatePersonalObjectiveDialogProps) {
+  onSuccess,
+}: CreateCustomObjectiveDialogProps) {
   const { user } = useAuth()
-  const createPersonalObjective = useCreatePersonalObjective()
+  const createCustomObjective = useCreateCustomObjective()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user?.id || !title.trim()) return
+    if (!user?.id) {
+      alert('Please log in to create a custom objective.')
+      return
+    }
+    if (!title.trim()) return
 
-    createPersonalObjective.mutate(
+    createCustomObjective.mutate(
       {
         userId: user.id,
         lifeDomainId,
@@ -44,6 +48,10 @@ export function CreatePersonalObjectiveDialog({
           setDescription('')
           onOpenChange(false)
           onSuccess?.()
+        },
+        onError: (error: unknown) => {
+          const err = error as { response?: { data?: { error?: string }; message?: string }; message?: string }
+          alert(err?.response?.data?.error || err?.message || 'Failed to create objective. Please try again.')
         },
       }
     )
@@ -60,9 +68,9 @@ export function CreatePersonalObjectiveDialog({
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create Personal Objective</DialogTitle>
+            <DialogTitle>Create Custom Objective</DialogTitle>
             <DialogDescription>
-              Create your own personal objective for this life domain.
+              Create your own custom objective for this life domain.
             </DialogDescription>
           </DialogHeader>
 
@@ -75,7 +83,7 @@ export function CreatePersonalObjectiveDialog({
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Complete Arabic basics course"
                 required
-                disabled={createPersonalObjective.isPending}
+                disabled={createCustomObjective.isPending}
                 autoFocus
               />
             </div>
@@ -88,7 +96,7 @@ export function CreatePersonalObjectiveDialog({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description of your objective..."
                 rows={3}
-                disabled={createPersonalObjective.isPending}
+                disabled={createCustomObjective.isPending}
               />
             </div>
           </div>
@@ -98,15 +106,15 @@ export function CreatePersonalObjectiveDialog({
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={createPersonalObjective.isPending}
+              disabled={createCustomObjective.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={createPersonalObjective.isPending || !title.trim()}
+              disabled={createCustomObjective.isPending || !title.trim()}
             >
-              {createPersonalObjective.isPending ? 'Creating...' : 'Create Objective'}
+              {createCustomObjective.isPending ? 'Creating...' : 'Create Objective'}
             </Button>
           </DialogFooter>
         </form>

@@ -11,6 +11,7 @@ import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { InitiativeList } from '@/features/goals-okr/components/InitiativeList'
 import { CreateInitiativeDialog } from '@/features/goals-okr/components/CreateInitiativeDialog'
+import { CreateCustomKeyResultDialog } from '@/features/goals-okr/components/CreateCustomKeyResultDialog'
 import { Button } from '@/shared/components/ui/button'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
@@ -24,6 +25,7 @@ export default function OKRUserObjectiveInstancePage() {
   const instanceId = Number(params.id)
   const language = 'en' as 'nl' | 'en'
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [createKeyResultDialogOpen, setCreateKeyResultDialogOpen] = useState(false)
   const [selectedKeyResultId, setSelectedKeyResultId] = useState<number | null>(null)
 
   // Get user objective instance to find the objective
@@ -158,6 +160,18 @@ export default function OKRUserObjectiveInstancePage() {
                 </div>
               )}
 
+              {/* Add Custom Key Result - always visible */}
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setCreateKeyResultDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  {language === 'nl' ? 'Voeg custom key result toe' : 'Add custom key result'}
+                </Button>
+              </div>
+
               {/* Initiatives List */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -173,6 +187,14 @@ export default function OKRUserObjectiveInstancePage() {
             </div>
           </Container>
         </main>
+
+        {/* Create Custom Key Result Dialog */}
+        <CreateCustomKeyResultDialog
+          open={createKeyResultDialogOpen}
+          onOpenChange={setCreateKeyResultDialogOpen}
+          userObjectiveInstanceId={instanceId}
+          onSuccess={() => setCreateKeyResultDialogOpen(false)}
+        />
 
         {/* Create Initiative Dialog */}
         {selectedKeyResultId && selectedUserKeyResultInstanceId != null && (

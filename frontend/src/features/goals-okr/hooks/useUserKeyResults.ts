@@ -1,34 +1,65 @@
 /**
- * Hook for fetching and managing user-specific key results
+ * Hooks for user key result instances and custom key results
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUserKeyResultsByUserObjective, createUserKeyResult } from '../api/goalsOkrApi'
-import type { UserKeyResultDTO } from '../api/goalsOkrApi'
+import {
+  getUserKeyResultInstancesByUserObjectiveInstance,
+  createCustomKeyResult,
+} from '../api/goalsOkrApi'
 
 /**
- * Get user-specific key results by user objective
+ * Get user key result instances by user objective instance
  */
-export function useUserKeyResultsByUserObjective(userObjectiveId: number | null) {
+export function useUserKeyResultInstancesByUserObjectiveInstance(
+  userObjectiveInstanceId: number | null
+) {
   return useQuery({
-    queryKey: ['goals-okr', 'user-key-results', 'user-objective', userObjectiveId],
-    queryFn: () => getUserKeyResultsByUserObjective(userObjectiveId!),
-    enabled: userObjectiveId !== null,
+    queryKey: ['goals-okr', 'user-key-result-instances', 'user-objective-instance', userObjectiveInstanceId],
+    queryFn: () => getUserKeyResultInstancesByUserObjectiveInstance(userObjectiveInstanceId!),
+    enabled: userObjectiveInstanceId !== null,
   })
 }
 
 /**
- * Hook for creating a user-specific key result
+ * Hook for creating a custom key result (KeyResult + UserKeyResultInstance + Kanban)
  */
-export function useCreateUserKeyResult() {
+export function useCreateCustomKeyResult() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, ...request }: { userId: number; userObjectiveId: number; title: string; description?: string; targetValue?: number; unit?: string }) =>
-      createUserKeyResult(userId, request),
+    mutationFn: ({
+      userId,
+      userObjectiveInstanceId,
+      title,
+      description,
+      targetValue,
+      unit,
+    }: {
+      userId: number
+      userObjectiveInstanceId: number
+      title: string
+      description?: string
+      targetValue: number
+      unit: string
+    }) =>
+      createCustomKeyResult(userId, {
+        userObjectiveInstanceId,
+        title,
+        description,
+        targetValue,
+        unit,
+      }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-key-results', 'user-objective', variables.userObjectiveId] })
-      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-objectives', 'user-goal'] })
+      queryClient.invalidateQueries({
+        queryKey: ['goals-okr', 'user-key-result-instances', 'user-objective-instance', variables.userObjectiveInstanceId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['goals-okr', 'userKeyResultInstances', 'userObjectiveInstance', variables.userObjectiveInstanceId],
+      })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items'] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-objective-instances'] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'keyResults'] })
     },
   })
 }

@@ -67,7 +67,8 @@ export function useUpdateKanbanItemNotes() {
 }
 
 /**
- * Hook for deleting a kanban item
+ * Hook for deleting a kanban item (and its underlying instance).
+ * Backend routes to the appropriate instance delete handler.
  */
 export function useDeleteKanbanItem() {
   const queryClient = useQueryClient()
@@ -77,6 +78,9 @@ export function useDeleteKanbanItem() {
       deleteKanbanItem(itemId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', variables.userId] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userObjectiveInstances'] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userKeyResultInstances'] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userInitiativeInstances'] })
     },
   })
 }

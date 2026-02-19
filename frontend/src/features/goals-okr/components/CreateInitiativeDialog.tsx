@@ -72,8 +72,8 @@ export function CreateInitiativeDialog({
           onSuccess?.()
           alert(
             language === 'nl'
-              ? 'Initiative aangemaakt! Voeg het toe aan je kanban board met de + knop om het op je progress board te volgen.'
-              : 'Initiative created! Add it to your kanban board with the + button to track it on your progress board.'
+              ? 'Initiative aangemaakt en toegevoegd aan je progress board!'
+              : 'Initiative created and added to your progress board!'
           )
         },
       }

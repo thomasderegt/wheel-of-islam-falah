@@ -68,7 +68,7 @@ export default function OKRLifeDomainPage() {
                 )}
               </div>
 
-              {/* Goals Grid - Includes Create Personal Goal card */}
+              {/* Goals Grid - Includes Create Custom Objective card */}
               <NavGoalCircle lifeDomainId={lifeDomainId} />
             </div>
           </Container>

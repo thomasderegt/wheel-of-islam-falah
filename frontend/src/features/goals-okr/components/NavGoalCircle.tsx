@@ -5,7 +5,7 @@
  *
  * Grid navigation voor objectives binnen een life domain (goal layer removed).
  * - Objectives in een grid layout
- * - Create Personal Objective card
+ * - Create Custom Objective card
  * - Add to Kanban = start user objective instance + add OBJECTIVE item
  */
 
@@ -19,7 +19,7 @@ import { useAuth } from '@/features/auth'
 import { useAddKanbanItem } from '../hooks/useKanbanItems'
 import { Button } from '@/shared/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui/dialog'
-import { CreatePersonalObjectiveDialog } from './CreatePersonalObjectiveDialog'
+import { CreateCustomObjectiveDialog } from './CreateCustomObjectiveDialog'
 import { Plus, Trash2 } from 'lucide-react'
 import { useDeleteObjective } from '../hooks/useDeleteObjective'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -163,7 +163,7 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
     <>
       <div className="w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Create Personal Objective Card */}
+          {/* Create Custom Objective Card */}
           {user?.id && (
             <div
               onClick={() => setCreateDialogOpen(true)}
@@ -183,7 +183,7 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
                 >
                   <Plus className={isWireframeTheme ? 'text-foreground h-6 w-6' : 'text-primary h-6 w-6'} />
                 </div>
-                <h3 className="text-xl font-bold">Create Personal Objective</h3>
+                <h3 className="text-xl font-bold">Create Custom Objective</h3>
                 <p className="text-sm text-muted-foreground line-clamp-2">
                   Add your own objective for this life domain
                 </p>
@@ -278,7 +278,7 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
         </DialogContent>
       </Dialog>
 
-      <CreatePersonalObjectiveDialog
+      <CreateCustomObjectiveDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         lifeDomainId={lifeDomainId}
@@ -293,8 +293,8 @@ export function NavGoalCircle({ lifeDomainId, language = 'en' }: NavGoalCirclePr
             </DialogTitle>
             <DialogDescription>
               {language === 'nl'
-                ? `Weet je zeker dat je "${objectiveToDelete ? getObjectiveTitle(objectiveToDelete) : ''}" wilt verwijderen? Alle key results onder dit objective worden ook verwijderd. Dit kan alleen als nog niemand het objective op het progress board heeft.`
-                : `Are you sure you want to remove "${objectiveToDelete ? getObjectiveTitle(objectiveToDelete) : ''}"? All key results under this objective will also be deleted. This is only possible if no one has added it to their progress board.`}
+                ? `Weet je zeker dat je "${objectiveToDelete ? getObjectiveTitle(objectiveToDelete) : ''}" wilt verwijderen? Alle key results, instances en kanban-items onder dit objective worden ook verwijderd.`
+                : `Are you sure you want to remove "${objectiveToDelete ? getObjectiveTitle(objectiveToDelete) : ''}"? All key results, instances and kanban items under this objective will also be deleted.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

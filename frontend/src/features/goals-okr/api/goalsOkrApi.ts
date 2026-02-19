@@ -906,15 +906,15 @@ export interface UserGoalDTO {
 }
 
 /**
- * Create a personal objective (Objective template + UserObjectiveInstance + Kanban item)
- * POST /api/v2/goals-okr/users/{userId}/personal-objectives
- * 
- * This follows the same pattern as createPersonalGoal: creates an Objective template,
- * starts a UserObjectiveInstance, and adds it to the kanban board automatically.
- * 
+ * Create a custom objective (Objective template + UserObjectiveInstance + Kanban item)
+ * POST /api/v2/goals-okr/users/{userId}/objectives/custom
+ *
+ * Creates an Objective template, starts a UserObjectiveInstance,
+ * and adds it to the kanban board automatically.
+ *
  * Returns: UserObjectiveInstanceDTO
  */
-export async function createPersonalObjective(
+export async function createCustomObjective(
   userId: number,
   request: {
     lifeDomainId: number
@@ -923,11 +923,14 @@ export async function createPersonalObjective(
   }
 ): Promise<UserObjectiveInstanceDTO> {
   const response = await apiClient.post<UserObjectiveInstanceDTO>(
-    `/api/v2/goals-okr/users/${userId}/personal-objectives`,
+    `/api/v2/goals-okr/users/${userId}/objectives/custom`,
     request
   )
   return response.data
 }
+
+/** @deprecated Use createCustomObjective instead */
+export const createPersonalObjective = createCustomObjective
 
 /**
  * Create a user-specific goal (OLD APPROACH - kept for backward compatibility)
@@ -1018,53 +1021,30 @@ export async function getUserObjectivesByUserGoal(
   return response.data
 }
 
-// ========== User-Specific Key Results ==========
-
-export interface UserKeyResultDTO {
-  id: number
-  userId: number
-  userObjectiveId: number
-  title: string
-  description?: string | null
-  targetValue?: number | null
-  unit?: string | null
-  currentValue: number
-  number?: string | null
-  createdAt: string
-  updatedAt: string
-  completedAt?: string | null
-}
+// ========== Custom Key Results ==========
 
 /**
- * Create a user-specific key result
- * POST /api/v2/goals-okr/users/{userId}/user-key-results
+ * Create a custom key result (KeyResult template + UserKeyResultInstance + Kanban item)
+ * POST /api/v2/goals-okr/users/{userId}/key-results/custom
+ *
+ * Creates a KeyResult template, starts a UserKeyResultInstance,
+ * and adds it to the kanban board automatically.
+ *
+ * Returns: UserKeyResultInstanceDTO
  */
-export async function createUserKeyResult(
+export async function createCustomKeyResult(
   userId: number,
   request: {
-    userObjectiveId: number
+    userObjectiveInstanceId: number
     title: string
     description?: string
-    targetValue?: number
-    unit?: string
+    targetValue: number
+    unit: string
   }
-): Promise<UserKeyResultDTO> {
-  const response = await apiClient.post<UserKeyResultDTO>(
-    `/api/v2/goals-okr/users/${userId}/user-key-results`,
-    { ...request, userId }
-  )
-  return response.data
-}
-
-/**
- * Get all user-specific key results for a user objective
- * GET /api/v2/goals-okr/user-objectives/{userObjectiveId}/user-key-results
- */
-export async function getUserKeyResultsByUserObjective(
-  userObjectiveId: number
-): Promise<UserKeyResultDTO[]> {
-  const response = await apiClient.get<UserKeyResultDTO[]>(
-    `/api/v2/goals-okr/user-objectives/${userObjectiveId}/user-key-results`
+): Promise<UserKeyResultInstanceDTO> {
+  const response = await apiClient.post<UserKeyResultInstanceDTO>(
+    `/api/v2/goals-okr/users/${userId}/key-results/custom`,
+    request
   )
   return response.data
 }
