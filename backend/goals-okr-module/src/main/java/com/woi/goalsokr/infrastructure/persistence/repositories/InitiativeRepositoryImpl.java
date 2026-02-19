@@ -36,6 +36,14 @@ public class InitiativeRepositoryImpl implements InitiativeRepository {
     }
 
     @Override
+    public List<Initiative> findByCreatedByUserId(Long createdByUserId) {
+        return jpaRepository.findByCreatedByUserIdOrderByCreatedAtDesc(createdByUserId)
+                .stream()
+                .map(InitiativeEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Initiative save(Initiative initiative) {
         InitiativeJpaEntity jpaEntity = InitiativeEntityMapper.toJpa(initiative);
         InitiativeJpaEntity saved = jpaRepository.save(jpaEntity);

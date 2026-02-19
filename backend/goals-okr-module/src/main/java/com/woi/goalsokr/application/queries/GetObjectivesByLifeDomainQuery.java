@@ -1,10 +1,13 @@
 package com.woi.goalsokr.application.queries;
 
 /**
- * Query to get all objectives for a life domain
+ * Query to get objectives for a life domain.
+ * Returns templates (created_by_user_id IS NULL) + user's custom (created_by_user_id = userId).
+ * When userId is null, only templates are returned.
  */
 public record GetObjectivesByLifeDomainQuery(
-    Long lifeDomainId
+    Long lifeDomainId,
+    Long userId
 ) {
     public GetObjectivesByLifeDomainQuery {
         if (lifeDomainId == null) {

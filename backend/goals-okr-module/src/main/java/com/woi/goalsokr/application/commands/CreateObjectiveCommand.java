@@ -1,7 +1,8 @@
 package com.woi.goalsokr.application.commands;
 
 /**
- * Command to create a new objective (template)
+ * Command to create a new objective (template or custom)
+ * createdByUserId = null for templates, user_id for custom objectives
  */
 public record CreateObjectiveCommand(
     Long lifeDomainId,
@@ -9,7 +10,8 @@ public record CreateObjectiveCommand(
     String titleEn,
     String descriptionNl,
     String descriptionEn,
-    Integer orderIndex
+    Integer orderIndex,
+    Long createdByUserId
 ) {
     public CreateObjectiveCommand {
         if (lifeDomainId == null) {

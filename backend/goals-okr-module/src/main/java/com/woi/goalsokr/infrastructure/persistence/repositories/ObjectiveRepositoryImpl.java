@@ -47,6 +47,14 @@ public class ObjectiveRepositoryImpl implements ObjectiveRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Objective> findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(Long lifeDomainId, Long userId) {
+        return jpaRepository.findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(lifeDomainId, userId).stream()
+            .map(ObjectiveEntityMapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public Objective save(Objective objective) {
         ObjectiveJpaEntity jpaEntity = ObjectiveEntityMapper.toJpa(objective);
@@ -58,5 +66,11 @@ public class ObjectiveRepositoryImpl implements ObjectiveRepository {
     @Transactional
     public void delete(Objective objective) {
         jpaRepository.deleteById(objective.getId());
+    }
+
+    @Override
+    @Transactional
+    public void updateCreatedByUserId(Long objectiveId, Long userId) {
+        jpaRepository.updateCreatedByUserId(objectiveId, userId);
     }
 }

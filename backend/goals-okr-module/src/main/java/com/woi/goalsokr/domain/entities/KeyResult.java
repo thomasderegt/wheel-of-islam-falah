@@ -29,6 +29,7 @@ public class KeyResult {
     private String number; // Unique human-readable number (e.g., "KR-123")
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long createdByUserId; // NULL = template, user_id = custom
 
     // Public constructor for mappers (infrastructure layer)
     public KeyResult() {}
@@ -73,6 +74,45 @@ public class KeyResult {
         keyResult.orderIndex = orderIndex;
         keyResult.createdAt = LocalDateTime.now();
         keyResult.updatedAt = LocalDateTime.now();
+        return keyResult;
+    }
+
+    /**
+     * Factory method: Create a custom key result (user-created)
+     */
+    public static KeyResult createCustom(Long objectiveId, Long createdByUserId, String title,
+            String description, BigDecimal targetValue, String unit, Integer orderIndex) {
+        if (objectiveId == null) {
+            throw new IllegalArgumentException("Objective ID cannot be null");
+        }
+        if (createdByUserId == null) {
+            throw new IllegalArgumentException("Created by user ID cannot be null");
+        }
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be null or empty");
+        }
+        if (targetValue == null || targetValue.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Target value must be a positive number");
+        }
+        if (unit == null || unit.trim().isEmpty()) {
+            throw new IllegalArgumentException("Unit cannot be null or empty");
+        }
+        if (orderIndex == null || orderIndex < 1) {
+            throw new IllegalArgumentException("Order index must be a positive integer");
+        }
+
+        KeyResult keyResult = new KeyResult();
+        keyResult.objectiveId = objectiveId;
+        keyResult.titleNl = title.trim();
+        keyResult.titleEn = title.trim();
+        keyResult.descriptionNl = description;
+        keyResult.descriptionEn = description;
+        keyResult.targetValue = targetValue;
+        keyResult.unit = unit.trim();
+        keyResult.orderIndex = orderIndex;
+        keyResult.createdAt = LocalDateTime.now();
+        keyResult.updatedAt = LocalDateTime.now();
+        keyResult.createdByUserId = createdByUserId;
         return keyResult;
     }
 
@@ -127,6 +167,7 @@ public class KeyResult {
     public String getNumber() { return number; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public Long getCreatedByUserId() { return createdByUserId; }
 
     // Setters for entity mapping (infrastructure layer only)
     public void setId(Long id) { this.id = id; }
@@ -141,4 +182,5 @@ public class KeyResult {
     public void setNumber(String number) { this.number = number; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
 }

@@ -1,10 +1,12 @@
 package com.woi.goalsokr.infrastructure.persistence.entities;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * JPA entity for Initiative (template) - database mapping
+ * JPA entity for Initiative - database mapping
+ * Supports both template initiatives (created_by_user_id null) and custom initiatives (created_by_user_id set)
  */
 @Entity
 @Table(name = "initiatives", schema = "goals_okr")
@@ -42,6 +44,24 @@ public class InitiativeJpaEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId; // NULL = template, user_id = custom initiative
+
+    @Column(name = "target_date")
+    private LocalDate targetDate;
+
+    @Column(name = "status", length = 50)
+    private String status;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "learning_flow_enrollment_id")
+    private Long learningFlowEnrollmentId;
+
     // Public constructor for JPA
     public InitiativeJpaEntity() {}
 
@@ -75,4 +95,22 @@ public class InitiativeJpaEntity {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Long getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
+
+    public LocalDate getTargetDate() { return targetDate; }
+    public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public Long getLearningFlowEnrollmentId() { return learningFlowEnrollmentId; }
+    public void setLearningFlowEnrollmentId(Long learningFlowEnrollmentId) { this.learningFlowEnrollmentId = learningFlowEnrollmentId; }
 }

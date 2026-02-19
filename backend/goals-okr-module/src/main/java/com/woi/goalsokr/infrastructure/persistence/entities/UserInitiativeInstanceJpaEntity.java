@@ -19,7 +19,7 @@ public class UserInitiativeInstanceJpaEntity {
     private Long userKeyResultInstanceId; // FK to goals_okr.user_key_result_instances
 
     @Column(name = "initiative_id", nullable = false)
-    private Long initiativeId; // Soft reference to goals_okr.initiatives (template) OR goals_okr.user_initiatives (user-created)
+    private Long initiativeId; // FK to goals_okr.initiatives (template or custom)
 
     @Column(name = "number", length = 50)
     private String number;

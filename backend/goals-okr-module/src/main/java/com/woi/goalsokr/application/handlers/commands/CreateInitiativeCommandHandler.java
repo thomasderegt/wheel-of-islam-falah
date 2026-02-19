@@ -3,24 +3,24 @@ package com.woi.goalsokr.application.handlers.commands;
 import com.woi.goalsokr.application.commands.AddKanbanItemCommand;
 import com.woi.goalsokr.application.commands.CreateInitiativeCommand;
 import com.woi.goalsokr.application.results.UserInitiativeResult;
-import com.woi.goalsokr.domain.entities.UserInitiative;
-import com.woi.goalsokr.domain.enums.EntityType;
-import com.woi.goalsokr.domain.repositories.UserInitiativeRepository;
+import com.woi.goalsokr.domain.entities.Initiative;
+import com.woi.goalsokr.domain.entities.UserInitiativeInstance;
+import com.woi.goalsokr.domain.repositories.InitiativeRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository;
-import com.woi.goalsokr.domain.entities.UserInitiativeInstance;
 import com.woi.goalsokr.domain.services.EntityNumberGenerator;
 import com.woi.user.api.UserModuleInterface;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Command handler for creating a new user initiative
+ * Command handler for creating a custom initiative.
+ * Creates an Initiative in initiatives table (with created_by_user_id) + UserInitiativeInstance + Kanban item.
  */
 @Component
 public class CreateInitiativeCommandHandler {
-    private final UserInitiativeRepository userInitiativeRepository;
+    private final InitiativeRepository initiativeRepository;
     private final KeyResultRepository keyResultRepository;
     private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
     private final UserInitiativeInstanceRepository userInitiativeInstanceRepository;
@@ -29,14 +29,14 @@ public class CreateInitiativeCommandHandler {
     private final EntityNumberGenerator numberGenerator;
 
     public CreateInitiativeCommandHandler(
-            UserInitiativeRepository userInitiativeRepository,
+            InitiativeRepository initiativeRepository,
             KeyResultRepository keyResultRepository,
             UserKeyResultInstanceRepository userKeyResultInstanceRepository,
             UserInitiativeInstanceRepository userInitiativeInstanceRepository,
             AddKanbanItemCommandHandler addKanbanItemHandler,
             UserModuleInterface userModule,
             EntityNumberGenerator numberGenerator) {
-        this.userInitiativeRepository = userInitiativeRepository;
+        this.initiativeRepository = initiativeRepository;
         this.keyResultRepository = keyResultRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
@@ -52,77 +52,61 @@ public class CreateInitiativeCommandHandler {
             throw new IllegalArgumentException("User not found: " + command.userId());
         }
 
-        // Validate key result exists (optional, for template reference)
-        if (command.keyResultId() != null) {
-            keyResultRepository.findById(command.keyResultId())
-                .orElseThrow(() -> new IllegalArgumentException("Key result not found: " + command.keyResultId()));
-        }
-
-        // Validate user key result instance exists and belongs to user
+        // Validate user key result instance exists and get key_result_id
         var userKeyResultInstance = userKeyResultInstanceRepository.findById(command.userKeyResultInstanceId())
             .orElseThrow(() -> new IllegalArgumentException("User key result instance not found: " + command.userKeyResultInstanceId()));
 
-        // Create user initiative
-        UserInitiative initiative = UserInitiative.create(
+        Long keyResultId = command.keyResultId() != null ? command.keyResultId() : userKeyResultInstance.getKeyResultId();
+        if (keyResultId == null) {
+            throw new IllegalArgumentException("Key result ID is required");
+        }
+
+        // Validate key result exists
+        keyResultRepository.findById(keyResultId)
+            .orElseThrow(() -> new IllegalArgumentException("Key result not found: " + keyResultId));
+
+        // Calculate display order
+        var existingInitiatives = initiativeRepository.findByKeyResultId(keyResultId);
+        int displayOrder = existingInitiatives.size() + 1;
+
+        // Create Initiative (custom - in initiatives table with created_by_user_id)
+        Initiative initiative = Initiative.createCustom(
+            keyResultId,
             command.userId(),
-            command.userKeyResultInstanceId(),
-            command.title()
+            command.title(),
+            command.description(),
+            command.targetDate(),
+            displayOrder
         );
-        
-        // Set optional fields
-        if (command.description() != null) {
-            initiative.updateDescription(command.description());
-        }
-        if (command.targetDate() != null) {
-            initiative.updateTargetDate(command.targetDate());
-        }
-        
-        // Generate unique number
-        String number = numberGenerator.generateNextNumber(EntityType.USER_INITIATIVE);
-        initiative.setNumber(number);
-        
-        // Save initiative first to get ID
-        UserInitiative savedInitiative = userInitiativeRepository.save(initiative);
-        
-        // Set keyResultId if provided (using setter for infrastructure layer)
-        if (command.keyResultId() != null) {
-            savedInitiative.setKeyResultId(command.keyResultId());
-            savedInitiative = userInitiativeRepository.save(savedInitiative);
-        }
-        
-        // Create UserInitiativeInstance (subscription to the initiative)
+        initiative.setNumber(numberGenerator.generateNextNumber(com.woi.goalsokr.domain.enums.EntityType.INITIATIVE));
+        Initiative savedInitiative = initiativeRepository.save(initiative);
+
+        // Create UserInitiativeInstance
         UserInitiativeInstance instance = UserInitiativeInstance.start(
             command.userKeyResultInstanceId(),
             savedInitiative.getId()
         );
-        
-        // Save instance
         UserInitiativeInstance savedInstance = userInitiativeInstanceRepository.save(instance);
-        
-        // Add to kanban board so it appears on the progress board (same as StartUserInitiativeInstance)
+
+        // Add to kanban board
         try {
             addKanbanItemHandler.handle(new AddKanbanItemCommand(
                 command.userId(),
                 "INITIATIVE",
                 savedInstance.getId()
             ));
-            org.slf4j.LoggerFactory.getLogger(CreateInitiativeCommandHandler.class)
-                .debug("Added user-created initiative to kanban: userId={}, instanceId={}", command.userId(), savedInstance.getId());
         } catch (IllegalArgumentException e) {
             if (!"Item already exists in kanban board".equals(e.getMessage())) {
-                org.slf4j.LoggerFactory.getLogger(CreateInitiativeCommandHandler.class)
-                    .warn("Failed to add initiative to kanban: {}", e.getMessage());
                 throw e;
             }
         }
-        
+
         // Link learning flow enrollment if provided
         if (command.learningFlowEnrollmentId() != null) {
             savedInitiative.linkLearningFlowEnrollment(command.learningFlowEnrollmentId());
-            savedInitiative = userInitiativeRepository.save(savedInitiative);
+            savedInitiative = initiativeRepository.save(savedInitiative);
         }
 
-        // Return result (include userInitiativeInstanceId for frontend kanban add)
-        return UserInitiativeResult.from(savedInitiative, savedInstance.getId());
+        return UserInitiativeResult.from(savedInitiative, command.userKeyResultInstanceId(), command.userId(), savedInstance.getId());
     }
 }

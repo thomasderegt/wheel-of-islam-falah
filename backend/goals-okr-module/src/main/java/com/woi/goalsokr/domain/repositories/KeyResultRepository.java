@@ -13,6 +13,7 @@ public interface KeyResultRepository {
     Optional<KeyResult> findById(Long id);
     List<KeyResult> findByObjectiveId(Long objectiveId);
     List<KeyResult> findByObjectiveIdOrderedByOrderIndex(Long objectiveId);
+    List<KeyResult> findByObjectiveIdAndUserFilteredOrderedByOrderIndex(Long objectiveId, Long userId);
     KeyResult save(KeyResult keyResult);
     void delete(KeyResult keyResult);
 }

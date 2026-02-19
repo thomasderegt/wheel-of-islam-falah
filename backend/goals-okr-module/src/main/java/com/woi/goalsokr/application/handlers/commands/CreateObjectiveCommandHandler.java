@@ -41,6 +41,9 @@ public class CreateObjectiveCommandHandler {
         if (command.descriptionEn() != null) {
             objective.setDescriptionEn(command.descriptionEn());
         }
+        if (command.createdByUserId() != null) {
+            objective.setCreatedByUserId(command.createdByUserId());
+        }
 
         // Generate unique number
         String number = numberGenerator.generateNextNumber(EntityType.OBJECTIVE);

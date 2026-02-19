@@ -1,15 +1,15 @@
 package com.woi.goalsokr.application.commands;
 
 /**
- * Command to create a personal objective (creates Objective template + UserObjectiveInstance + Kanban item)
+ * Command to create a custom objective (creates Objective template + UserObjectiveInstance + Kanban item)
  */
-public record CreatePersonalObjectiveCommand(
+public record CreateCustomObjectiveCommand(
     Long userId,
     Long lifeDomainId, // Life domain for the new objective
     String title,
     String description // Optional
 ) {
-    public CreatePersonalObjectiveCommand {
+    public CreateCustomObjectiveCommand {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  *
  * Business rules:
  * - userKeyResultInstanceId is required (FK to UserKeyResultInstance)
- * - initiativeId is required (reference to Initiative template OR UserInitiative user-created)
+ * - initiativeId is required (reference to Initiative - template or custom)
  * - userId is accessed via UserKeyResultInstance → UserObjectiveInstance → UserGoalInstance (strikt DDD)
  */
 public class UserInitiativeInstance {
@@ -28,7 +28,7 @@ public class UserInitiativeInstance {
      * Factory method: Start a new user initiative instance
      *
      * @param userKeyResultInstanceId User Key Result Instance ID (required, reference to parent instance)
-     * @param initiativeId Initiative ID (required, reference to Initiative template OR UserInitiative user-created)
+     * @param initiativeId Initiative ID (required, reference to Initiative)
      * @return New UserInitiativeInstance instance
      * @throws IllegalArgumentException if required fields are null
      */

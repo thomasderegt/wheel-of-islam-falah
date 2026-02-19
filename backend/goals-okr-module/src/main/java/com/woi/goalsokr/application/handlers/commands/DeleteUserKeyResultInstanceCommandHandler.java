@@ -1,19 +1,16 @@
 package com.woi.goalsokr.application.handlers.commands;
 
 import com.woi.goalsokr.application.commands.DeleteKanbanItemCommand;
-import com.woi.goalsokr.application.commands.DeleteObjectiveCommand;
-import com.woi.goalsokr.domain.entities.KeyResult;
-import com.woi.goalsokr.domain.entities.Objective;
+import com.woi.goalsokr.application.commands.DeleteUserKeyResultInstanceCommand;
 import com.woi.goalsokr.domain.entities.Initiative;
 import com.woi.goalsokr.domain.entities.UserInitiativeInstance;
 import com.woi.goalsokr.domain.entities.UserKeyResultInstance;
 import com.woi.goalsokr.domain.entities.UserObjectiveInstance;
 import com.woi.goalsokr.domain.enums.ItemType;
+import com.woi.goalsokr.domain.repositories.InitiativeRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultProgressRepository;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.repositories.KanbanItemRepository;
-import com.woi.goalsokr.domain.repositories.ObjectiveRepository;
-import com.woi.goalsokr.domain.repositories.InitiativeRepository;
 import com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository;
 import com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository;
@@ -23,38 +20,33 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Command handler for deleting an objective.
- * Cascades deletion of UserObjectiveInstances (and their kanban items, key result instances,
- * initiatives, etc.) so personal objectives on the kanban can be deleted.
- * Then deletes all key results under this objective, and finally the objective.
+ * Command handler for deleting a user key result instance.
+ * Cascades to initiative instances and kanban items.
  */
 @Component
-public class DeleteObjectiveCommandHandler {
-    private final ObjectiveRepository objectiveRepository;
-    private final KeyResultRepository keyResultRepository;
-    private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
+public class DeleteUserKeyResultInstanceCommandHandler {
     private final UserKeyResultInstanceRepository userKeyResultInstanceRepository;
+    private final UserObjectiveInstanceRepository userObjectiveInstanceRepository;
     private final KeyResultProgressRepository keyResultProgressRepository;
+    private final KeyResultRepository keyResultRepository;
     private final UserInitiativeInstanceRepository userInitiativeInstanceRepository;
     private final InitiativeRepository initiativeRepository;
     private final KanbanItemRepository kanbanItemRepository;
     private final DeleteKanbanItemCommandHandler deleteKanbanItemHandler;
 
-    public DeleteObjectiveCommandHandler(
-            ObjectiveRepository objectiveRepository,
-            KeyResultRepository keyResultRepository,
-            UserObjectiveInstanceRepository userObjectiveInstanceRepository,
+    public DeleteUserKeyResultInstanceCommandHandler(
             UserKeyResultInstanceRepository userKeyResultInstanceRepository,
+            UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             KeyResultProgressRepository keyResultProgressRepository,
+            KeyResultRepository keyResultRepository,
             UserInitiativeInstanceRepository userInitiativeInstanceRepository,
             InitiativeRepository initiativeRepository,
             KanbanItemRepository kanbanItemRepository,
             DeleteKanbanItemCommandHandler deleteKanbanItemHandler) {
-        this.objectiveRepository = objectiveRepository;
-        this.keyResultRepository = keyResultRepository;
-        this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
+        this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.keyResultProgressRepository = keyResultProgressRepository;
+        this.keyResultRepository = keyResultRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
         this.initiativeRepository = initiativeRepository;
         this.kanbanItemRepository = kanbanItemRepository;
@@ -62,38 +54,18 @@ public class DeleteObjectiveCommandHandler {
     }
 
     @Transactional
-    public void handle(DeleteObjectiveCommand command) {
-        Objective objective = objectiveRepository.findById(command.objectiveId())
-            .orElseThrow(() -> new IllegalArgumentException("Objective not found with id: " + command.objectiveId()));
+    public void handle(DeleteUserKeyResultInstanceCommand command) {
+        UserKeyResultInstance instance = userKeyResultInstanceRepository.findById(command.userKeyResultInstanceId())
+            .orElseThrow(() -> new IllegalArgumentException("User key result instance not found with id: " + command.userKeyResultInstanceId()));
 
-        List<UserObjectiveInstance> instances = userObjectiveInstanceRepository.findByObjectiveId(objective.getId());
-        for (UserObjectiveInstance uoi : instances) {
-            deleteUserObjectiveInstance(uoi);
-        }
+        UserObjectiveInstance userObjectiveInstance = userObjectiveInstanceRepository.findById(instance.getUserObjectiveInstanceId())
+            .orElseThrow(() -> new IllegalArgumentException("User objective instance not found"));
+        Long userId = userObjectiveInstance.getUserId();
 
-        List<KeyResult> keyResults = keyResultRepository.findByObjectiveId(objective.getId());
-        for (KeyResult kr : keyResults) {
-            keyResultRepository.delete(kr);
-        }
-        objectiveRepository.delete(objective);
-    }
-
-    private void deleteUserObjectiveInstance(UserObjectiveInstance uoi) {
-        Long userId = uoi.getUserId();
-        List<UserKeyResultInstance> krInstances = userKeyResultInstanceRepository.findByUserObjectiveInstanceId(uoi.getId());
-        for (UserKeyResultInstance ukri : krInstances) {
-            deleteUserKeyResultInstance(ukri, userId);
-        }
-        kanbanItemRepository.findByUserIdAndItemTypeAndItemId(userId, ItemType.OBJECTIVE, uoi.getId())
-            .ifPresent(item -> deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(item.getId())));
-        userObjectiveInstanceRepository.delete(uoi);
-    }
-
-    private void deleteUserKeyResultInstance(UserKeyResultInstance ukri, Long userId) {
-        keyResultProgressRepository.findByUserKeyResultInstanceId(ukri.getId())
+        keyResultProgressRepository.findByUserKeyResultInstanceId(instance.getId())
             .forEach(keyResultProgressRepository::delete);
 
-        List<UserInitiativeInstance> initiativeInstances = userInitiativeInstanceRepository.findByUserKeyResultInstanceId(ukri.getId());
+        List<UserInitiativeInstance> initiativeInstances = userInitiativeInstanceRepository.findByUserKeyResultInstanceId(instance.getId());
         for (UserInitiativeInstance uii : initiativeInstances) {
             kanbanItemRepository.findByUserIdAndItemTypeAndItemId(userId, ItemType.INITIATIVE, uii.getId())
                 .ifPresent(item -> deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(item.getId())));
@@ -106,10 +78,10 @@ public class DeleteObjectiveCommandHandler {
             });
         }
 
-        kanbanItemRepository.findByUserIdAndItemTypeAndItemId(userId, ItemType.KEY_RESULT, ukri.getId())
+        kanbanItemRepository.findByUserIdAndItemTypeAndItemId(userId, ItemType.KEY_RESULT, instance.getId())
             .ifPresent(item -> deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(item.getId())));
-        var keyResultOpt = keyResultRepository.findById(ukri.getKeyResultId());
-        userKeyResultInstanceRepository.delete(ukri);
+        var keyResultOpt = keyResultRepository.findById(instance.getKeyResultId());
+        userKeyResultInstanceRepository.delete(instance);
         keyResultOpt.ifPresent(kr -> {
             if (kr.getCreatedByUserId() != null) {
                 keyResultRepository.delete(kr);

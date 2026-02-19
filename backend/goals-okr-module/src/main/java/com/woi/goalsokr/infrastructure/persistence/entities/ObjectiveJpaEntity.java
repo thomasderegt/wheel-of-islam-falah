@@ -18,6 +18,9 @@ public class ObjectiveJpaEntity {
     @Column(name = "life_domain_id", nullable = false)
     private Long lifeDomainId; // FK to goals_okr.life_domains
 
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId; // NULL = template, user_id = custom objective
+
     @Column(name = "title_nl", nullable = false)
     private String titleNl;
 
@@ -51,6 +54,9 @@ public class ObjectiveJpaEntity {
 
     public Long getLifeDomainId() { return lifeDomainId; }
     public void setLifeDomainId(Long lifeDomainId) { this.lifeDomainId = lifeDomainId; }
+
+    public Long getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
 
     public String getTitleNl() { return titleNl; }
     public void setTitleNl(String titleNl) { this.titleNl = titleNl; }

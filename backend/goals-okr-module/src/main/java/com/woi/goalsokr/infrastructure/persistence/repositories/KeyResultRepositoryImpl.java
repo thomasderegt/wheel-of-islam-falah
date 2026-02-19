@@ -47,6 +47,14 @@ public class KeyResultRepositoryImpl implements KeyResultRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<KeyResult> findByObjectiveIdAndUserFilteredOrderedByOrderIndex(Long objectiveId, Long userId) {
+        return jpaRepository.findByObjectiveIdAndUserFilteredOrderedByOrderIndex(objectiveId, userId).stream()
+            .map(KeyResultEntityMapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public KeyResult save(KeyResult keyResult) {
         KeyResultJpaEntity jpaEntity = KeyResultEntityMapper.toJpa(keyResult);

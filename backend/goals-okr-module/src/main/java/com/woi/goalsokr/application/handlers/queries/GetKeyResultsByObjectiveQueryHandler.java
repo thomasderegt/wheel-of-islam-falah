@@ -2,6 +2,7 @@ package com.woi.goalsokr.application.handlers.queries;
 
 import com.woi.goalsokr.application.queries.GetKeyResultsByObjectiveQuery;
 import com.woi.goalsokr.application.results.KeyResultResult;
+import com.woi.goalsokr.domain.entities.KeyResult;
 import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,12 @@ public class GetKeyResultsByObjectiveQueryHandler {
 
     @Transactional(readOnly = true)
     public List<KeyResultResult> handle(GetKeyResultsByObjectiveQuery query) {
-        return keyResultRepository.findByObjectiveIdOrderedByOrderIndex(query.objectiveId()).stream()
+        List<KeyResult> keyResults = query.userId() != null
+            ? keyResultRepository.findByObjectiveIdAndUserFilteredOrderedByOrderIndex(query.objectiveId(), query.userId())
+            : keyResultRepository.findByObjectiveIdOrderedByOrderIndex(query.objectiveId()).stream()
+                .filter(kr -> kr.getCreatedByUserId() == null)
+                .collect(Collectors.toList());
+        return keyResults.stream()
             .map(KeyResultResult::from)
             .collect(Collectors.toList());
     }

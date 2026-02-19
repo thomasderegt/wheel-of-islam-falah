@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface InitiativeRepository {
     Optional<Initiative> findById(Long id);
     List<Initiative> findByKeyResultId(Long keyResultId);
+    List<Initiative> findByCreatedByUserId(Long createdByUserId);
     Initiative save(Initiative initiative);
     void delete(Long id);
 }

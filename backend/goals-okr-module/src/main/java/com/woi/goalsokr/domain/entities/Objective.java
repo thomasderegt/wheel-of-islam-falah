@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class Objective {
     private Long id;
     private Long lifeDomainId; // Required - FK to Life Domain
+    private Long createdByUserId; // NULL = template, user_id = custom objective
     private String titleNl;
     private String titleEn;
     private String descriptionNl;
@@ -73,6 +74,7 @@ public class Objective {
     // Getters
     public Long getId() { return id; }
     public Long getLifeDomainId() { return lifeDomainId; }
+    public Long getCreatedByUserId() { return createdByUserId; }
     public String getTitleNl() { return titleNl; }
     public String getTitleEn() { return titleEn; }
     public String getDescriptionNl() { return descriptionNl; }
@@ -85,6 +87,7 @@ public class Objective {
     // Setters for entity mapping (infrastructure layer only)
     public void setId(Long id) { this.id = id; }
     public void setLifeDomainId(Long lifeDomainId) { this.lifeDomainId = lifeDomainId; }
+    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
     public void setTitleNl(String titleNl) { this.titleNl = titleNl; }
     public void setTitleEn(String titleEn) { this.titleEn = titleEn; }
     public void setDescriptionNl(String descriptionNl) { this.descriptionNl = descriptionNl; }

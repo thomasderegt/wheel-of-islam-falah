@@ -13,6 +13,13 @@ public interface ObjectiveRepository {
     Optional<Objective> findById(Long id);
     List<Objective> findByLifeDomainId(Long lifeDomainId);
     List<Objective> findByLifeDomainIdOrderedByOrderIndex(Long lifeDomainId);
+    List<Objective> findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(Long lifeDomainId, Long userId);
     Objective save(Objective objective);
     void delete(Objective objective);
+
+    /**
+     * Explicitly set created_by_user_id for an objective (e.g. custom objectives).
+     * Ensures the value is persisted even if save() did not.
+     */
+    void updateCreatedByUserId(Long objectiveId, Long userId);
 }

@@ -12,4 +12,5 @@ import java.util.List;
 @Repository
 public interface InitiativeJpaRepository extends JpaRepository<InitiativeJpaEntity, Long> {
     List<InitiativeJpaEntity> findByKeyResultIdOrderByDisplayOrderAsc(Long keyResultId);
+    List<InitiativeJpaEntity> findByCreatedByUserIdOrderByCreatedAtDesc(Long createdByUserId);
 }

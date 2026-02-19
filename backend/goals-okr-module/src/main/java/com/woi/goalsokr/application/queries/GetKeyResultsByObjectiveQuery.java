@@ -1,10 +1,13 @@
 package com.woi.goalsokr.application.queries;
 
 /**
- * Query to get all key results for an objective
+ * Query to get key results for an objective.
+ * Returns templates (created_by_user_id IS NULL) + user's custom (created_by_user_id = userId).
+ * When userId is null, only templates are returned.
  */
 public record GetKeyResultsByObjectiveQuery(
-    Long objectiveId
+    Long objectiveId,
+    Long userId
 ) {
     public GetKeyResultsByObjectiveQuery {
         if (objectiveId == null) {

@@ -17,4 +17,9 @@ public interface KeyResultJpaRepository extends JpaRepository<KeyResultJpaEntity
 
     @Query("SELECT kr FROM KeyResultJpaEntity kr WHERE kr.objectiveId = :objectiveId ORDER BY kr.orderIndex ASC")
     List<KeyResultJpaEntity> findByObjectiveIdOrderedByOrderIndex(@Param("objectiveId") Long objectiveId);
+
+    @Query("SELECT kr FROM KeyResultJpaEntity kr WHERE kr.objectiveId = :objectiveId " +
+           "AND (kr.createdByUserId IS NULL OR kr.createdByUserId = :userId) ORDER BY kr.orderIndex ASC")
+    List<KeyResultJpaEntity> findByObjectiveIdAndUserFilteredOrderedByOrderIndex(
+        @Param("objectiveId") Long objectiveId, @Param("userId") Long userId);
 }

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Result DTO for UserInitiative
+ * Result DTO for initiatives (both template and custom, unified for API)
  */
 public record UserInitiativeResult(
     Long id,
@@ -22,25 +22,24 @@ public record UserInitiativeResult(
     LocalDateTime completedAt,
     Long userInitiativeInstanceId
 ) {
-    public static UserInitiativeResult from(com.woi.goalsokr.domain.entities.UserInitiative initiative) {
-        return from(initiative, null);
-    }
-
-    public static UserInitiativeResult from(com.woi.goalsokr.domain.entities.UserInitiative initiative, Long userInitiativeInstanceId) {
+    /**
+     * Create from Initiative (unified model - template or custom)
+     */
+    public static UserInitiativeResult from(com.woi.goalsokr.domain.entities.Initiative initiative,
+            Long userKeyResultInstanceId, Long userId, Long userInitiativeInstanceId) {
         if (initiative == null) {
-            throw new IllegalArgumentException("UserInitiative cannot be null");
+            throw new IllegalArgumentException("Initiative cannot be null");
         }
-        if (initiative.getStatus() == null) {
-            throw new IllegalStateException("UserInitiative status cannot be null for initiative ID: " + initiative.getId());
-        }
+        String title = initiative.getTitleEn() != null ? initiative.getTitleEn() : initiative.getTitleNl();
+        String description = initiative.getDescriptionEn() != null ? initiative.getDescriptionEn() : initiative.getDescriptionNl();
         return new UserInitiativeResult(
             initiative.getId(),
-            initiative.getUserId(),
-            initiative.getUserKeyResultInstanceId(),
+            userId != null ? userId : initiative.getCreatedByUserId(),
+            userKeyResultInstanceId,
             initiative.getKeyResultId(),
-            initiative.getTitle(),
-            initiative.getDescription(),
-            initiative.getStatus().name(),
+            title,
+            description,
+            initiative.getStatus() != null ? initiative.getStatus() : "ACTIVE",
             initiative.getTargetDate(),
             initiative.getLearningFlowEnrollmentId(),
             initiative.getNumber(),

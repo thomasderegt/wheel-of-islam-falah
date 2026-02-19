@@ -4,7 +4,7 @@ import com.woi.goalsokr.domain.entities.Initiative;
 import com.woi.goalsokr.infrastructure.persistence.entities.InitiativeJpaEntity;
 
 /**
- * Mapper between Initiative domain entity (template) and InitiativeJpaEntity
+ * Mapper between Initiative domain entity and InitiativeJpaEntity
  */
 public class InitiativeEntityMapper {
 
@@ -24,6 +24,12 @@ public class InitiativeEntityMapper {
         domain.setDisplayOrder(jpaEntity.getDisplayOrder());
         domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
+        domain.setCreatedByUserId(jpaEntity.getCreatedByUserId());
+        domain.setTargetDate(jpaEntity.getTargetDate());
+        domain.setStatus(jpaEntity.getStatus());
+        domain.setUpdatedAt(jpaEntity.getUpdatedAt());
+        domain.setCompletedAt(jpaEntity.getCompletedAt());
+        domain.setLearningFlowEnrollmentId(jpaEntity.getLearningFlowEnrollmentId());
 
         return domain;
     }
@@ -44,6 +50,12 @@ public class InitiativeEntityMapper {
         jpaEntity.setDisplayOrder(domain.getDisplayOrder());
         jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
+        jpaEntity.setCreatedByUserId(domain.getCreatedByUserId());
+        jpaEntity.setTargetDate(domain.getTargetDate());
+        jpaEntity.setStatus(domain.getStatus());
+        jpaEntity.setUpdatedAt(domain.getUpdatedAt());
+        jpaEntity.setCompletedAt(domain.getCompletedAt());
+        jpaEntity.setLearningFlowEnrollmentId(domain.getLearningFlowEnrollmentId());
 
         return jpaEntity;
     }

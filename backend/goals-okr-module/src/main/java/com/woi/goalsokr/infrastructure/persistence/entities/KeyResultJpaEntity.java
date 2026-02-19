@@ -49,6 +49,9 @@ public class KeyResultJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId; // NULL = template, user_id = custom
+
     // Public constructor for JPA
     public KeyResultJpaEntity() {}
 
@@ -88,4 +91,7 @@ public class KeyResultJpaEntity {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Long getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
 }

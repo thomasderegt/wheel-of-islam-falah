@@ -2,6 +2,7 @@ package com.woi.goalsokr.application.handlers.queries;
 
 import com.woi.goalsokr.application.queries.GetObjectivesByLifeDomainQuery;
 import com.woi.goalsokr.application.results.ObjectiveResult;
+import com.woi.goalsokr.domain.entities.Objective;
 import com.woi.goalsokr.domain.repositories.ObjectiveRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,12 @@ public class GetObjectivesByLifeDomainQueryHandler {
 
     @Transactional(readOnly = true)
     public List<ObjectiveResult> handle(GetObjectivesByLifeDomainQuery query) {
-        return objectiveRepository.findByLifeDomainIdOrderedByOrderIndex(query.lifeDomainId()).stream()
+        List<Objective> objectives = query.userId() != null
+            ? objectiveRepository.findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(query.lifeDomainId(), query.userId())
+            : objectiveRepository.findByLifeDomainIdOrderedByOrderIndex(query.lifeDomainId()).stream()
+                .filter(o -> o.getCreatedByUserId() == null) // anonymous: only templates
+                .collect(Collectors.toList());
+        return objectives.stream()
             .map(ObjectiveResult::from)
             .collect(Collectors.toList());
     }

@@ -6,11 +6,15 @@ import com.woi.goalsokr.application.handlers.queries.*;
 import com.woi.goalsokr.application.queries.*;
 import com.woi.goalsokr.application.results.*;
 import com.woi.goalsokr.domain.repositories.KanbanItemRepository;
+import com.woi.goalsokr.domain.repositories.ObjectiveRepository;
+import com.woi.goalsokr.domain.repositories.KeyResultRepository;
 import com.woi.goalsokr.domain.entities.KanbanItem;
+import com.woi.goalsokr.domain.enums.ItemType;
 import com.woi.goalsokr.infrastructure.web.dtos.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +61,8 @@ public class GoalsOKRController {
     private final GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler;
     private final GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler;
     private final DeleteUserInitiativeInstanceCommandHandler deleteUserInitiativeInstanceHandler;
+    private final DeleteUserObjectiveInstanceCommandHandler deleteUserObjectiveInstanceHandler;
+    private final DeleteUserKeyResultInstanceCommandHandler deleteUserKeyResultInstanceHandler;
     private final GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler;
     private final GetInitiativesByUserQueryHandler getInitiativesByUserHandler;
     private final GetKeyResultProgressQueryHandler getKeyResultProgressHandler;
@@ -69,15 +75,14 @@ public class GoalsOKRController {
     private final GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler;
     private final GetTeamKanbanItemsQueryHandler getTeamKanbanItemsHandler;
     private final KanbanItemRepository kanbanItemRepository;
+    private final ObjectiveRepository objectiveRepository;
+    private final KeyResultRepository keyResultRepository;
     
     // Repositories for children endpoints
     private final com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository;
     private final com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository;
     private final com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository;
     
-    // User-specific command handlers
-    private final CreatePersonalObjectiveCommandHandler createPersonalObjectiveHandler;
-
     public GoalsOKRController(
             CreateObjectiveCommandHandler createObjectiveHandler,
             CreateKeyResultCommandHandler createKeyResultHandler,
@@ -107,6 +112,8 @@ public class GoalsOKRController {
             GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler,
             GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler,
             DeleteUserInitiativeInstanceCommandHandler deleteUserInitiativeInstanceHandler,
+            DeleteUserObjectiveInstanceCommandHandler deleteUserObjectiveInstanceHandler,
+            DeleteUserKeyResultInstanceCommandHandler deleteUserKeyResultInstanceHandler,
             GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler,
             GetInitiativesByUserQueryHandler getInitiativesByUserHandler,
             GetKeyResultProgressQueryHandler getKeyResultProgressHandler,
@@ -119,10 +126,11 @@ public class GoalsOKRController {
             GetKanbanItemsByUserQueryHandler getKanbanItemsByUserHandler,
             GetTeamKanbanItemsQueryHandler getTeamKanbanItemsHandler,
             KanbanItemRepository kanbanItemRepository,
+            ObjectiveRepository objectiveRepository,
+            KeyResultRepository keyResultRepository,
             com.woi.goalsokr.domain.repositories.UserObjectiveInstanceRepository userObjectiveInstanceRepository,
             com.woi.goalsokr.domain.repositories.UserKeyResultInstanceRepository userKeyResultInstanceRepository,
-            com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository,
-            CreatePersonalObjectiveCommandHandler createPersonalObjectiveHandler
+            com.woi.goalsokr.domain.repositories.UserInitiativeInstanceRepository userInitiativeInstanceRepository
 ) {
         this.createObjectiveHandler = createObjectiveHandler;
         this.createKeyResultHandler = createKeyResultHandler;
@@ -152,6 +160,8 @@ public class GoalsOKRController {
         this.getUserInitiativeInstanceHandler = getUserInitiativeInstanceHandler;
         this.getUserInitiativeInstancesHandler = getUserInitiativeInstancesHandler;
         this.deleteUserInitiativeInstanceHandler = deleteUserInitiativeInstanceHandler;
+        this.deleteUserObjectiveInstanceHandler = deleteUserObjectiveInstanceHandler;
+        this.deleteUserKeyResultInstanceHandler = deleteUserKeyResultInstanceHandler;
         this.getInitiativesByUserKeyResultInstanceHandler = getInitiativesByUserKeyResultInstanceHandler;
         this.getInitiativesByUserHandler = getInitiativesByUserHandler;
         this.getKeyResultProgressHandler = getKeyResultProgressHandler;
@@ -164,10 +174,11 @@ public class GoalsOKRController {
         this.getKanbanItemsByUserHandler = getKanbanItemsByUserHandler;
         this.getTeamKanbanItemsHandler = getTeamKanbanItemsHandler;
         this.kanbanItemRepository = kanbanItemRepository;
+        this.objectiveRepository = objectiveRepository;
+        this.keyResultRepository = keyResultRepository;
         this.userObjectiveInstanceRepository = userObjectiveInstanceRepository;
         this.userKeyResultInstanceRepository = userKeyResultInstanceRepository;
         this.userInitiativeInstanceRepository = userInitiativeInstanceRepository;
-        this.createPersonalObjectiveHandler = createPersonalObjectiveHandler;
     }
 
     // ========== Wheels ==========
@@ -210,7 +221,8 @@ public class GoalsOKRController {
                 request.titleEn(),
                 request.descriptionNl(),
                 request.descriptionEn(),
-                request.orderIndex()
+                request.orderIndex(),
+                null // template - no created_by_user_id
             );
             ObjectiveResult result = createObjectiveHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -232,18 +244,29 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/life-domains/{lifeDomainId}/objectives
      */
     @GetMapping("/life-domains/{lifeDomainId}/objectives")
-    public ResponseEntity<List<ObjectiveResult>> getObjectivesByLifeDomain(@PathVariable Long lifeDomainId) {
+    public ResponseEntity<List<ObjectiveResult>> getObjectivesByLifeDomain(
+            @PathVariable Long lifeDomainId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long userId) {
         List<ObjectiveResult> results = getObjectivesByLifeDomainHandler.handle(
-            new GetObjectivesByLifeDomainQuery(lifeDomainId));
+            new GetObjectivesByLifeDomainQuery(lifeDomainId, userId));
         return ResponseEntity.ok(results);
     }
 
     @GetMapping("/objectives/{objectiveId}")
-    public ResponseEntity<?> getObjective(@PathVariable Long objectiveId) {
+    public ResponseEntity<?> getObjective(
+            @PathVariable Long objectiveId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long userId) {
         try {
-            Optional<ObjectiveResult> result = getObjectiveHandler.handle(new GetObjectiveQuery(objectiveId));
-            return result.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            var objectiveOpt = objectiveRepository.findById(objectiveId);
+            if (objectiveOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            var objective = objectiveOpt.get();
+            if (objective.getCreatedByUserId() != null && !objective.getCreatedByUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: objective belongs to another user"));
+            }
+            return ResponseEntity.ok(ObjectiveResult.from(objective));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -252,12 +275,24 @@ public class GoalsOKRController {
     }
 
     /**
-     * Delete an objective (only when no user has started it). Also deletes all its key results.
+     * Delete an objective. Custom objectives: only owner can delete. Templates: allowed.
      * DELETE /api/v2/goals-okr/objectives/{objectiveId}
      */
     @DeleteMapping("/objectives/{objectiveId}")
-    public ResponseEntity<?> deleteObjective(@PathVariable Long objectiveId) {
+    @Transactional
+    public ResponseEntity<?> deleteObjective(
+            @PathVariable Long objectiveId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long userId) {
         try {
+            var objectiveOpt = objectiveRepository.findById(objectiveId);
+            if (objectiveOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            var objective = objectiveOpt.get();
+            if (objective.getCreatedByUserId() != null && !objective.getCreatedByUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: can only delete your own custom objectives"));
+            }
             deleteObjectiveHandler.handle(new DeleteObjectiveCommand(objectiveId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
@@ -300,12 +335,24 @@ public class GoalsOKRController {
     }
 
     /**
-     * Delete a key result (only when no user has started it).
+     * Delete a key result. Custom key results: only owner can delete. Templates: allowed.
      * DELETE /api/v2/goals-okr/key-results/{keyResultId}
      */
     @RequestMapping(path = "/key-results/{keyResultId}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteKeyResult(@PathVariable Long keyResultId) {
+    @Transactional
+    public ResponseEntity<?> deleteKeyResult(
+            @PathVariable Long keyResultId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long userId) {
         try {
+            var keyResultOpt = keyResultRepository.findById(keyResultId);
+            if (keyResultOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            var keyResult = keyResultOpt.get();
+            if (keyResult.getCreatedByUserId() != null && !keyResult.getCreatedByUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: can only delete your own custom key results"));
+            }
             deleteKeyResultHandler.handle(new DeleteKeyResultCommand(keyResultId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
@@ -322,11 +369,20 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/key-results/{id}
      */
     @GetMapping("/key-results/{keyResultId}")
-    public ResponseEntity<?> getKeyResult(@PathVariable Long keyResultId) {
+    public ResponseEntity<?> getKeyResult(
+            @PathVariable Long keyResultId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long userId) {
         try {
-            Optional<KeyResultResult> result = getKeyResultHandler.handle(new GetKeyResultQuery(keyResultId));
-            return result.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            var keyResultOpt = keyResultRepository.findById(keyResultId);
+            if (keyResultOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            var keyResult = keyResultOpt.get();
+            if (keyResult.getCreatedByUserId() != null && !keyResult.getCreatedByUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: key result belongs to another user"));
+            }
+            return ResponseEntity.ok(KeyResultResult.from(keyResult));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -339,9 +395,11 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/objectives/{objectiveId}/key-results
      */
     @GetMapping("/objectives/{objectiveId}/key-results")
-    public ResponseEntity<List<KeyResultResult>> getKeyResultsByObjective(@PathVariable Long objectiveId) {
+    public ResponseEntity<List<KeyResultResult>> getKeyResultsByObjective(
+            @PathVariable Long objectiveId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long userId) {
         List<KeyResultResult> results = getKeyResultsByObjectiveHandler.handle(
-            new GetKeyResultsByObjectiveQuery(objectiveId));
+            new GetKeyResultsByObjectiveQuery(objectiveId, userId));
         return ResponseEntity.ok(results);
     }
 
@@ -986,14 +1044,27 @@ public class GoalsOKRController {
     }
 
     /**
-     * Delete a kanban item
+     * Delete a kanban item (and its underlying instance).
      * DELETE /api/v2/goals-okr/kanban-items/{itemId}
+     * Routes to the appropriate instance delete handler based on item type.
      */
     @DeleteMapping("/kanban-items/{itemId}")
     @Transactional
     public ResponseEntity<?> deleteKanbanItem(@PathVariable Long itemId) {
         try {
-            deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(itemId));
+            KanbanItem item = kanbanItemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("KanbanItem not found with id: " + itemId));
+
+            ItemType itemType = item.getItemType();
+            Long instanceId = item.getItemId();
+
+            switch (itemType) {
+                case OBJECTIVE -> deleteUserObjectiveInstanceHandler.handle(new DeleteUserObjectiveInstanceCommand(instanceId));
+                case KEY_RESULT -> deleteUserKeyResultInstanceHandler.handle(new DeleteUserKeyResultInstanceCommand(instanceId));
+                case INITIATIVE -> deleteUserInitiativeInstanceHandler.handle(new DeleteUserInitiativeInstanceCommand(instanceId));
+                case GOAL -> deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(itemId));
+                default -> deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(itemId));
+            }
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -1004,29 +1075,35 @@ public class GoalsOKRController {
         }
     }
 
-    // ========== Personal Objectives ==========
+    /**
+     * Delete a user objective instance (and its children, kanban items).
+     * DELETE /api/v2/goals-okr/user-objective-instances/{id}
+     */
+    @DeleteMapping("/user-objective-instances/{userObjectiveInstanceId}")
+    @Transactional
+    public ResponseEntity<?> deleteUserObjectiveInstance(@PathVariable Long userObjectiveInstanceId) {
+        try {
+            deleteUserObjectiveInstanceHandler.handle(new DeleteUserObjectiveInstanceCommand(userObjectiveInstanceId));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
 
     /**
-     * Create a new personal objective (Objective template + UserObjectiveInstance + Kanban item)
-     * POST /api/v2/goals-okr/users/{userId}/personal-objectives
-     * 
-     * This follows the same pattern as createPersonalGoal: creates an Objective template,
-     * starts a UserObjectiveInstance, and adds it to the kanban board automatically.
+     * Delete a user key result instance (and its children, kanban items).
+     * DELETE /api/v2/goals-okr/user-key-result-instances/{id}
      */
-    @PostMapping("/users/{userId}/personal-objectives")
+    @DeleteMapping("/user-key-result-instances/{userKeyResultInstanceId}")
     @Transactional
-    public ResponseEntity<?> createPersonalObjective(
-            @PathVariable Long userId,
-            @Valid @RequestBody CreatePersonalObjectiveRequest request) {
+    public ResponseEntity<?> deleteUserKeyResultInstance(@PathVariable Long userKeyResultInstanceId) {
         try {
-            CreatePersonalObjectiveCommand command = new CreatePersonalObjectiveCommand(
-                userId,
-                request.lifeDomainId(),
-                request.title(),
-                request.description()
-            );
-            UserObjectiveInstanceResult result = createPersonalObjectiveHandler.handle(command);
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+            deleteUserKeyResultInstanceHandler.handle(new DeleteUserKeyResultInstanceCommand(userKeyResultInstanceId));
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {

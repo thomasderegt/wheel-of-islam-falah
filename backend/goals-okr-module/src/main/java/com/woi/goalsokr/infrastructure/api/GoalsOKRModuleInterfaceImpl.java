@@ -124,14 +124,14 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     public ObjectiveSummary createObjective(Long lifeDomainId, String titleNl, String titleEn,
                                             String descriptionNl, String descriptionEn, Integer orderIndex) {
         ObjectiveResult result = createObjectiveHandler.handle(
-            new CreateObjectiveCommand(lifeDomainId, titleNl, titleEn, descriptionNl, descriptionEn, orderIndex));
+            new CreateObjectiveCommand(lifeDomainId, titleNl, titleEn, descriptionNl, descriptionEn, orderIndex, null));
         return toObjectiveSummary(result);
     }
 
     @Override
     public List<ObjectiveSummary> getObjectivesByLifeDomain(Long lifeDomainId) {
         List<ObjectiveResult> results = getObjectivesByLifeDomainHandler.handle(
-            new GetObjectivesByLifeDomainQuery(lifeDomainId));
+            new GetObjectivesByLifeDomainQuery(lifeDomainId, null));
         return results.stream().map(this::toObjectiveSummary).collect(Collectors.toList());
     }
 
@@ -162,7 +162,7 @@ public class GoalsOKRModuleInterfaceImpl implements GoalsOKRModuleInterface {
     @Override
     public List<KeyResultSummary> getKeyResultsByObjective(Long objectiveId) {
         List<KeyResultResult> results = getKeyResultsByObjectiveHandler.handle(
-            new GetKeyResultsByObjectiveQuery(objectiveId));
+            new GetKeyResultsByObjectiveQuery(objectiveId, null));
         return results.stream()
             .map(this::toKeyResultSummary)
             .collect(Collectors.toList());

@@ -26,6 +26,7 @@ public class KeyResultEntityMapper {
         domain.setNumber(jpaEntity.getNumber());
         domain.setCreatedAt(jpaEntity.getCreatedAt());
         domain.setUpdatedAt(jpaEntity.getUpdatedAt());
+        domain.setCreatedByUserId(jpaEntity.getCreatedByUserId());
 
         return domain;
     }
@@ -48,6 +49,7 @@ public class KeyResultEntityMapper {
         jpaEntity.setNumber(domain.getNumber());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
+        jpaEntity.setCreatedByUserId(domain.getCreatedByUserId());
 
         return jpaEntity;
     }
