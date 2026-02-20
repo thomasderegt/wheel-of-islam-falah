@@ -581,14 +581,14 @@ export default function KanbanItemDetailPage() {
                           <div className="space-y-2">
                             <Label htmlFor="quarter">Quarter</Label>
                             <Select
-                              value={selectedQuarter?.toString() || ''}
-                              onValueChange={(v) => setSelectedQuarter(v ? parseInt(v) : null)}
+                              value={selectedQuarter != null ? selectedQuarter.toString() : 'none'}
+                              onValueChange={(v) => setSelectedQuarter(v === 'none' ? null : parseInt(v))}
                             >
                               <SelectTrigger id="quarter" disabled={isUpdatingPI}>
                                 <SelectValue placeholder="Select quarter" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">None</SelectItem>
+                                <SelectItem value="none">None</SelectItem>
                                 <SelectItem value="1">Q1</SelectItem>
                                 <SelectItem value="2">Q2</SelectItem>
                                 <SelectItem value="3">Q3</SelectItem>
@@ -599,14 +599,14 @@ export default function KanbanItemDetailPage() {
                           <div className="space-y-2">
                             <Label htmlFor="year">Year</Label>
                             <Select
-                              value={selectedYear?.toString() || ''}
-                              onValueChange={(v) => setSelectedYear(v ? parseInt(v) : null)}
+                              value={selectedYear != null ? selectedYear.toString() : 'none'}
+                              onValueChange={(v) => setSelectedYear(v === 'none' ? null : parseInt(v))}
                             >
                               <SelectTrigger id="year" disabled={isUpdatingPI}>
                                 <SelectValue placeholder="Select year" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">None</SelectItem>
+                                <SelectItem value="none">None</SelectItem>
                                 {Array.from({ length: 5 }, (_, i) => {
                                   const year = new Date().getFullYear() + i
                                   return (

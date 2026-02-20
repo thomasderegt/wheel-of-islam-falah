@@ -97,7 +97,10 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background backdrop-blur-md border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="flex items-center justify-around px-2 py-2 max-w-6xl mx-auto">
+      <div
+        className="flex items-center flex-nowrap gap-0 px-2 py-2 max-w-6xl mx-auto overflow-x-auto overflow-y-hidden"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         {bottomNavItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
@@ -105,7 +108,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors hover:bg-muted"
+              className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors hover:bg-muted"
             >
               <Icon 
                 className={`h-5 w-5 transition-colors ${
@@ -130,17 +133,17 @@ export function BottomNav() {
         {/* User settings */}
         <Link
           href="/user/settings"
-          className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors hover:bg-muted"
+          className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] max-w-[140px] rounded-lg transition-colors hover:bg-muted"
         >
           <UserCircle 
-            className={`h-5 w-5 transition-colors ${
+            className={`h-5 w-5 flex-shrink-0 transition-colors ${
               pathname === '/user/settings' 
                 ? 'text-primary' 
                 : 'text-muted-foreground'
             }`} 
           />
           <span 
-            className={`text-xs font-medium transition-colors truncate max-w-[120px] text-center ${
+            className={`text-xs font-medium transition-colors truncate w-full max-w-[120px] text-center block min-w-0 ${
               pathname === '/user/settings' 
                 ? 'text-primary' 
                 : 'text-muted-foreground'
@@ -152,7 +155,7 @@ export function BottomNav() {
         {/* Logout button */}
         <button
           onClick={handleLogout}
-          className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors hover:bg-muted"
+          className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors hover:bg-muted"
         >
           <LogOut className="h-5 w-5 text-muted-foreground" />
           <span className="text-xs font-medium text-muted-foreground">

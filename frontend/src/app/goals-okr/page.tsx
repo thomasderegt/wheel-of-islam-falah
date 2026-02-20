@@ -72,47 +72,41 @@ function GoalsOKRContent() {
         <main className="flex-1 flex flex-col p-4 pb-24">
           <Container className="max-w-6xl mx-auto">
             <div className="space-y-4">
-              {goalsOkrContext === 'ALL' && availableWheels.length > 0 && (
-                <div className="flex items-center justify-center gap-2">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    View Wheel:
-                  </label>
-                  <Select
-                    value={
-                      currentWheelId?.toString() ||
-                      availableWheels[0]?.id.toString() ||
-                      ''
-                    }
-                    onValueChange={handleWheelChange}
-                  >
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue>
-                        {currentWheel
-                          ? currentWheel.nameEn || currentWheel.nameNl
-                          : 'Select Wheel'}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableWheels.map((wheel) => (
-                        <SelectItem
-                          key={wheel.id}
-                          value={wheel.id.toString()}
-                        >
-                          {wheel.nameEn || wheel.nameNl}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <section className="text-center py-8 md:py-12 px-4">
-                <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-                  Select a domain to set an objective
-                </h1>
-              </section>
-
-              <NavOKRLifeDomainCircle />
+              <NavOKRLifeDomainCircle>
+                {goalsOkrContext === 'ALL' && availableWheels.length > 0 && (
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <label className="text-sm font-medium text-muted-foreground">
+                      View Wheel:
+                    </label>
+                    <Select
+                      value={
+                        currentWheelId?.toString() ||
+                        availableWheels[0]?.id.toString() ||
+                        ''
+                      }
+                      onValueChange={handleWheelChange}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue>
+                          {currentWheel
+                            ? currentWheel.nameEn || currentWheel.nameNl
+                            : 'Select Wheel'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableWheels.map((wheel) => (
+                          <SelectItem
+                            key={wheel.id}
+                            value={wheel.id.toString()}
+                          >
+                            {wheel.nameEn || wheel.nameNl}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </NavOKRLifeDomainCircle>
             </div>
           </Container>
         </main>

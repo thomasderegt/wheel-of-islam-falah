@@ -10,7 +10,7 @@ import { useAuth } from '@/features/auth'
 import { useKanbanItems, useTeamKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
 import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult } from '../api/goalsOkrApi'
 import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO, LifeDomainDTO } from '../api/goalsOkrApi'
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable } from '@dnd-kit/core'
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable, useSensors, useSensor, PointerSensor, TouchSensor } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
@@ -92,7 +92,7 @@ function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, langua
               data-drag-handle
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
-              className="cursor-grab active:cursor-grabbing flex-shrink-0"
+              className="cursor-grab active:cursor-grabbing flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center -m-1 touch-none"
             >
               <GripVertical className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -345,6 +345,12 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const [isLoadingTitles, setIsLoadingTitles] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<{ id: number; title: string } | null>(null)
+
+  // Sensors: PointerSensor + TouchSensor met activation constraint voor mobiel (lang indrukken om te slepen, scroll blijft werken)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  )
   
   // Create maps for wheel type filtering (still needed for WIP limits display)
   const wheelIdToType = useMemo(() => {
@@ -828,6 +834,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
         </div>
       )}
       <DndContext
+        sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}

@@ -10,7 +10,7 @@
  * - Click handlers voor navigatie naar /goals-okr
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, type ReactNode } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useLifeDomains } from '../hooks/useLifeDomains'
 import { useWheels } from '../hooks/useWheels'
@@ -21,9 +21,10 @@ import type { LifeDomainDTO } from '../api/goalsOkrApi'
 
 interface NavOKRLifeDomainCircleProps {
   readonly language?: 'nl' | 'en'
+  readonly children?: ReactNode
 }
 
-export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCircleProps) {
+export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLifeDomainCircleProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -38,6 +39,17 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
   const [centerDomain, setCenterDomain] = useState<LifeDomainDTO | null>(null)
   const [ringDomains, setRingDomains] = useState<LifeDomainDTO[]>([])
   const [ringRotation, setRingRotation] = useState(0)
+  const [isDraggingWheel, setIsDraggingWheel] = useState(false)
+
+  const wheelWrapperRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    startAngle: number
+    startRotation: number
+  } | null>(null)
+  const userJustDraggedRef = useRef(false)
 
   // Extract wheelId from URL to use in dependency array (avoids searchParams object size changes)
   const wheelIdFromUrl = searchParams?.get('wheelId') ?? null
@@ -144,13 +156,89 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
     }
   }
 
+  // Drag-to-rotate: hoek uit pointerpositie t.o.v. wrapper (viewBox 40 40 320 320, center 200,200)
+  const getAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
+    const el = wheelWrapperRef.current
+    if (!el) return 0
+    const rect = el.getBoundingClientRect()
+    const scale = Math.min(rect.width / 320, rect.height / 320)
+    const svgX = 200 + (clientX - rect.left - rect.width / 2) / scale
+    const svgY = 200 + (clientY - rect.top - rect.height / 2) / scale
+    return (Math.atan2(svgY - 200, svgX - 200) * 180) / Math.PI
+  }, [])
+
+  const normalizeAngleDelta = (delta: number): number => {
+    let d = delta
+    while (d > 180) d -= 360
+    while (d < -180) d += 360
+    return d
+  }
+
+  const DRAG_THRESHOLD_PX = 10
+
+  const handleWheelPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (ringDomains.length === 0) return
+      const el = wheelWrapperRef.current
+      if (!el) return
+      const angle = getAngleFromPointer(e.clientX, e.clientY)
+      dragRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        startAngle: angle,
+        startRotation: ringRotation,
+      }
+      // Geen setPointerCapture hier – pas bij eerste beweging, anders krijgt het segment geen click
+    },
+    [ringDomains.length, ringRotation, getAngleFromPointer]
+  )
+
+  const handleWheelPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragRef.current) return
+      const { pointerId, startX, startY, startAngle, startRotation } = dragRef.current
+      const distance = Math.hypot(e.clientX - startX, e.clientY - startY)
+      if (!isDraggingWheel && distance < DRAG_THRESHOLD_PX) return
+      if (!isDraggingWheel) {
+        setIsDraggingWheel(true)
+        wheelWrapperRef.current?.setPointerCapture(pointerId)
+      }
+      const currentAngle = getAngleFromPointer(e.clientX, e.clientY)
+      const delta = normalizeAngleDelta(currentAngle - startAngle)
+      setRingRotation(startRotation - delta)
+    },
+    [isDraggingWheel, getAngleFromPointer]
+  )
+
+  const handleWheelPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (dragRef.current && isDraggingWheel) {
+        userJustDraggedRef.current = true
+        setTimeout(() => {
+          userJustDraggedRef.current = false
+        }, 150)
+      }
+      dragRef.current = null
+      setIsDraggingWheel(false)
+      try {
+        wheelWrapperRef.current?.releasePointerCapture(e.pointerId)
+      } catch {
+        /* ignore */
+      }
+    },
+    [isDraggingWheel]
+  )
+
   const handleCenterClick = () => {
+    if (userJustDraggedRef.current) return
     if (centerDomain) {
       router.push(`/goals-okr/life-domains/${centerDomain.id}?wheelId=${selectedWheelId}`)
     }
   }
 
   const handleDomainClick = (domainId: number) => {
+    if (userJustDraggedRef.current) return
     router.push(`/goals-okr/life-domains/${domainId}?wheelId=${selectedWheelId}`)
   }
 
@@ -187,7 +275,14 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
 
   return (
     <div className="w-full space-y-4">
-      <div className="relative w-full aspect-square">
+      <div
+        ref={wheelWrapperRef}
+        className="relative w-full aspect-square touch-none"
+        onPointerDown={handleWheelPointerDown}
+        onPointerMove={handleWheelPointerMove}
+        onPointerUp={handleWheelPointerUp}
+        onPointerCancel={handleWheelPointerUp}
+      >
         {/* SVG Circular Menu */}
         <svg 
           className="absolute inset-0 w-full h-full" 
@@ -219,7 +314,7 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
             <g style={{ 
               transform: `rotate(${ringRotation}deg)`, 
               transformOrigin: `${centerX}px ${centerY}px`,
-              transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: isDraggingWheel ? 'none' : 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
             }}>
               {ringDomains.map((domain, index) => {
                 const angleStep = 360 / ringDomains.length
@@ -395,6 +490,8 @@ export function NavOKRLifeDomainCircle({ language = 'en' }: NavOKRLifeDomainCirc
           </Button>
         </div>
       )}
+
+      {children}
     </div>
   )
 }
