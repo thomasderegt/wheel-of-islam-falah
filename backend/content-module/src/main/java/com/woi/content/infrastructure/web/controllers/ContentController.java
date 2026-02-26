@@ -39,6 +39,7 @@ import com.woi.content.application.handlers.commands.UpdateChapterCommandHandler
 import com.woi.content.application.handlers.commands.UpdateParagraphCommandHandler;
 import com.woi.content.application.handlers.commands.UpdateSectionCommandHandler;
 import com.woi.content.application.handlers.queries.GetAllCategoriesQueryHandler;
+import com.woi.content.application.handlers.queries.GetContentItemsQueryHandler;
 import com.woi.content.application.handlers.queries.GetBookQueryHandler;
 import com.woi.content.application.handlers.queries.GetBooksByCategoryQueryHandler;
 import com.woi.content.application.handlers.queries.GetPublicBooksByCategoryQueryHandler;
@@ -65,6 +66,7 @@ import com.woi.content.application.handlers.queries.GetChapterVersionHistoryQuer
 import com.woi.content.application.handlers.queries.GetParagraphVersionHistoryQueryHandler;
 import com.woi.content.application.handlers.queries.GetSectionVersionHistoryQueryHandler;
 import com.woi.content.application.queries.GetAllCategoriesQuery;
+import com.woi.content.application.queries.GetContentItemsQuery;
 import com.woi.content.application.queries.GetBookQuery;
 import com.woi.content.application.queries.GetBookCurrentVersionQuery;
 import com.woi.content.application.queries.GetChapterCurrentVersionQuery;
@@ -118,6 +120,7 @@ public class ContentController {
     private final GetCategoryQueryHandler getCategoryHandler;
     private final GetCategoryByNumberQueryHandler getCategoryByNumberHandler;
     private final GetAllCategoriesQueryHandler getAllCategoriesHandler;
+    private final GetContentItemsQueryHandler getContentItemsHandler;
     private final GetCategoriesByWheelIdQueryHandler getCategoriesByWheelIdHandler;
     private final GetAllWheelsQueryHandler getAllWheelsHandler;
     private final GetWheelByKeyQueryHandler getWheelByKeyHandler;
@@ -165,6 +168,7 @@ public class ContentController {
             GetCategoryQueryHandler getCategoryHandler,
             GetCategoryByNumberQueryHandler getCategoryByNumberHandler,
             GetAllCategoriesQueryHandler getAllCategoriesHandler,
+            GetContentItemsQueryHandler getContentItemsHandler,
             GetCategoriesByWheelIdQueryHandler getCategoriesByWheelIdHandler,
             GetAllWheelsQueryHandler getAllWheelsHandler,
             GetWheelByKeyQueryHandler getWheelByKeyHandler,
@@ -210,6 +214,7 @@ public class ContentController {
         this.getCategoryHandler = getCategoryHandler;
         this.getCategoryByNumberHandler = getCategoryByNumberHandler;
         this.getAllCategoriesHandler = getAllCategoriesHandler;
+        this.getContentItemsHandler = getContentItemsHandler;
         this.getCategoriesByWheelIdHandler = getCategoriesByWheelIdHandler;
         this.getAllWheelsHandler = getAllWheelsHandler;
         this.getWheelByKeyHandler = getWheelByKeyHandler;
@@ -249,6 +254,34 @@ public class ContentController {
         this.getChapterVersionHistoryHandler = getChapterVersionHistoryHandler;
         this.getParagraphVersionHistoryHandler = getParagraphVersionHistoryHandler;
         this.getSectionVersionHistoryHandler = getSectionVersionHistoryHandler;
+    }
+    
+    /**
+     * Get flat list of content items (books, chapters, sections, paragraphs) with optional filters.
+     * GET /api/v2/content/items?type=BOOK&categoryId=1&bookId=2
+     */
+    @GetMapping("/items")
+    public ResponseEntity<List<ContentItemDTO>> getContentItems(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long bookId) {
+        GetContentItemsQuery query = new GetContentItemsQuery(type, categoryId, bookId);
+        List<com.woi.content.application.results.ContentItemResult> results = getContentItemsHandler.handle(query);
+        List<ContentItemDTO> dtos = results.stream()
+            .map(this::toContentItemDTO)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+    
+    private ContentItemDTO toContentItemDTO(com.woi.content.application.results.ContentItemResult r) {
+        ContentItemDTO dto = new ContentItemDTO();
+        dto.setId(r.id());
+        dto.setType(r.type());
+        dto.setTitle(r.title());
+        dto.setPath(r.path());
+        dto.setBookId(r.bookId());
+        dto.setCategoryId(r.categoryId());
+        return dto;
     }
     
     // ========== Category Endpoints ==========

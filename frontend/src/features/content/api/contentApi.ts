@@ -50,6 +50,38 @@ export async function getSectionVersionHistory(sectionId: number): Promise<Secti
   return response.data
 }
 
+// ========== Content Items (flat list for admin) ==========
+
+export interface ContentItemDTO {
+  id: number
+  type: 'BOOK' | 'CHAPTER' | 'SECTION' | 'PARAGRAPH'
+  title?: string
+  path?: string
+  bookId?: number
+  categoryId?: number
+}
+
+export interface ContentItemsFilters {
+  type?: 'BOOK' | 'CHAPTER' | 'SECTION' | 'PARAGRAPH'
+  categoryId?: number
+  bookId?: number
+}
+
+/**
+ * Get flat list of content items (books, chapters, sections, paragraphs) with optional filters.
+ * Replaces client-side fetchAllContentItems waterfall.
+ */
+export async function getContentItems(filters?: ContentItemsFilters): Promise<ContentItemDTO[]> {
+  const params = new URLSearchParams()
+  if (filters?.type) params.set('type', filters.type)
+  if (filters?.categoryId != null) params.set('categoryId', String(filters.categoryId))
+  if (filters?.bookId != null) params.set('bookId', String(filters.bookId))
+  const query = params.toString()
+  const url = query ? `/api/v2/content/items?${query}` : '/api/v2/content/items'
+  const response = await apiClient.get(url)
+  return response.data
+}
+
 // ========== Content Viewer (Public/Read-only) ==========
 
 /**
