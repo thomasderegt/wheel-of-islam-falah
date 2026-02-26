@@ -12,6 +12,7 @@
    - Adult Man: <html data-user-group="adult-man">
    - Young Adult Male: <html data-user-group="young-adult-male">
    - Young Adult Female: <html data-user-group="young-adult-female">
+   - Premium: <html data-user-group="premium">
    
    De ThemeContext zet automatisch het data-user-group attribute op <html>.
 */
@@ -77,8 +78,17 @@
   --circular-menu-center-stroke: oklch(0.98 0.02 330); /* Zeer licht roze - center circle rand */
   --circular-menu-center-text: oklch(0.3 0.1 330); /* Donker roze - center circle tekst */
   
-  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
-  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  /* Wheel segment kleuren (regenboog) - theme-afhankelijk, voor nu gelijk over alle themes */
+  --circular-menu-chapter-0: oklch(0.65 0.1 0);    /* Zachter rood */
+  --circular-menu-chapter-1: oklch(0.68 0.1 30);   /* Zachter oranje */
+  --circular-menu-chapter-2: oklch(0.72 0.1 60);   /* Zachter geel */
+  --circular-menu-chapter-3: oklch(0.68 0.1 90);   /* Zachter geelgroen */
+  --circular-menu-chapter-4: oklch(0.65 0.1 120);  /* Zachter groen */
+  --circular-menu-chapter-5: oklch(0.6 0.1 150);   /* Zachter groenblauw */
+  --circular-menu-chapter-6: oklch(0.55 0.1 180);  /* Zachter cyaan */
+  --circular-menu-chapter-7: oklch(0.6 0.1 210);   /* Zachter blauw */
+  --circular-menu-chapter-8: oklch(0.65 0.1 240);  /* Zachter blauw */
+  --circular-menu-chapter-9: oklch(0.68 0.1 270);  /* Zachter paars */
   
   /* NavCategoryCircle kleuren - zachte roze/paarse tinten */
   --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
@@ -99,7 +109,7 @@
   --nav-category-circle-falah-start: oklch(1 0 0);             /* Falah gradient start (wit) */
   --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
   --nav-category-circle-falah-end: oklch(0.98 0 0);            /* Falah gradient end (bijna wit) */
-  --nav-category-circle-falah-stroke: oklch(0.3 0.1 330);      /* Falah stroke color (donker roze) */
+  --nav-category-circle-falah-stroke: oklch(0.98 0 0);        /* Center border (licht, match gradient) */
   --nav-category-circle-falah-hover: oklch(0.95 0.05 330);     /* Falah hover fill (licht roze) */
   
   /* Achtergrond afbeelding */
@@ -174,8 +184,17 @@
   --circular-menu-center-stroke: oklch(0.98 0.02 240); /* Zeer licht blauw - center circle rand */
   --circular-menu-center-text: oklch(0.3 0.1 240); /* Donker blauw - center circle tekst */
   
-  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
-  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  /* Wheel segment kleuren (regenboog) - theme-afhankelijk, voor nu gelijk over alle themes */
+  --circular-menu-chapter-0: oklch(0.65 0.1 0);    /* Zachter rood */
+  --circular-menu-chapter-1: oklch(0.68 0.1 30);   /* Zachter oranje */
+  --circular-menu-chapter-2: oklch(0.72 0.1 60);   /* Zachter geel */
+  --circular-menu-chapter-3: oklch(0.68 0.1 90);   /* Zachter geelgroen */
+  --circular-menu-chapter-4: oklch(0.65 0.1 120);  /* Zachter groen */
+  --circular-menu-chapter-5: oklch(0.6 0.1 150);   /* Zachter groenblauw */
+  --circular-menu-chapter-6: oklch(0.55 0.1 180);  /* Zachter cyaan */
+  --circular-menu-chapter-7: oklch(0.6 0.1 210);   /* Zachter blauw */
+  --circular-menu-chapter-8: oklch(0.65 0.1 240);  /* Zachter blauw */
+  --circular-menu-chapter-9: oklch(0.68 0.1 270);  /* Zachter paars */
   
   /* NavCategoryCircle kleuren - blauwe tinten */
   --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
@@ -196,7 +215,7 @@
   --nav-category-circle-falah-start: oklch(1 0 0);             /* Falah gradient start (wit) */
   --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
   --nav-category-circle-falah-end: oklch(0.98 0 0);             /* Falah gradient end (bijna wit) */
-  --nav-category-circle-falah-stroke: oklch(0.3 0.1 240);      /* Falah stroke color (donker blauw) */
+  --nav-category-circle-falah-stroke: oklch(0.98 0 0);        /* Center border (licht, match gradient) */
   --nav-category-circle-falah-hover: oklch(0.94 0.04 240);      /* Falah hover fill (licht blauw) */
   
   /* Achtergrond afbeelding */
@@ -271,8 +290,17 @@
   --circular-menu-center-stroke: oklch(0.98 0.05 60); /* Zeer licht geel - center circle rand */
   --circular-menu-center-text: oklch(0.3 0.15 60); /* Donker oranje - center circle tekst */
   
-  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
-  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  /* Wheel segment kleuren (regenboog) - theme-afhankelijk, voor nu gelijk over alle themes */
+  --circular-menu-chapter-0: oklch(0.65 0.1 0);    /* Zachter rood */
+  --circular-menu-chapter-1: oklch(0.68 0.1 30);   /* Zachter oranje */
+  --circular-menu-chapter-2: oklch(0.72 0.1 60);   /* Zachter geel */
+  --circular-menu-chapter-3: oklch(0.68 0.1 90);   /* Zachter geelgroen */
+  --circular-menu-chapter-4: oklch(0.65 0.1 120);  /* Zachter groen */
+  --circular-menu-chapter-5: oklch(0.6 0.1 150);   /* Zachter groenblauw */
+  --circular-menu-chapter-6: oklch(0.55 0.1 180);  /* Zachter cyaan */
+  --circular-menu-chapter-7: oklch(0.6 0.1 210);   /* Zachter blauw */
+  --circular-menu-chapter-8: oklch(0.65 0.1 240);  /* Zachter blauw */
+  --circular-menu-chapter-9: oklch(0.68 0.1 270);  /* Zachter paars */
   
   /* NavCategoryCircle kleuren - levendige geel/oranje tinten */
   --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
@@ -293,7 +321,7 @@
   --nav-category-circle-falah-start: oklch(1 0 0);              /* Falah gradient start (wit) */
   --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
   --nav-category-circle-falah-end: oklch(0.98 0 0);             /* Falah gradient end (bijna wit) */
-  --nav-category-circle-falah-stroke: oklch(0.3 0.15 60);       /* Falah stroke color (donker oranje) */
+  --nav-category-circle-falah-stroke: oklch(0.98 0 0);         /* Center border (licht, match gradient) */
   --nav-category-circle-falah-hover: oklch(0.96 0.08 60);       /* Falah hover fill (licht geel) */
   
   /* Achtergrond afbeelding */
@@ -368,8 +396,17 @@
   --circular-menu-center-stroke: oklch(0.98 0.03 330); /* Zeer licht roze - center circle rand */
   --circular-menu-center-text: oklch(0.3 0.12 330); /* Donker roze - center circle tekst */
   
-  /* Regenboog chapter kleuren - gebruik standaard waarden uit globals.css (consistent over alle themes) */
-  /* De regenboog kleuren worden gedefinieerd in :root in globals.css en zijn hetzelfde voor alle themes */
+  /* Wheel segment kleuren (regenboog) - theme-afhankelijk, voor nu gelijk over alle themes */
+  --circular-menu-chapter-0: oklch(0.65 0.1 0);    /* Zachter rood */
+  --circular-menu-chapter-1: oklch(0.68 0.1 30);   /* Zachter oranje */
+  --circular-menu-chapter-2: oklch(0.72 0.1 60);   /* Zachter geel */
+  --circular-menu-chapter-3: oklch(0.68 0.1 90);   /* Zachter geelgroen */
+  --circular-menu-chapter-4: oklch(0.65 0.1 120);  /* Zachter groen */
+  --circular-menu-chapter-5: oklch(0.6 0.1 150);   /* Zachter groenblauw */
+  --circular-menu-chapter-6: oklch(0.55 0.1 180);  /* Zachter cyaan */
+  --circular-menu-chapter-7: oklch(0.6 0.1 210);   /* Zachter blauw */
+  --circular-menu-chapter-8: oklch(0.65 0.1 240);  /* Zachter blauw */
+  --circular-menu-chapter-9: oklch(0.68 0.1 270);  /* Zachter paars */
   
   /* NavCategoryCircle kleuren - levendige roze/paarse tinten */
   --nav-category-circle-sector-0-start: oklch(0.65 0.1 0);     /* Sector 0 gradient start */
@@ -390,7 +427,7 @@
   --nav-category-circle-falah-start: oklch(1 0 0);              /* Falah gradient start (wit) */
   --nav-category-circle-falah-mid: oklch(0.98 0 0);             /* Falah gradient mid (bijna wit) */
   --nav-category-circle-falah-end: oklch(0.98 0 0);             /* Falah gradient end (bijna wit) */
-  --nav-category-circle-falah-stroke: oklch(0.3 0.12 330);      /* Falah stroke color (donker roze) */
+  --nav-category-circle-falah-stroke: oklch(0.98 0 0);         /* Center border (licht, match gradient) */
   --nav-category-circle-falah-hover: oklch(0.96 0.06 330);      /* Falah hover fill (licht roze) */
   
   /* Achtergrond afbeelding */
@@ -401,6 +438,111 @@
   --navbar-border: oklch(0.92 0.05 330 / 30%);  /* 30% transparant licht roze - navbar border */
   
   /* Container border color - transparant */
+  --container-border-color: transparent;
+}
+
+/* ============================================
+   PREMIUM THEME - Donker met gouden accenten
+   ============================================ */
+
+[data-user-group="premium"] {
+  /* Pagina achtergrond zwart, geen afbeelding; letters zelfde kleur als bottom nav */
+  --background: oklch(0 0 0);
+  --background-image: none;
+  --foreground: var(--muted-foreground);
+  
+  /* Primary kleuren - goud/accent */
+  --primary: oklch(0.65 0.15 85);                  /* Goud - button achtergrond */
+  --primary-foreground: oklch(0.15 0 0);            /* Bijna zwart - tekst op button */
+  
+  /* Secondary kleuren */
+  --secondary: oklch(0.25 0.02 85);                /* Donker met gouden nuance - secondary */
+  --secondary-foreground: oklch(0.75 0.12 85);    /* Goud - tekst op secondary */
+  
+  /* Accent kleuren */
+  --accent: oklch(0.3 0.04 85);                    /* Donker met gouden accent */
+  --accent-foreground: oklch(0.8 0.12 85);        /* Licht goud - accent tekst */
+  
+  /* Muted kleuren - zelfde zwart als achtergrond (consistent met wheel) */
+  --muted: oklch(0 0 0);
+  --muted-foreground: oklch(0.65 0.08 85);        /* Gedempt goud - muted tekst */
+  
+  /* Positive kleuren */
+  --positive-bg: oklch(0.25 0.05 85);
+  --positive-border: oklch(0.6 0.15 85);
+  --positive-icon-bg: oklch(0.65 0.15 85);
+  --positive-text: oklch(0.8 0.1 85);
+  
+  /* Negative kleuren */
+  --negative-bg: oklch(0.2 0.02 85);
+  --negative-border: oklch(0.5 0.05 85);
+  --negative-icon-bg: oklch(0.45 0.05 85);
+  --negative-text: oklch(0.6 0.05 85);
+  
+  /* Warning kleuren */
+  --warning-bg: oklch(0.25 0.04 85);
+  --warning-border: oklch(0.6 0.12 85);
+  --warning-text: oklch(0.8 0.1 85);
+  
+  /* Error kleuren */
+  --error-text: oklch(0.577 0.245 27.325);
+  
+  /* Loading spinner */
+  --loading-spinner: oklch(0.7 0.15 85);
+  
+  /* Card kleuren - zelfde zwart als achtergrond (consistent met wheel) */
+  --card: oklch(0 0 0);
+  --card-foreground: oklch(0.9 0.02 85);
+  
+  /* Border kleuren */
+  --border: oklch(0.5 0.1 85);
+  
+  /* Circular Menu kleuren - premium goud/donker */
+  --circular-menu-chapter-fill: oklch(0.22 0.03 85);
+  --circular-menu-chapter-hover: oklch(0.28 0.06 85);
+  --circular-menu-chapter-stroke: oklch(0.6 0.12 85);
+  --circular-menu-chapter-text: oklch(0.85 0.08 85);
+  --circular-menu-center-fill: oklch(0.2 0.04 85);
+  --circular-menu-center-fill-expanded: oklch(0.25 0.06 85);
+  --circular-menu-center-stroke: oklch(0.65 0.12 85);
+  --circular-menu-center-text: oklch(0.9 0.05 85);
+  
+  /* Wheel: zwarte achtergrond, gouden borders, witte letters via --foreground */
+  --circular-menu-chapter-0: oklch(0.7 0.14 85);
+  --circular-menu-chapter-1: oklch(0.7 0.14 85);
+  --circular-menu-chapter-2: oklch(0.7 0.14 85);
+  --circular-menu-chapter-3: oklch(0.7 0.14 85);
+  --circular-menu-chapter-4: oklch(0.7 0.14 85);
+  --circular-menu-chapter-5: oklch(0.7 0.14 85);
+  --circular-menu-chapter-6: oklch(0.7 0.14 85);
+  --circular-menu-chapter-7: oklch(0.7 0.14 85);
+  --circular-menu-chapter-8: oklch(0.7 0.14 85);
+  --circular-menu-chapter-9: oklch(0.7 0.14 85);
+  --circular-menu-chapter-0-fill: oklch(0 0 0);
+  --circular-menu-chapter-1-fill: oklch(0 0 0);
+  --circular-menu-chapter-2-fill: oklch(0 0 0);
+  --circular-menu-chapter-3-fill: oklch(0 0 0);
+  --circular-menu-chapter-4-fill: oklch(0 0 0);
+  --circular-menu-chapter-5-fill: oklch(0 0 0);
+  --circular-menu-chapter-6-fill: oklch(0 0 0);
+  --circular-menu-chapter-7-fill: oklch(0 0 0);
+  --circular-menu-chapter-8-fill: oklch(0 0 0);
+  --circular-menu-chapter-9-fill: oklch(0 0 0);
+  
+  /* Wheel center: zwarte vulling, gouden border */
+  --nav-category-circle-sector-stroke: oklch(0.7 0.14 85);
+  --nav-category-circle-sector-hover: oklch(0.15 0.02 85);
+  --nav-category-circle-falah-start: oklch(0 0 0);
+  --nav-category-circle-falah-mid: oklch(0 0 0);
+  --nav-category-circle-falah-end: oklch(0 0 0);
+  --nav-category-circle-falah-stroke: oklch(0.7 0.14 85);
+  --nav-category-circle-falah-hover: oklch(0.12 0.02 85);
+  
+  /* Navbar */
+  --navbar: transparent;
+  --navbar-border: oklch(0.5 0.1 85 / 30%);
+  
+  /* Container border */
   --container-border-color: transparent;
 }
 

@@ -22,7 +22,7 @@ import { ThemeContextType, UserGroup, BackgroundImage } from '@/shared/types/the
 const ThemeContext = createContext<ThemeContextType | null>(null)
 
 // Available user groups
-const AVAILABLE_GROUPS = ['adult-woman', 'adult-man', 'young-adult-male', 'young-adult-female', 'universal'] as const
+const AVAILABLE_GROUPS = ['adult-woman', 'adult-man', 'young-adult-male', 'young-adult-female', 'premium', 'universal'] as const
 
 // Available background images
 const AVAILABLE_BACKGROUNDS: BackgroundImage[] = [
@@ -72,6 +72,8 @@ const getDefaultBackground = (userGroup: UserGroup): BackgroundImage => {
       return 'BackgroundYoungAdultMan.png'
     case 'young-adult-female':
       return 'BackgroundYoungAdultWoman.png'
+    case 'premium':
+      return 'BackgroundAdultWoman.png'
     case 'universal':
     case null:
     default:
@@ -158,6 +160,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       return
     }
     
+    // Premium theme: zwarte achtergrond, geen afbeelding
+    if (userGroup === 'premium') {
+      html.style.setProperty('--background-image', 'none')
+      return
+    }
+    
     // Get current background image (user selected or default based on theme)
     const currentBackground = backgroundImage || getDefaultBackground(userGroup)
     html.style.setProperty('--background-image', `url('${getBackgroundImagePath(currentBackground)}')`)
@@ -180,7 +188,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       
       // Apply background immediately
       const html = document.documentElement
-      if (group === 'universal') {
+      if (group === 'universal' || group === 'premium') {
         html.style.setProperty('--background-image', 'none')
       } else {
         const defaultBg = getDefaultBackground(group as UserGroup)

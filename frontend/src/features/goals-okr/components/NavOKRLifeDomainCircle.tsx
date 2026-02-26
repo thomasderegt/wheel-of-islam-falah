@@ -355,7 +355,7 @@ export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLife
                       d={pathData}
                       className="stroke-2 cursor-pointer transition-opacity opacity-100"
                       style={{ 
-                        fill: isWireframeTheme ? 'transparent' : `var(--circular-menu-chapter-${index % 10})`,
+                        fill: isWireframeTheme ? 'transparent' : `var(--circular-menu-chapter-${index % 10}-fill, var(--circular-menu-chapter-${index % 10}))`,
                         stroke: isWireframeTheme ? 'var(--nav-category-circle-sector-stroke)' : `var(--circular-menu-chapter-${index % 10})`,
                         strokeWidth: '2'
                       }}
@@ -417,7 +417,7 @@ export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLife
                 className="cursor-pointer transition-opacity opacity-100"
                 style={{
                   fill: isWireframeTheme ? 'transparent' : 'url(#okr-life-domain-center-gradient)',
-                  stroke: isWireframeTheme ? 'var(--nav-category-circle-falah-stroke)' : 'url(#okr-life-domain-center-gradient)',
+                  stroke: 'var(--nav-category-circle-falah-stroke)',
                   strokeWidth: 2
                 }}
                 onMouseEnter={(e) => {

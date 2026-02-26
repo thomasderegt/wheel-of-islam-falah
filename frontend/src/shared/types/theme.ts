@@ -6,7 +6,8 @@ export type UserGroup =
   | 'adult-man' 
   | 'young-adult-male'
   | 'young-adult-female'
-  | 'universal' 
+  | 'premium'
+  | 'universal'
   | null
 
 // Type for background images

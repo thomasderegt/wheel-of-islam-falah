@@ -178,6 +178,7 @@ export default function RegisterPage() {
                        group === 'adult-man' ? 'Adult Man' :
                        group === 'young-adult-male' ? 'Young Adult Male' :
                        group === 'young-adult-female' ? 'Young Adult Female' :
+                       group === 'premium' ? 'Premium' :
                        'Universal'}
                     </SelectItem>
                   ))}
