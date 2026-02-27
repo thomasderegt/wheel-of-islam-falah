@@ -10,6 +10,7 @@ import com.woi.learning.infrastructure.web.dtos.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -104,7 +105,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de template."));
         }
@@ -164,7 +164,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de template."));
         }
@@ -194,7 +193,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de step."));
         }
@@ -225,7 +223,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de step."));
         }
@@ -239,7 +236,13 @@ public class LearningController {
      */
     @PostMapping("/enrollments")
     @Transactional
-    public ResponseEntity<?> startEnrollment(@Valid @RequestBody StartEnrollmentRequest request) {
+    public ResponseEntity<?> startEnrollment(
+            @Valid @RequestBody StartEnrollmentRequest request,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !request.userId().equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             StartEnrollmentCommand command = new StartEnrollmentCommand(
                 request.userId(),
@@ -252,7 +255,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het starten van de enrollment."));
         }
@@ -278,7 +280,12 @@ public class LearningController {
      * GET /api/v2/learning/enrollments/user/{userId}
      */
     @GetMapping("/enrollments/user/{userId}")
-    public ResponseEntity<List<LearningFlowEnrollmentResult>> getEnrollmentsForUser(@PathVariable Long userId) {
+    public ResponseEntity<?> getEnrollmentsForUser(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !userId.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         List<LearningFlowEnrollmentResult> results = getEnrollmentsForUserHandler.handle(
             new GetEnrollmentsForUserQuery(userId)
         );
@@ -299,7 +306,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het voltooien van de enrollment."));
         }
@@ -333,7 +339,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het toevoegen van het antwoord."));
         }
@@ -386,7 +391,6 @@ public class LearningController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het bijwerken van de voortgang."));
         }

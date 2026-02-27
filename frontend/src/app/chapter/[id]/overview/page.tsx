@@ -31,7 +31,7 @@ import { ChevronRight } from 'lucide-react'
 export default function ChapterOverviewPage() {
   const params = useParams()
   const chapterId = Number(params.id)
-  const language: 'nl' | 'en' = 'en' // TODO: Get from language context
+  const language: 'nl' | 'en' = 'en' as 'nl' | 'en' // TODO: Get from language context
 
   const { data: chapter, isLoading, error } = useChapter(chapterId)
   const { data: chapterVersion, isLoading: isLoadingVersion } = useChapterCurrentVersion(chapterId)

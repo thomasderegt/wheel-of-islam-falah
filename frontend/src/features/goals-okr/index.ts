@@ -11,5 +11,4 @@ export { useInitiativesByUserObjectiveInstance } from './hooks/useInitiativesByU
 export { NavOKRLifeDomainCircle } from './components/NavOKRLifeDomainCircle'
 export { KeyResultList } from './components/KeyResultList'
 export { InitiativeList } from './components/InitiativeList'
-export { CreateUserGoalDialog } from './components/CreateUserGoalDialog'
 export { CreateCustomObjectiveDialog } from './components/CreateCustomObjectiveDialog'

@@ -44,9 +44,8 @@ public class CreateCustomObjectiveCommandHandler {
             throw new IllegalArgumentException("User not found: " + command.userId());
         }
 
-        // Calculate next orderIndex for this life domain
-        var existingObjectives = objectiveRepository.findByLifeDomainId(command.lifeDomainId());
-        int nextOrderIndex = existingObjectives.size() + 1;
+        // Calculate next orderIndex: max + 1 to avoid unique constraint (life_domain_id, order_index)
+        int nextOrderIndex = objectiveRepository.findMaxOrderIndexByLifeDomainId(command.lifeDomainId()) + 1;
 
         // 1. Create Objective (custom - with created_by_user_id)
         var objectiveResult = createObjectiveHandler.handle(new CreateObjectiveCommand(
@@ -79,7 +78,6 @@ public class CreateCustomObjectiveCommandHandler {
             ));
         } catch (IllegalArgumentException e) {
             // If item already exists in kanban, that's okay - don't fail the creation
-            System.err.println("Note: Objective instance already in kanban: " + e.getMessage());
         }
 
         return instanceResult;

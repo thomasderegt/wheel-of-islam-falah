@@ -11,7 +11,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useKeyResultsByObjective } from '../hooks/useKeyResultsByObjective'
-import { startUserObjectiveEnrollment, getUserObjectiveEnrollments, getKeyResultProgress, getObjective, getUserGoalEnrollments, startUserKeyResultEnrollment, getUserKeyResultEnrollments } from '../api/goalsOkrApi'
+import { startUserObjectiveEnrollment, getUserObjectiveEnrollments, getKeyResultProgress, getObjective, startUserKeyResultEnrollment, getUserKeyResultEnrollments } from '../api/goalsOkrApi'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
@@ -236,13 +236,6 @@ export function NavKeyResult({ objectiveId, language = 'en' }: NavKeyResultProps
     enabled: !!objectiveId,
   })
 
-  // Get user goal enrollments
-  const { data: userGoalEnrollments } = useQuery({
-    queryKey: ['goals-okr', 'userGoalEnrollments', 'user', user?.id],
-    queryFn: () => getUserGoalEnrollments(user?.id || 0),
-    enabled: !!user?.id,
-  })
-
   // Get user objective enrollments to check which objectives are already started
   const { data: userObjectiveEnrollments } = useQuery({
     queryKey: ['goals-okr', 'userObjectiveEnrollments', 'user', user?.id],
@@ -250,12 +243,9 @@ export function NavKeyResult({ objectiveId, language = 'en' }: NavKeyResultProps
     enabled: !!user?.id,
   })
 
-  // Goal layer removed: no userGoalEnrollment needed to start an objective
-  const userGoalEnrollment = undefined
-
   const startEnrollmentMutation = useMutation({
-    mutationFn: ({ userId, userGoalEnrollmentId, objectiveId }: { userId: number; userGoalEnrollmentId: number; objectiveId: number }) =>
-      startUserObjectiveEnrollment(userId, userGoalEnrollmentId, objectiveId),
+    mutationFn: ({ userId, objectiveId }: { userId: number; objectiveId: number }) =>
+      startUserObjectiveEnrollment(userId, 0, objectiveId),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'userObjectiveEnrollments'] })
       // Navigate to the user objective enrollment
@@ -273,11 +263,7 @@ export function NavKeyResult({ objectiveId, language = 'en' }: NavKeyResultProps
       return
     }
     setStartingObjectiveId(objectiveId)
-    startEnrollmentMutation.mutate({ 
-      userId: user.id, 
-      userGoalEnrollmentId: 0, // ignored by API after goal layer removal
-      objectiveId 
-    })
+    startEnrollmentMutation.mutate({ userId: user.id, objectiveId })
   }
 
   const isObjectiveStarted = (objectiveId: number): boolean => {

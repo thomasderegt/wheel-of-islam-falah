@@ -220,7 +220,6 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ALL">All Types</SelectItem>
-                      <SelectItem value="GOAL">Goal</SelectItem>
                       <SelectItem value="OBJECTIVE">Objective</SelectItem>
                       <SelectItem value="KEY_RESULT">Key Result</SelectItem>
                       <SelectItem value="INITIATIVE">Initiative</SelectItem>

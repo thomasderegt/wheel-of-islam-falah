@@ -320,7 +320,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de category."));
         }
@@ -362,7 +361,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de category."));
         }
@@ -386,7 +384,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de category."));
         }
@@ -510,7 +507,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de book."));
         }
@@ -534,7 +530,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de book."));
         }
@@ -615,7 +610,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de book."));
         }
@@ -654,7 +648,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de chapter."));
         }
@@ -765,7 +758,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de chapter."));
         }
@@ -789,7 +781,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de chapter."));
         }
@@ -828,7 +819,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de paragraph."));
         }
@@ -909,7 +899,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de paragraph."));
         }
@@ -937,7 +926,6 @@ public class ContentController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de paragraph."));
         }
@@ -977,7 +965,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de section."));
         }
@@ -1020,7 +1007,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de section version."));
         }
@@ -1063,7 +1049,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de book version."));
         }
@@ -1106,7 +1091,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de chapter version."));
         }
@@ -1144,7 +1128,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het publiceren van de section."));
         }
@@ -1237,7 +1220,6 @@ public class ContentController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de section."));
         }

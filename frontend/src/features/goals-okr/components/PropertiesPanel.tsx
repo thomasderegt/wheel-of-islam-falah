@@ -11,13 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Badge } from '@/shared/components/ui/badge'
 import { Loading } from '@/shared/components/ui/Loading'
 import { 
-  getGoal, 
   getLifeDomain,
   getObjective, 
   getKeyResult, 
   getInitiative,
   getAllLifeDomains,
-  type GoalDTO,
   type ObjectiveDTO,
   type KeyResultDTO,
   type UserInitiativeDTO,
@@ -36,7 +34,6 @@ interface PropertiesPanelProps {
 
 interface HierarchyData {
   lifeDomain?: LifeDomainDTO
-  goal?: GoalDTO
   objective?: ObjectiveDTO
   keyResult?: KeyResultDTO
   initiative?: UserInitiativeDTO
@@ -65,9 +62,6 @@ export function PropertiesPanel({ item, language = 'en', onClose }: PropertiesPa
         // Load the selected item first
         try {
           switch (item.itemType) {
-            case 'GOAL':
-              data.goal = await getGoal(item.itemId)
-              break
             case 'OBJECTIVE':
               data.objective = await getObjective(item.itemId)
               break
@@ -93,7 +87,7 @@ export function PropertiesPanel({ item, language = 'en', onClose }: PropertiesPa
 
         // Load parent hierarchy (only if we successfully loaded the item)
         if (data.initiative && data.initiative.keyResultId) {
-          // Initiative → KeyResult → Objective → Goal → LifeDomain
+          // Initiative → KeyResult → Objective → LifeDomain
           try {
             data.keyResult = await getKeyResult(data.initiative.keyResultId)
             if (data.keyResult && data.keyResult.objectiveId) {
@@ -123,16 +117,6 @@ export function PropertiesPanel({ item, language = 'en', onClose }: PropertiesPa
             data.lifeDomain = await getLifeDomain(data.objective.lifeDomainId) ?? undefined
           } catch (err: any) {
             console.error('Failed to load objective hierarchy:', err)
-            // Don't fail completely, just log the error
-          }
-        }
-
-        // Load Life Domain from goal when we have a GOAL item
-        if (data.goal && data.goal.lifeDomainId) {
-          try {
-            data.lifeDomain = await getLifeDomain(data.goal.lifeDomainId) ?? undefined
-          } catch (err: any) {
-            console.error('Failed to load life domains:', err)
             // Don't fail completely, just log the error
           }
         }
@@ -214,52 +198,6 @@ export function PropertiesPanel({ item, language = 'en', onClose }: PropertiesPa
           <>
             {/* Life Domain */}
             {hierarchy.lifeDomain && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Life Domain
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <h3 className="font-semibold">
-                      {getTitle(hierarchy.lifeDomain.titleNl, hierarchy.lifeDomain.titleEn)}
-                    </h3>
-                    {hierarchy.lifeDomain.descriptionNl || hierarchy.lifeDomain.descriptionEn ? (
-                      <p className="text-sm text-muted-foreground">
-                        {getTitle(hierarchy.lifeDomain.descriptionNl, hierarchy.lifeDomain.descriptionEn)}
-                      </p>
-                    ) : null}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Goal (when item is GOAL) */}
-            {hierarchy.goal && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Goal
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    <h3 className="font-semibold">
-                      {getTitle(hierarchy.goal.titleNl, hierarchy.goal.titleEn)}
-                    </h3>
-                    {hierarchy.goal.descriptionNl || hierarchy.goal.descriptionEn ? (
-                      <p className="text-sm text-muted-foreground">
-                        {getTitle(hierarchy.goal.descriptionNl, hierarchy.goal.descriptionEn)}
-                      </p>
-                    ) : null}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Life Domain (when loaded from objective/key result/initiative) */}
-            {hierarchy.lifeDomain && !hierarchy.goal && (
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">

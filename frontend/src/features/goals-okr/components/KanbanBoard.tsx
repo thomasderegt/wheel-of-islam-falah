@@ -5,17 +5,16 @@
  * Displays progress items in 4 columns: TODO, IN_PROGRESS, IN_REVIEW, DONE
  */
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useAuth } from '@/features/auth'
 import { useKanbanItems, useTeamKanbanItems, useUpdateKanbanItemPosition, useDeleteKanbanItem } from '../hooks/useKanbanItems'
-import { getGoal, getObjective, getKeyResult, getInitiative, getUserGoalInstance, getUserObjectiveInstance, getUserKeyResultInstance, getUserInitiativeInstance, getInitiativesByKeyResult } from '../api/goalsOkrApi'
-import type { KanbanItemDTO, GoalDTO, ObjectiveDTO, KeyResultDTO, UserInitiativeDTO, InitiativeDTO, LifeDomainDTO } from '../api/goalsOkrApi'
+import type { KanbanItemDTO } from '../api/goalsOkrApi'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, useDroppable, useSensors, useSensor, PointerSensor, TouchSensor } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { Trash2, GripVertical, Loader2 } from 'lucide-react'
+import { Trash2, GripVertical } from 'lucide-react'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import type { KanbanFilters } from '../hooks/useKanbanFilters'
@@ -62,7 +61,6 @@ function KanbanCard({ item, title, instanceNumber, domainTitle, onDelete, langua
 
   const getItemTypeLabel = (itemType: string) => {
     const labels: Record<string, { en: string; nl: string }> = {
-      GOAL: { en: 'Goal', nl: 'Doel' },
       OBJECTIVE: { en: 'Objective', nl: 'Objectief' },
       KEY_RESULT: { en: 'Key Result', nl: 'Kernresultaat' },
       INITIATIVE: { en: 'Initiative', nl: 'Initiatief' },
@@ -166,15 +164,11 @@ interface KanbanColumnProps {
   columnId: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'
   label: string
   items: KanbanItemDTO[]
-  itemTitles: Map<string, string>
-  itemNumbers: Map<string, string>
-  itemLifeDomainIds: Map<string, number>
-  lifeDomains?: LifeDomainDTO[]
+  lifeDomains?: { id: number; titleNl?: string | null; titleEn?: string | null }[]
   onDelete: (itemId: number) => void
   language?: 'nl' | 'en'
   onNavigate?: (item: KanbanItemDTO) => void
   onNavigateToInstance?: (item: KanbanItemDTO) => void
-  isLoadingTitles?: boolean
   wipLimits?: {
     life?: number
     business?: number
@@ -185,11 +179,11 @@ interface KanbanColumnProps {
   readOnly?: boolean
 }
 
-function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLifeDomainIds, lifeDomains, onDelete, language = 'en', onNavigate, onNavigateToInstance, isLoadingTitles = false, wipLimits, wheelIdToType, lifeDomainIdToWheelId, readOnly = false }: KanbanColumnProps) {
+function KanbanColumn({ columnId, label, items, lifeDomains, onDelete, language = 'en', onNavigate, onNavigateToInstance, wipLimits, wheelIdToType, lifeDomainIdToWheelId, readOnly = false }: KanbanColumnProps) {
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
 
-  // Calculate counts per wheel type
+  // Calculate counts per wheel type (using enriched item.lifeDomainId)
   const countsByWheelType = useMemo(() => {
     const counts: { life: number; business: number } = { life: 0, business: 0 }
     
@@ -198,8 +192,7 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
     }
     
     items.forEach(item => {
-      const compoundKey = `${item.itemType}-${item.itemId}`
-      const lifeDomainId = itemLifeDomainIds.get(compoundKey)
+      const lifeDomainId = item.lifeDomainId
       if (!lifeDomainId) return
       
       const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
@@ -212,7 +205,7 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
     })
     
     return counts
-  }, [items, itemLifeDomainIds, wheelIdToType, lifeDomainIdToWheelId])
+  }, [items, wheelIdToType, lifeDomainIdToWheelId])
 
   // Check if any WIP limit is reached
   const isWipLimitReached = useMemo(() => {
@@ -268,22 +261,15 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
         )}
         <SortableContext items={sortedItems.map(item => item.id.toString())} strategy={verticalListSortingStrategy}>
           <div className="flex flex-col gap-2 min-h-[200px]">
-            {isLoadingTitles && sortedItems.length > 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            ) : sortedItems.length === 0 ? (
+            {sortedItems.length === 0 ? (
               <div className="text-sm text-muted-foreground text-center py-8 border-2 border-dashed rounded-lg border-muted-foreground/20">
                 {language === 'nl' ? 'Geen items' : 'No items'}
               </div>
             ) : (
               sortedItems.map((item) => {
-                const compoundKey = `${item.itemType}-${item.itemId}`
-                const title = itemTitles.get(compoundKey) || `${item.itemType} ${item.itemId}`
-                const instanceNumber = itemNumbers.get(compoundKey)
-                const lifeDomainId = itemLifeDomainIds.get(compoundKey)
-                const domain = lifeDomains?.find(d => d.id === lifeDomainId)
-                const domainTitle = domain 
+                const title = item.title ?? `${item.itemType} ${item.itemId}`
+                const domain = lifeDomains?.find(d => d.id === item.lifeDomainId)
+                const domainTitle = domain
                   ? (language === 'nl' ? (domain.titleNl || domain.titleEn) : (domain.titleEn || domain.titleNl))
                   : null
                 return (
@@ -291,7 +277,7 @@ function KanbanColumn({ columnId, label, items, itemTitles, itemNumbers, itemLif
                     key={item.id}
                     item={item}
                     title={title}
-                    instanceNumber={instanceNumber}
+                    instanceNumber={item.number}
                     domainTitle={domainTitle}
                     onDelete={() => onDelete(item.id)}
                     onNavigate={onNavigate ? () => onNavigate(item) : undefined}
@@ -339,10 +325,6 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   const deleteMutation = useDeleteKanbanItem()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [activeItem, setActiveItem] = useState<KanbanItemDTO | null>(null)
-  const [itemTitles, setItemTitles] = useState<Map<string, string>>(new Map()) // Use compound key: "itemType-itemId"
-  const [itemLifeDomainIds, setItemLifeDomainIds] = useState<Map<string, number>>(new Map()) // Use compound key: "itemType-itemId"
-  const [itemNumbers, setItemNumbers] = useState<Map<string, string>>(new Map()) // Use compound key: "itemType-itemId" - User instance numbers
-  const [isLoadingTitles, setIsLoadingTitles] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<{ id: number; title: string } | null>(null)
 
@@ -386,24 +368,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   // Filter items based on filters AND goalsOkrContext
   const filteredItems = useMemo(() => {
     if (!kanbanItems) return []
-    // Debug: trace kanban filtering for initiatives
-    if (process.env.NODE_ENV === 'development') {
-      const initiatives = kanbanItems.filter(i => i.itemType === 'INITIATIVE')
-      if (initiatives.length > 0) {
-        const withoutLifeDomain = initiatives.filter(i => !itemLifeDomainIds.get(`${i.itemType}-${i.itemId}`))
-        if (withoutLifeDomain.length > 0) {
-          console.log('[KanbanBoard] Initiatives without lifeDomainId (may be filtered out):', withoutLifeDomain.map(i => ({ id: i.id, itemId: i.itemId })))
-        }
-        console.log('[KanbanBoard] Filter context:', { goalsOkrContext, targetWheelId, totalItems: kanbanItems.length, initiativeCount: initiatives.length })
-      }
-    }
-    // If goalsOkrContext is NONE, show nothing
-    if (goalsOkrContext === 'NONE') {
-      return []
-    }
-    
-    // If goalsOkrContext is ALL, show items from all wheels (no wheelId filtering)
-    
+    // NONE = don't show Goals/Execute in nav, but on the kanban page still show all items (same as ALL)
+    // Only filter by wheel when context is LIFE, BUSINESS, or WORK
     let filtered = kanbanItems
     
     // Filter by viewMode: 'all' = show everything (default), 'okrs' = only OKR items, 'initiatives' = only initiatives
@@ -412,7 +378,6 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       filtered = filtered.filter(item => item.itemType === 'INITIATIVE')
     } else if (viewMode === 'okrs') {
       filtered = filtered.filter(item =>
-        item.itemType === 'GOAL' ||
         item.itemType === 'OBJECTIVE' ||
         item.itemType === 'KEY_RESULT'
       )
@@ -424,32 +389,24 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       filtered = filtered.filter(item => item.itemType === filters.itemType)
     }
     
-    // Filter by lifeDomainId (user can still filter by specific domain)
-    if (filters.lifeDomainId && itemLifeDomainIds.size > 0) {
-      filtered = filtered.filter(item => {
-        const compoundKey = `${item.itemType}-${item.itemId}`
-        const lifeDomainId = itemLifeDomainIds.get(compoundKey)
-        return lifeDomainId === filters.lifeDomainId
-      })
+    // Filter by lifeDomainId (using enriched item.lifeDomainId from API)
+    if (filters.lifeDomainId) {
+      filtered = filtered.filter(item => item.lifeDomainId === filters.lifeDomainId)
     }
-    
+
     // Filter by goalsOkrContext (wheelId) - Skip if ALL (show all wheels)
-    if (goalsOkrContext !== 'ALL' && targetWheelId && itemLifeDomainIds.size > 0 && lifeDomainIdToWheelId.size > 0) {
+    if (goalsOkrContext !== 'ALL' && targetWheelId && lifeDomainIdToWheelId.size > 0) {
       filtered = filtered.filter(item => {
-        const compoundKey = `${item.itemType}-${item.itemId}`
-        const lifeDomainId = itemLifeDomainIds.get(compoundKey)
+        const lifeDomainId = item.lifeDomainId
         if (!lifeDomainId) return false
-        
         const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
         if (!wheelId) return false
-        
-        // Only show items from the target wheel (based on goalsOkrContext)
         return wheelId === targetWheelId
       })
     }
-    
+
     return filtered
-  }, [kanbanItems, filters, itemLifeDomainIds, lifeDomainIdToWheelId, goalsOkrContext, targetWheelId])
+  }, [kanbanItems, filters, lifeDomainIdToWheelId, goalsOkrContext, targetWheelId])
 
   // Group items by column
   const itemsByColumn = useMemo(() => {
@@ -468,196 +425,6 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
 
     return grouped
   }, [filteredItems])
-
-  // Load item titles and life domain IDs
-  useEffect(() => {
-    if (!kanbanItems || kanbanItems.length === 0) {
-      setItemTitles(new Map())
-      setItemLifeDomainIds(new Map())
-      setItemNumbers(new Map())
-      setIsLoadingTitles(false)
-      return
-    }
-
-    let isCancelled = false
-
-    const loadTitlesAndLifeDomains = async () => {
-      const titles = new Map<string, string>() // Use compound key: "itemType-itemId"
-      const lifeDomainIds = new Map<string, number>() // Use compound key: "itemType-itemId"
-      const numbers = new Map<string, string>() // Use compound key: "itemType-itemId" - User instance numbers
-      
-      // Process items sequentially (one at a time) to avoid race conditions
-      // This prevents multiple parallel requests from interfering with each other
-      for (const item of kanbanItems) {
-        // Check if this effect was cancelled (e.g., kanbanItems changed)
-        if (isCancelled) {
-          return
-        }
-
-        try {
-          let title = ''
-          let lifeDomainId: number | undefined
-          
-          switch (item.itemType) {
-            case 'GOAL': {
-              // item.itemId is a userGoalInstanceId, not a goalId
-              const userGoalInstance = await getUserGoalInstance(item.itemId)
-              if (isCancelled) return
-              const goal = await getGoal(userGoalInstance.goalId)
-              if (isCancelled) return
-              title = language === 'nl' ? (goal.titleNl || goal.titleEn) : (goal.titleEn || goal.titleNl)
-              lifeDomainId = goal.lifeDomainId
-              // Store user instance number
-              if (userGoalInstance.number) {
-                numbers.set(`${item.itemType}-${item.itemId}`, userGoalInstance.number)
-              }
-              break
-            }
-            case 'OBJECTIVE': {
-              // item.itemId is a userObjectiveInstanceId, not an objectiveId
-              const userObjectiveInstance = await getUserObjectiveInstance(item.itemId)
-              if (isCancelled) return
-              const objective = await getObjective(userObjectiveInstance.objectiveId)
-              if (isCancelled) return
-              title = language === 'nl' ? (objective.titleNl || objective.titleEn) : (objective.titleEn || objective.titleNl)
-              lifeDomainId = objective.lifeDomainId
-              // Store user instance number
-              if (userObjectiveInstance.number) {
-                numbers.set(`${item.itemType}-${item.itemId}`, userObjectiveInstance.number)
-              }
-              break
-            }
-            case 'KEY_RESULT': {
-              // item.itemId is a userKeyResultInstanceId, not a keyResultId
-              const userKeyResultInstance = await getUserKeyResultInstance(item.itemId)
-              if (isCancelled) return
-              const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
-              if (isCancelled) return
-              title = language === 'nl' ? (keyResult.titleNl || keyResult.titleEn) : (keyResult.titleEn || keyResult.titleNl)
-              // Get objective to find lifeDomainId
-              if (keyResult.objectiveId) {
-                const objective = await getObjective(keyResult.objectiveId)
-                if (isCancelled) return
-                lifeDomainId = objective.lifeDomainId
-              }
-              // Store user instance number
-              if (userKeyResultInstance.number) {
-                numbers.set(`${item.itemType}-${item.itemId}`, userKeyResultInstance.number)
-              }
-              break
-            }
-            case 'INITIATIVE': {
-              // item.itemId is a UserInitiativeInstance.id, not an Initiative.id or UserInitiative.id
-              // Follow the same pattern as GOAL/OBJECTIVE/KEY_RESULT: get instance first
-              const userInitiativeInstance = await getUserInitiativeInstance(item.itemId)
-              if (isCancelled) return
-              
-              // The initiativeId in UserInitiativeInstance can refer to:
-              // 1. Initiative (template) - if it's a template initiative
-              // 2. UserInitiative (user-created) - if it's a user-created initiative
-              
-              // Try to get as UserInitiative first (user-created)
-              // If it fails with 404, it's a template Initiative, which is expected
-              try {
-                const userInitiative = await getInitiative(userInitiativeInstance.initiativeId)
-                if (isCancelled) return
-                title = userInitiative.title
-                // Get keyResult -> objective to find lifeDomainId (required for wheel/context filtering)
-                let keyResultId = userInitiative.keyResultId
-                if (!keyResultId) {
-                  // Fallback: get keyResultId from userKeyResultInstance (user-created initiatives may not have keyResultId set)
-                  const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
-                  if (isCancelled) return
-                  keyResultId = userKeyResultInstance.keyResultId
-                }
-                if (keyResultId) {
-                  const keyResult = await getKeyResult(keyResultId)
-                  if (isCancelled) return
-                  if (keyResult.objectiveId) {
-                    const objective = await getObjective(keyResult.objectiveId)
-                    if (isCancelled) return
-                    lifeDomainId = objective.lifeDomainId
-                  }
-                }
-              } catch (userInitiativeError: any) {
-                if (isCancelled) return
-                // If not found as UserInitiative (404), it's a template Initiative - this is expected
-                // Only log if it's not a 404 error
-                if (userInitiativeError?.response?.status !== 404) {
-                  console.warn(`[KanbanBoard] Error checking UserInitiative ${userInitiativeInstance.initiativeId}:`, userInitiativeError)
-                }
-                
-                // Get the key result from the userInitiativeInstance to find the template Initiative
-                const userKeyResultInstance = await getUserKeyResultInstance(userInitiativeInstance.userKeyResultInstanceId)
-                if (isCancelled) return
-                const keyResult = await getKeyResult(userKeyResultInstance.keyResultId)
-                if (isCancelled) return
-                const templateInitiatives = await getInitiativesByKeyResult(keyResult.id)
-                if (isCancelled) return
-                const templateInitiative = templateInitiatives.find(i => i.id === userInitiativeInstance.initiativeId)
-                
-                if (templateInitiative) {
-                  title = language === 'nl' 
-                    ? (templateInitiative.titleNl || templateInitiative.titleEn)
-                    : (templateInitiative.titleEn || templateInitiative.titleNl)
-                  
-                  // Get keyResult -> objective to find lifeDomainId
-                  if (keyResult.objectiveId) {
-                    const objective = await getObjective(keyResult.objectiveId)
-                    if (isCancelled) return
-                    lifeDomainId = objective.lifeDomainId
-                  }
-                } else {
-                  throw new Error(`Template Initiative ${userInitiativeInstance.initiativeId} not found for key result ${keyResult.id}`)
-                }
-              }
-              // Store user instance number
-              if (userInitiativeInstance.number) {
-                numbers.set(`${item.itemType}-${item.itemId}`, userInitiativeInstance.number)
-              }
-              break
-            }
-          }
-          
-          if (isCancelled) return
-          
-          // Use compound key to avoid collisions (itemId can be the same for different itemTypes)
-          const compoundKey = `${item.itemType}-${item.itemId}`
-          
-          // Only set title if we got a valid one
-          if (title) {
-            titles.set(compoundKey, title)
-          } else {
-            titles.set(compoundKey, `${item.itemType} ${item.itemId}`)
-          }
-          if (lifeDomainId) {
-            lifeDomainIds.set(compoundKey, lifeDomainId)
-          }
-        } catch (error) {
-          if (isCancelled) return
-          console.error(`[KanbanBoard] Failed to load data for ${item.itemType} ${item.itemId}:`, error)
-          const compoundKey = `${item.itemType}-${item.itemId}`
-          titles.set(compoundKey, `${item.itemType} ${item.itemId}`)
-        }
-      }
-      
-      // Only update state if this effect wasn't cancelled
-      if (!isCancelled) {
-        setItemTitles(titles)
-        setItemLifeDomainIds(lifeDomainIds)
-        setItemNumbers(numbers)
-        setIsLoadingTitles(false)
-      }
-    }
-
-    setIsLoadingTitles(true)
-    loadTitlesAndLifeDomains()
-
-    // Cleanup: cancel if kanbanItems or language changes
-    return () => {
-      isCancelled = true
-    }
-  }, [kanbanItems, language])
 
   const handleDragStart = (event: DragStartEvent) => {
     const activeId = event.active.id as string
@@ -695,11 +462,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
 
     if (!targetColumn || targetColumn === item.columnName) return
 
-    // Determine wheel type of the item being moved
-    const compoundKey = `${item.itemType}-${item.itemId}`
-    const lifeDomainId = itemLifeDomainIds.get(compoundKey)
+    // Determine wheel type of the item being moved (using enriched item.lifeDomainId)
+    const lifeDomainId = item.lifeDomainId
     let itemWheelType: 'life' | 'business' | undefined = undefined
-    
+
     if (lifeDomainId && lifeDomainIdToWheelId.size > 0 && wheelIdToType.size > 0) {
       const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
       if (wheelId) {
@@ -714,13 +480,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
         // Count only items of the same wheel type in the target column
         const targetColumnItems = itemsByColumn[targetColumn]
         const itemsOfSameWheelType = targetColumnItems.filter(targetItem => {
-          const targetCompoundKey = `${targetItem.itemType}-${targetItem.itemId}`
-          const targetLifeDomainId = itemLifeDomainIds.get(targetCompoundKey)
+          const targetLifeDomainId = targetItem.lifeDomainId
           if (!targetLifeDomainId) return false
-          
           const targetWheelId = lifeDomainIdToWheelId.get(targetLifeDomainId)
           if (!targetWheelId) return false
-          
           const targetWheelType = wheelIdToType.get(targetWheelId)
           return targetWheelType === itemWheelType
         })
@@ -756,11 +519,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   }
 
   const handleDeleteClick = (itemId: number) => {
-    const compoundKey = Array.from(itemTitles.entries()).find(([key]) => {
-      const [type, id] = key.split('-')
-      return parseInt(id) === itemId
-    })
-    const title = compoundKey ? compoundKey[1] : 'this item'
+    const item = kanbanItems?.find(i => i.id === itemId)
+    const title = item?.title ?? 'this item'
     setItemToDelete({ id: itemId, title })
     setDeleteDialogOpen(true)
   }
@@ -782,11 +542,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   }
 
   const handleNavigateToInstance = (item: KanbanItemDTO) => {
-    // Goal layer removed: GOAL items open kanban item detail. Others go to instance page.
     switch (item.itemType) {
-      case 'GOAL':
-        handleNavigate(item)
-        break
       case 'OBJECTIVE':
         router.push(`/goals-okr/user-objective-instances/${item.itemId}`)
         break
@@ -859,14 +615,10 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                   columnId={column.id}
                   label={column.label}
                   items={items}
-                  itemTitles={itemTitles}
-                  itemNumbers={itemNumbers}
-                  itemLifeDomainIds={itemLifeDomainIds}
                   lifeDomains={lifeDomains}
                   onDelete={handleDeleteClick}
                   onNavigate={handleNavigate}
                   onNavigateToInstance={handleNavigateToInstance}
-                  isLoadingTitles={isLoadingTitles}
                   language={language}
                   wipLimits={wipLimits}
                   wheelIdToType={wheelIdToType}
@@ -886,7 +638,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
                   <GripVertical className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <CardTitle className="text-sm font-medium line-clamp-2">
-                      {itemTitles.get(`${activeItem.itemType}-${activeItem.itemId}`) || `${activeItem.itemType} ${activeItem.itemId}`}
+                      {activeItem.title ?? `${activeItem.itemType} ${activeItem.itemId}`}
                     </CardTitle>
                     {activeItem.notes && activeItem.notes.trim() && (
                       <div className="text-xs text-muted-foreground mt-1 line-clamp-2">

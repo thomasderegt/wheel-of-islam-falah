@@ -12,6 +12,7 @@ export function useWheels() {
   return useQuery({
     queryKey: ['goals-okr', 'wheels'],
     queryFn: getAllWheels,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error: any) => {
       // Don't retry on network errors (no response) - backend might not be available
       if (!error?.response && failureCount >= 1) {

@@ -1,21 +1,9 @@
 /**
- * Hook for fetching and managing user-specific objectives
+ * Hook for creating user-specific objectives (goal layer removed).
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUserObjectivesByUserGoal, createUserObjective } from '../api/goalsOkrApi'
-import type { UserObjectiveDTO } from '../api/goalsOkrApi'
-
-/**
- * Get user-specific objectives by user goal
- */
-export function useUserObjectivesByUserGoal(userGoalId: number | null) {
-  return useQuery({
-    queryKey: ['goals-okr', 'user-objectives', 'user-goal', userGoalId],
-    queryFn: () => getUserObjectivesByUserGoal(userGoalId!),
-    enabled: userGoalId !== null,
-  })
-}
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createUserObjective } from '../api/goalsOkrApi'
 
 /**
  * Hook for creating a user-specific objective
@@ -28,7 +16,7 @@ export function useCreateUserObjective() {
       createUserObjective(userId, request),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-objectives', 'user-goal', variables.userGoalId] })
-      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-goals', 'user', variables.userId] })
+      queryClient.invalidateQueries({ queryKey: ['goals-okr', 'user-objective-instances'] })
     },
   })
 }

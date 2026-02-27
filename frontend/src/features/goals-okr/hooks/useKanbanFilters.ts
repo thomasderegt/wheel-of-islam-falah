@@ -4,7 +4,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 export type KanbanViewMode = 'all' | 'okrs' | 'initiatives'
 
 export interface KanbanFilters {
-  itemType?: 'GOAL' | 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
+  itemType?: 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
   lifeDomainId?: number
   wheelType?: 'life' | 'business'
   /** @deprecated Use viewMode instead. Kept for URL backward compatibility. */
@@ -68,7 +68,7 @@ export function useKanbanFilters(initialFilters: KanbanFilters = {}) {
     if (!params) return filters
     
     const itemType = params.get('itemType')
-    if (itemType && ['GOAL', 'OBJECTIVE', 'KEY_RESULT', 'INITIATIVE'].includes(itemType)) {
+    if (itemType && ['OBJECTIVE', 'KEY_RESULT', 'INITIATIVE'].includes(itemType)) {
       filters.itemType = itemType as KanbanFilters['itemType']
     }
     

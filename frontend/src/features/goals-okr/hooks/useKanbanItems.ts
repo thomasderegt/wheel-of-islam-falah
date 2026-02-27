@@ -24,7 +24,7 @@ export function useAddKanbanItem() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (request: { userId: number; itemType: 'GOAL' | 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'; itemId: number }) =>
+    mutationFn: (request: { userId: number; itemType: 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'; itemId: number }) =>
       addKanbanItem(request),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['goals-okr', 'kanban-items', 'user', variables.userId] })

@@ -5,7 +5,7 @@ package com.woi.goalsokr.application.commands;
  */
 public record AddKanbanItemCommand(
     Long userId,
-    String itemType, // GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE
+    String itemType, // OBJECTIVE, KEY_RESULT, INITIATIVE
     Long itemId
 ) {
     public AddKanbanItemCommand {

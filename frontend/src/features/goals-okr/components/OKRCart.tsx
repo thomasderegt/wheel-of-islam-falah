@@ -41,8 +41,7 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
 
   const validationErrors = getValidationErrors()
 
-  // Group items by type for better display (goal layer removed – cart uses objective + key result)
-  const goals = items.filter((i) => i.type === 'GOAL')
+  // Group items by type for better display (cart uses objective + key result)
   const objectives = items.filter((i) => i.type === 'OBJECTIVE')
   const keyResults = items.filter((i) => i.type === 'KEY_RESULT')
 
@@ -153,8 +152,6 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'GOAL':
-        return 'Goal'
       case 'OBJECTIVE':
         return 'Objective'
       case 'KEY_RESULT':
@@ -166,8 +163,6 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'GOAL':
-        return 'bg-blue-500'
       case 'OBJECTIVE':
         return 'bg-green-500'
       case 'KEY_RESULT':
@@ -212,39 +207,6 @@ export function OKRCart({ open, onOpenChange }: OKRCartProps) {
                     </div>
                   </CardContent>
                 </Card>
-              )}
-
-              {/* Goals */}
-              {goals.length > 0 && (
-                <div className="space-y-1.5">
-                  <h3 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">Goals ({goals.length})</h3>
-                  {goals.map((item) => (
-                    <Card key={`${item.type}-${item.id}`}>
-                      <CardContent className="p-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <Badge className={`${getTypeColor(item.type)} text-[10px] px-1.5 py-0`} variant="default">{getTypeLabel(item.type)}</Badge>
-                              {item.isNew && <Badge variant="outline" className="text-[10px] px-1.5 py-0">New</Badge>}
-                            </div>
-                            <p className="font-medium text-sm truncate">{item.title}</p>
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{item.description}</p>
-                            )}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeItem(item.type, item.id)}
-                            className="h-5 w-5 p-0 flex-shrink-0"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
               )}
 
               {/* Objectives */}

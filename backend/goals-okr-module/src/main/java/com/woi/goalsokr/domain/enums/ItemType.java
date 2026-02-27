@@ -1,10 +1,10 @@
 package com.woi.goalsokr.domain.enums;
 
 /**
- * Item type for kanban items
+ * Item type for kanban items.
+ * Goal layer removed; only OBJECTIVE, KEY_RESULT, INITIATIVE are used.
  */
 public enum ItemType {
-    GOAL,           // UserGoalInstance (template-based goals)
     OBJECTIVE,
     KEY_RESULT,
     INITIATIVE

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record KanbanItemSummary(
     Long id,
     Long userId,
-    String itemType, // GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE
+    String itemType, // OBJECTIVE, KEY_RESULT, INITIATIVE
     Long itemId,
     String columnName, // TODO, IN_PROGRESS, IN_REVIEW, DONE
     Integer position,

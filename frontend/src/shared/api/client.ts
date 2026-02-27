@@ -19,14 +19,21 @@ const apiClient: AxiosInstance = axios.create({
 let noResponseErrorCount = 0
 const MAX_NO_RESPONSE_ERRORS = 3
 
+/** Paths that must not send a Bearer token (auth endpoints) */
+const NO_AUTH_PATHS = ['/api/v2/user/login', '/api/v2/user/register', '/api/v2/user/refresh', '/api/v2/user/refresh-token']
+
 /**
- * Request interceptor - Add JWT token to requests
+ * Request interceptor - Add JWT token to requests (except auth endpoints)
  */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('auth_token')
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`
+    const url = config.url ?? ''
+    const isAuthEndpoint = NO_AUTH_PATHS.some((path) => url.includes(path))
+    if (!isAuthEndpoint) {
+      const token = localStorage.getItem('auth_token')
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
     }
     return config
   },
@@ -60,10 +67,10 @@ apiClient.interceptors.response.use(
         
         if (status !== 404 && !isPublicEndpoint && !shouldSuppress404) {
           // Try to extract error message from various possible formats (including Spring validation)
-          let errorMessage = 'Unknown error'
+          let errorMessage = status === 403 ? 'Access denied' : 'Unknown error'
           if (errorData) {
             if (typeof errorData === 'string') {
-              errorMessage = errorData
+              errorMessage = errorData.trim() || errorMessage
             } else if (typeof errorData === 'object') {
               const d = errorData as unknown as Record<string, unknown>
               // Backend Map.of("error", ...) and Spring validation / ProblemDetail

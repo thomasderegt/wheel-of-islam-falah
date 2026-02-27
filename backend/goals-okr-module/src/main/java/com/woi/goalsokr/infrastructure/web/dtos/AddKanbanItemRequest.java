@@ -12,7 +12,7 @@ public record AddKanbanItemRequest(
     Long userId,
     
     @NotNull(message = "Item type is required")
-    String itemType, // GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE
+    String itemType, // OBJECTIVE, KEY_RESULT, INITIATIVE
     
     @NotNull(message = "Item ID is required")
     @Positive(message = "Item ID must be positive")

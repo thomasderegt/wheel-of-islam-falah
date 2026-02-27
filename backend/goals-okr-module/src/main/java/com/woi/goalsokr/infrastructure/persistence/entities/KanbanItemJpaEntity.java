@@ -19,7 +19,7 @@ public class KanbanItemJpaEntity {
     private Long userId; // Soft reference to users.users
 
     @Column(name = "item_type", nullable = false, length = 50)
-    private String itemType; // GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE
+    private String itemType; // OBJECTIVE, KEY_RESULT, INITIATIVE
 
     @Column(name = "item_id", nullable = false)
     private Long itemId;

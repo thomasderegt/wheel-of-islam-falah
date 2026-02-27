@@ -87,7 +87,7 @@ export default function LoginPage() {
             </div>
           )}
           
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4" suppressHydrationWarning>
             {/* Email input */}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-foreground">
@@ -100,6 +100,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 placeholder="Email"
+                suppressHydrationWarning
               />
             </div>
           
@@ -116,16 +117,18 @@ export default function LoginPage() {
                 className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 placeholder="Wachtwoord"
                 required
+                suppressHydrationWarning
               />
             </div>
           
-            {/* Login button */}
-            <div className="pt-4">
+            {/* Login button - suppressHydrationWarning avoids mismatch when password managers (e.g. Dashlane) inject attributes */}
+            <div className="pt-4" suppressHydrationWarning>
               <Button
                 type="submit"
                 className="w-full"
                 variant="default"
                 disabled={loginMutation.isPending}
+                suppressHydrationWarning
               >
                 {loginMutation.isPending ? 'Inloggen...' : 'Inloggen'}
               </Button>

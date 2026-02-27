@@ -13,6 +13,7 @@ public interface ObjectiveRepository {
     Optional<Objective> findById(Long id);
     List<Objective> findByLifeDomainId(Long lifeDomainId);
     List<Objective> findByLifeDomainIdOrderedByOrderIndex(Long lifeDomainId);
+    int findMaxOrderIndexByLifeDomainId(Long lifeDomainId);
     List<Objective> findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(Long lifeDomainId, Long userId);
     Objective save(Objective objective);
     void delete(Objective objective);

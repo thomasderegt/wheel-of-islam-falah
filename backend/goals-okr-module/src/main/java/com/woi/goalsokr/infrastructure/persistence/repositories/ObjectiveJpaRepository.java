@@ -19,6 +19,9 @@ public interface ObjectiveJpaRepository extends JpaRepository<ObjectiveJpaEntity
     @Query("SELECT o FROM ObjectiveJpaEntity o WHERE o.lifeDomainId = :lifeDomainId ORDER BY o.orderIndex ASC")
     List<ObjectiveJpaEntity> findByLifeDomainIdOrderedByOrderIndex(@Param("lifeDomainId") Long lifeDomainId);
 
+    @Query("SELECT COALESCE(MAX(o.orderIndex), 0) FROM ObjectiveJpaEntity o WHERE o.lifeDomainId = :lifeDomainId")
+    int findMaxOrderIndexByLifeDomainId(@Param("lifeDomainId") Long lifeDomainId);
+
     @Query("SELECT o FROM ObjectiveJpaEntity o WHERE o.lifeDomainId = :lifeDomainId " +
            "AND (o.createdByUserId IS NULL OR o.createdByUserId = :userId) ORDER BY o.orderIndex ASC")
     List<ObjectiveJpaEntity> findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(

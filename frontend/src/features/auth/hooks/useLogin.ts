@@ -13,15 +13,21 @@ import { routes } from '@/shared/constants/routes'
  */
 export function useLogin() {
   const router = useRouter()
-  const { setAuth } = useAuth()
+  const { setAuth, setTokens } = useAuth()
 
   return useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: async (response: LoginResponse) => {
-      // Get user details
+      const tokens = {
+        token: response.token,
+        refreshToken: response.refreshToken,
+        expiresAt: response.expiresAt,
+      }
+      // Store token immediately so getCurrentUser sends it (avoid 403)
+      setTokens(tokens)
+
       const user = await authApi.getCurrentUser(response.userId)
-      
-      // Set auth state
+
       setAuth(
         {
           id: user.id,
@@ -31,14 +37,9 @@ export function useLogin() {
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
-        {
-          token: response.token,
-          refreshToken: response.refreshToken,
-          expiresAt: response.expiresAt,
-        }
+        tokens
       )
 
-      // Redirect to home
       router.push(routes.home)
     },
     onError: (error) => {

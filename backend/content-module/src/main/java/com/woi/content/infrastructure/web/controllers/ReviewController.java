@@ -106,7 +106,6 @@ public class ReviewController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het indienen voor review."));
         }
@@ -138,7 +137,6 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het goedkeuren van de review."));
         }
@@ -170,7 +168,6 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het afwijzen van de review."));
         }
@@ -265,7 +262,6 @@ public class ReviewController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het toevoegen van de comment."));
         }
@@ -288,7 +284,6 @@ public class ReviewController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het ophalen van de comments."));
         }
@@ -324,7 +319,6 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de comment."));
         }
@@ -351,7 +345,6 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de comment."));
         }

@@ -41,7 +41,7 @@ public class AddKanbanItemCommandHandler {
         try {
             itemType = ItemType.valueOf(command.itemType());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid item type: " + command.itemType() + ". Must be one of: GOAL, OBJECTIVE, KEY_RESULT, INITIATIVE");
+            throw new IllegalArgumentException("Invalid item type: " + command.itemType() + ". Must be one of: OBJECTIVE, KEY_RESULT, INITIATIVE");
         }
         kanbanItemRepository.findByUserIdAndItemTypeAndItemId(
             command.userId(),

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * KanbanItem domain entity - Pure POJO (no JPA annotations)
  *
  * Represents a kanban board item for a user.
- * Users can add goals, objectives, key results, or initiatives to their kanban board.
+ * Users can add objectives, key results, or initiatives to their kanban board.
  *
  * Business rules:
  * - userId is required
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 public class KanbanItem {
     private Long id;
     private Long userId; // Required - Soft reference to User
-    private ItemType itemType; // Required - GOAL, OBJECTIVE, KEY_RESULT, or INITIATIVE
+    private ItemType itemType; // Required - OBJECTIVE, KEY_RESULT, or INITIATIVE
     private Long itemId; // Required - ID of the selected item
     private KanbanColumn columnName; // Default: TODO
     private Integer position; // Default: 0 - Order within the column

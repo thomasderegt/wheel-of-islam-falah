@@ -72,8 +72,7 @@ export const authApi = {
   async changePassword(userId: number, data: ChangePasswordRequest): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>(
       '/api/v2/user/change-password',
-      data,
-      { headers: { 'X-User-Id': String(userId) } }
+      data
     )
     return response.data
   },

@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -135,7 +136,6 @@ public class UserController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij de registratie. Probeer het later opnieuw."));
         }
@@ -187,7 +187,6 @@ public class UserController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het inloggen. Probeer het later opnieuw."));
         }
@@ -221,7 +220,6 @@ public class UserController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verversen van de token."));
         }
@@ -252,7 +250,6 @@ public class UserController {
             // Always return success (security best practice - don't reveal if user exists)
             return ResponseEntity.ok(Map.of("message", "Als dit email adres bestaat, is er een reset link verzonden."));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden."));
         }
@@ -288,7 +285,6 @@ public class UserController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het resetten van het wachtwoord."));
         }
@@ -306,13 +302,12 @@ public class UserController {
     public ResponseEntity<?> changePassword(
             @Valid @RequestBody ChangePasswordRequestDTO request,
             BindingResult bindingResult,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @AuthenticationPrincipal Long userId) {
         try {
             if (userId == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Gebruiker niet geauthenticeerd"));
             }
-            
             if (bindingResult.hasErrors()) {
                 String errorMessage = bindingResult.getFieldErrors().stream()
                     .map(error -> error.getDefaultMessage())
@@ -334,7 +329,6 @@ public class UserController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het wijzigen van het wachtwoord."));
         }
@@ -345,10 +339,14 @@ public class UserController {
      * GET /api/v2/user/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getUser(@PathVariable Long id) {
+    public ResponseEntity<?> getUser(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         GetUserQuery query = new GetUserQuery(id);
         Optional<UserResult> result = getUserHandler.handle(query);
-        
         return result.map(r -> ResponseEntity.ok(toUserResponseDTO(r)))
                      .orElse(ResponseEntity.notFound().build());
     }
@@ -359,7 +357,12 @@ public class UserController {
      * Creates default preferences if they don't exist
      */
     @GetMapping("/{id}/preferences")
-    public ResponseEntity<UserPreferenceResponseDTO> getUserPreferences(@PathVariable Long id) {
+    public ResponseEntity<?> getUserPreferences(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         try {
             GetUserPreferencesQuery query = new GetUserPreferencesQuery(id);
             UserPreferenceResult result = getUserPreferencesHandler.handle(query);
@@ -367,7 +370,6 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -382,7 +384,11 @@ public class UserController {
     public ResponseEntity<?> updateUserPreferences(
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserPreferencesRequestDTO request,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         try {
             if (bindingResult.hasErrors()) {
                 String errorMessage = bindingResult.getFieldErrors().stream()
@@ -406,7 +412,6 @@ public class UserController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het bijwerken van de voorkeuren."));
         }

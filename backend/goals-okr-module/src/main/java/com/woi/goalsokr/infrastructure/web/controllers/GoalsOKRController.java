@@ -229,7 +229,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -268,7 +267,6 @@ public class GoalsOKRController {
             }
             return ResponseEntity.ok(ObjectiveResult.from(objective));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -298,7 +296,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -328,7 +325,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -358,7 +354,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -384,7 +379,6 @@ public class GoalsOKRController {
             }
             return ResponseEntity.ok(KeyResultResult.from(keyResult));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -410,13 +404,17 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/users/{userId}/user-objective-instances
      */
     @GetMapping("/users/{userId}/user-objective-instances")
-    public ResponseEntity<List<UserObjectiveInstanceResult>> getUserObjectiveInstancesByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<UserObjectiveInstanceResult>> getUserObjectiveInstancesByUser(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !userId.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(List.of());
+        }
         try {
             List<UserObjectiveInstanceResult> results = getUserObjectiveInstancesHandler.handle(
                 new GetUserObjectiveInstancesQuery(userId));
             return ResponseEntity.ok(results);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
         }
     }
@@ -426,22 +424,27 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/user-objective-instances
      */
     @PostMapping("/user-objective-instances")
-    public ResponseEntity<?> startUserObjectiveInstance(@RequestBody Map<String, Long> request) {
+    public ResponseEntity<?> startUserObjectiveInstance(
+            @RequestBody Map<String, Long> request,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied"));
+        }
         try {
             Long userId = request.get("userId");
             Long objectiveId = request.get("objectiveId");
-            
             if (userId == null || objectiveId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "User ID and Objective ID are required"));
             }
-            
+            if (!userId.equals(authUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied"));
+            }
             UserObjectiveInstanceResult result = startUserObjectiveInstanceHandler.handle(
                 new StartUserObjectiveInstanceCommand(userId, objectiveId));
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -459,7 +462,6 @@ public class GoalsOKRController {
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -479,7 +481,6 @@ public class GoalsOKRController {
                 .toList();
             return ResponseEntity.ok(results);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(List.of());
         }
@@ -499,7 +500,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -512,23 +512,28 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/user-key-result-instances
      */
     @PostMapping("/user-key-result-instances")
-    public ResponseEntity<?> startUserKeyResultInstance(@RequestBody Map<String, Long> request) {
+    public ResponseEntity<?> startUserKeyResultInstance(
+            @RequestBody Map<String, Long> request,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied"));
+        }
         try {
             Long userId = request.get("userId");
             Long userObjectiveInstanceId = request.get("userObjectiveInstanceId");
             Long keyResultId = request.get("keyResultId");
-            
             if (userId == null || userObjectiveInstanceId == null || keyResultId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "User ID, User Objective Instance ID, and Key Result ID are required"));
             }
-            
+            if (!userId.equals(authUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied"));
+            }
             UserKeyResultInstanceResult result = startUserKeyResultInstanceHandler.handle(
                 new StartUserKeyResultInstanceCommand(userId, userObjectiveInstanceId, keyResultId));
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -546,7 +551,6 @@ public class GoalsOKRController {
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -557,13 +561,17 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/users/{userId}/user-key-result-instances
      */
     @GetMapping("/users/{userId}/user-key-result-instances")
-    public ResponseEntity<List<UserKeyResultInstanceResult>> getUserKeyResultInstancesForUser(@PathVariable Long userId) {
+    public ResponseEntity<?> getUserKeyResultInstancesForUser(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !userId.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(List.of());
+        }
         try {
             List<UserKeyResultInstanceResult> results = getUserKeyResultInstancesHandler.handle(
                 new GetUserKeyResultInstancesQuery(userId));
             return ResponseEntity.ok(results);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
         }
     }
@@ -582,7 +590,6 @@ public class GoalsOKRController {
                 .toList();
             return ResponseEntity.ok(results);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(List.of());
         }
@@ -602,7 +609,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -632,7 +638,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -650,7 +655,6 @@ public class GoalsOKRController {
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -668,7 +672,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -699,7 +702,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -712,7 +714,13 @@ public class GoalsOKRController {
      * POST /api/v2/goals-okr/initiatives
      */
     @PostMapping("/initiatives")
-    public ResponseEntity<?> createInitiative(@Valid @RequestBody CreateInitiativeRequest request) {
+    public ResponseEntity<?> createInitiative(
+            @Valid @RequestBody CreateInitiativeRequest request,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !request.userId().equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             CreateInitiativeCommand command = new CreateInitiativeCommand(
                 request.userId(),
@@ -728,7 +736,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -745,7 +752,6 @@ public class GoalsOKRController {
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -756,7 +762,12 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/users/{userId}/initiatives
      */
     @GetMapping("/users/{userId}/initiatives")
-    public ResponseEntity<List<UserInitiativeResult>> getInitiativesForUser(@PathVariable Long userId) {
+    public ResponseEntity<?> getInitiativesForUser(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !userId.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied"));
+        }
         List<UserInitiativeResult> results = getInitiativesByUserHandler.handle(
             new GetInitiativesByUserQuery(userId));
         return ResponseEntity.ok(results);
@@ -795,7 +806,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -814,7 +824,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -832,7 +841,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -862,14 +870,18 @@ public class GoalsOKRController {
     public ResponseEntity<?> getKeyResultProgress(
             @RequestParam Long userId,
             @RequestParam Long keyResultId,
-            @RequestParam Long userKeyResultInstanceId) {
+            @RequestParam Long userKeyResultInstanceId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !userId.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             Optional<KeyResultProgressResult> result = getKeyResultProgressHandler.handle(
                 new GetKeyResultProgressQuery(userId, keyResultId, userKeyResultInstanceId));
             return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -881,7 +893,13 @@ public class GoalsOKRController {
      */
     @PutMapping("/key-result-progress")
     @Transactional
-    public ResponseEntity<?> updateKeyResultProgress(@Valid @RequestBody UpdateKeyResultProgressRequest request) {
+    public ResponseEntity<?> updateKeyResultProgress(
+            @Valid @RequestBody UpdateKeyResultProgressRequest request,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !request.userId().equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             UpdateKeyResultProgressCommand command = new UpdateKeyResultProgressCommand(
                 request.userId(),
@@ -894,7 +912,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -907,13 +924,18 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/users/{userId}/kanban-items
      */
     @GetMapping("/users/{userId}/kanban-items")
-    public ResponseEntity<?> getKanbanItemsByUser(@PathVariable Long userId) {
+    public ResponseEntity<?> getKanbanItemsByUser(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !userId.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             List<KanbanItemResult> results = getKanbanItemsByUserHandler.handle(
                 new GetKanbanItemsByUserQuery(userId));
             return ResponseEntity.ok(results);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -935,7 +957,6 @@ public class GoalsOKRController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -946,22 +967,26 @@ public class GoalsOKRController {
      * GET /api/v2/goals-okr/kanban-items/{itemId}
      */
     @GetMapping("/kanban-items/{itemId}")
-    public ResponseEntity<?> getKanbanItemById(@PathVariable Long itemId) {
+    public ResponseEntity<?> getKanbanItemById(
+            @PathVariable Long itemId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
         try {
-            // Use the repository directly for single item lookup
             Optional<KanbanItem> item = kanbanItemRepository.findById(itemId);
             if (item.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "KanbanItem not found with id: " + itemId));
+                    .body(Map.of("error", "KanbanItem not found"));
+            }
+            if (authUserId == null || !item.get().getUserId().equals(authUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied"));
             }
             KanbanItemResult result = KanbanItemResult.from(item.get());
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
+                .body(Map.of("error", "An unexpected error occurred."));
         }
     }
 
@@ -971,7 +996,13 @@ public class GoalsOKRController {
      */
     @PostMapping("/kanban-items")
     @Transactional
-    public ResponseEntity<?> addKanbanItem(@Valid @RequestBody AddKanbanItemRequest request) {
+    public ResponseEntity<?> addKanbanItem(
+            @Valid @RequestBody AddKanbanItemRequest request,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        if (authUserId == null || !request.userId().equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             AddKanbanItemCommand command = new AddKanbanItemCommand(
                 request.userId(),
@@ -985,10 +1016,8 @@ public class GoalsOKRController {
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
-            String errorMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "An unexpected error occurred: " + errorMessage));
+                .body(Map.of("error", "An unexpected error occurred."));
         }
     }
 
@@ -1000,7 +1029,16 @@ public class GoalsOKRController {
     @Transactional
     public ResponseEntity<?> updateKanbanItemPosition(
             @PathVariable Long itemId,
-            @Valid @RequestBody UpdateKanbanItemPositionRequest request) {
+            @Valid @RequestBody UpdateKanbanItemPositionRequest request,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        Optional<KanbanItem> itemOpt = kanbanItemRepository.findById(itemId);
+        if (itemOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (authUserId == null || !itemOpt.get().getUserId().equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             UpdateKanbanItemPositionCommand command = new UpdateKanbanItemPositionCommand(
                 itemId,
@@ -1012,7 +1050,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -1026,7 +1063,16 @@ public class GoalsOKRController {
     @Transactional
     public ResponseEntity<?> updateKanbanItemNotes(
             @PathVariable Long itemId,
-            @Valid @RequestBody UpdateKanbanItemNotesRequest request) {
+            @Valid @RequestBody UpdateKanbanItemNotesRequest request,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
+        Optional<KanbanItem> itemOpt = kanbanItemRepository.findById(itemId);
+        if (itemOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        if (authUserId == null || !itemOpt.get().getUserId().equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Access denied"));
+        }
         try {
             UpdateKanbanItemNotesCommand command = new UpdateKanbanItemNotesCommand(
                 itemId,
@@ -1037,7 +1083,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -1050,10 +1095,16 @@ public class GoalsOKRController {
      */
     @DeleteMapping("/kanban-items/{itemId}")
     @Transactional
-    public ResponseEntity<?> deleteKanbanItem(@PathVariable Long itemId) {
+    public ResponseEntity<?> deleteKanbanItem(
+            @PathVariable Long itemId,
+            @AuthenticationPrincipal(expression = "#this == null ? null : #this") Long authUserId) {
         try {
             KanbanItem item = kanbanItemRepository.findById(itemId)
-                .orElseThrow(() -> new IllegalArgumentException("KanbanItem not found with id: " + itemId));
+                .orElseThrow(() -> new IllegalArgumentException("KanbanItem not found"));
+            if (authUserId == null || !item.getUserId().equals(authUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied"));
+            }
 
             ItemType itemType = item.getItemType();
             Long instanceId = item.getItemId();
@@ -1062,14 +1113,12 @@ public class GoalsOKRController {
                 case OBJECTIVE -> deleteUserObjectiveInstanceHandler.handle(new DeleteUserObjectiveInstanceCommand(instanceId));
                 case KEY_RESULT -> deleteUserKeyResultInstanceHandler.handle(new DeleteUserKeyResultInstanceCommand(instanceId));
                 case INITIATIVE -> deleteUserInitiativeInstanceHandler.handle(new DeleteUserInitiativeInstanceCommand(instanceId));
-                case GOAL -> deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(itemId));
                 default -> deleteKanbanItemHandler.handle(new DeleteKanbanItemCommand(itemId));
             }
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -1088,7 +1137,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }
@@ -1107,7 +1155,6 @@ public class GoalsOKRController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
         }

@@ -48,6 +48,12 @@ public class ObjectiveRepositoryImpl implements ObjectiveRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public int findMaxOrderIndexByLifeDomainId(Long lifeDomainId) {
+        return jpaRepository.findMaxOrderIndexByLifeDomainId(lifeDomainId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Objective> findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(Long lifeDomainId, Long userId) {
         return jpaRepository.findByLifeDomainIdAndUserFilteredOrderedByOrderIndex(lifeDomainId, userId).stream()
             .map(ObjectiveEntityMapper::toDomain)

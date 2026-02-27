@@ -6,21 +6,6 @@ import apiClient from '@/shared/api/client'
 
 // ========== Types ==========
 
-export interface GoalDTO {
-  id: number
-  lifeDomainId: number
-  titleNl: string
-  titleEn: string
-  descriptionNl?: string | null
-  descriptionEn?: string | null
-  orderIndex: number
-  quarter?: number | null // Program Increment quarter (1-4)
-  year?: number | null    // Program Increment year (e.g., 2025)
-  number?: string | null
-  createdAt: string
-  updatedAt: string
-}
-
 export interface ObjectiveDTO {
   id: number
   lifeDomainId: number
@@ -47,15 +32,6 @@ export interface KeyResultDTO {
   number?: string | null
   createdAt: string
   updatedAt: string
-}
-
-export interface UserGoalInstanceDTO {
-  id: number
-  userId: number
-  goalId: number
-  number?: string | null
-  startedAt: string
-  completedAt?: string | null
 }
 
 export interface UserObjectiveInstanceDTO {
@@ -140,7 +116,7 @@ export interface LifeDomainDTO {
 export interface KanbanItemDTO {
   id: number
   userId: number
-  itemType: 'GOAL' | 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
+  itemType: 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
   itemId: number
   columnName: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'
   position: number
@@ -149,6 +125,10 @@ export interface KanbanItemDTO {
   createdAt: string
   updatedAt: string
   readOnly?: boolean // true for team kanban items (read-only for members)
+  /** Enriched by list endpoints: display title from objective/key result/initiative */
+  title?: string | null
+  /** Enriched by list endpoints: for filtering by wheel/context */
+  lifeDomainId?: number | null
 }
 
 export interface WheelDTO {
@@ -191,49 +171,6 @@ export async function getLifeDomain(lifeDomainId: number): Promise<LifeDomainDTO
   return all.find((d) => d.id === lifeDomainId) ?? null
 }
 
-// ========== Goals (removed from backend – goal layer removed) ==========
-// Stubs so existing call sites compile; replace with life domains + objectives flow.
-
-export async function getGoalsByLifeDomain(_lifeDomainId: number): Promise<GoalDTO[]> {
-  return []
-}
-
-/** Goal layer removed – returns placeholder so UI does not crash. */
-export async function getGoal(goalId: number): Promise<GoalDTO> {
-  return {
-    id: goalId,
-    lifeDomainId: 0,
-    titleNl: '—',
-    titleEn: '—',
-    descriptionNl: null,
-    descriptionEn: null,
-    orderIndex: 0,
-    number: null,
-    createdAt: '',
-    updatedAt: '',
-    quarter: null,
-    year: null,
-  }
-}
-
-export async function createGoal(_request: unknown): Promise<GoalDTO> {
-  throw new Error('Goal layer removed')
-}
-
-export async function updateGoal(_goalId: number, _request: unknown): Promise<GoalDTO> {
-  throw new Error('Goal layer removed')
-}
-
-/** @deprecated Goal layer removed – use getObjectivesByLifeDomain */
-export async function getObjectivesByGoal(_goalId: number): Promise<ObjectiveDTO[]> {
-  return []
-}
-
-/** @deprecated Goal layer removed – returns empty array. */
-export async function getUserGoalEnrollments(_userId: number): Promise<UserGoalInstanceDTO[]> {
-  return []
-}
-
 /**
  * Get all objectives for a life domain
  * GET /api/v2/goals-okr/life-domains/{lifeDomainId}/objectives
@@ -243,35 +180,6 @@ export async function getObjectivesByLifeDomain(lifeDomainId: number): Promise<O
     `/api/v2/goals-okr/life-domains/${lifeDomainId}/objectives`
   )
   return response.data
-}
-
-export async function startUserGoalInstance(_userId: number, _goalId: number): Promise<UserGoalInstanceDTO> {
-  throw new Error('User goal instance layer removed')
-}
-
-export async function getUserGoalInstances(_userId: number): Promise<UserGoalInstanceDTO[]> {
-  return []
-}
-
-/** User goal instance layer removed – returns placeholder so UI does not crash. */
-export async function getUserGoalInstance(userGoalInstanceId: number): Promise<UserGoalInstanceDTO> {
-  return {
-    id: userGoalInstanceId,
-    userId: 0,
-    goalId: 0,
-    number: null,
-    startedAt: '',
-    completedAt: null,
-  }
-}
-
-/** Prefer getUserObjectiveInstances(userId) instead. */
-export async function getUserObjectiveInstancesByUserGoalInstance(_userGoalInstanceId: number): Promise<UserObjectiveInstanceDTO[]> {
-  return []
-}
-
-export async function createPersonalGoal(_userId: number, _request: { lifeDomainId: number; title: string; description?: string }): Promise<UserGoalInstanceDTO> {
-  throw new Error('Personal goal removed – use personal objective')
 }
 
 // ========== Objectives ==========
@@ -362,9 +270,6 @@ export async function createKeyResult(request: {
   )
   return response.data
 }
-
-// ========== User Goal Instances (removed from backend) ==========
-// Use getUserObjectiveInstances(userId) for user's objective instances.
 
 // ========== User Objective Instances ==========
 
@@ -825,7 +730,7 @@ export async function getKanbanItem(itemId: number): Promise<KanbanItemDTO> {
  */
 export async function addKanbanItem(request: {
   userId: number
-  itemType: 'GOAL' | 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
+  itemType: 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
   itemId: number
 }): Promise<KanbanItemDTO> {
   const response = await apiClient.post<KanbanItemDTO>(
@@ -891,20 +796,6 @@ export async function updateKeyResultProgress(request: {
   return response.data
 }
 
-// ========== User-Specific Goals ==========
-
-export interface UserGoalDTO {
-  id: number
-  userId: number
-  lifeDomainId?: number | null
-  title: string
-  description?: string | null
-  number?: string | null
-  createdAt: string
-  updatedAt: string
-  completedAt?: string | null
-}
-
 /**
  * Create a custom objective (Objective template + UserObjectiveInstance + Kanban item)
  * POST /api/v2/goals-okr/users/{userId}/objectives/custom
@@ -931,49 +822,6 @@ export async function createCustomObjective(
 
 /** @deprecated Use createCustomObjective instead */
 export const createPersonalObjective = createCustomObjective
-
-/**
- * Create a user-specific goal (OLD APPROACH - kept for backward compatibility)
- * POST /api/v2/goals-okr/users/{userId}/user-goals
- * 
- * @deprecated Use createPersonalGoal instead
- */
-export async function createUserGoal(
-  userId: number,
-  request: {
-    lifeDomainId?: number
-    title: string
-    description?: string
-  }
-): Promise<UserGoalDTO> {
-  const response = await apiClient.post<UserGoalDTO>(
-    `/api/v2/goals-okr/users/${userId}/user-goals`,
-    { ...request, userId }
-  )
-  return response.data
-}
-
-/**
- * Get all user-specific goals for a user
- * GET /api/v2/goals-okr/users/{userId}/user-goals
- */
-export async function getUserGoals(userId: number): Promise<UserGoalDTO[]> {
-  const response = await apiClient.get<UserGoalDTO[]>(
-    `/api/v2/goals-okr/users/${userId}/user-goals`
-  )
-  return response.data
-}
-
-/**
- * Get a user-specific goal by ID
- * GET /api/v2/goals-okr/user-goals/{userGoalId}
- */
-export async function getUserGoal(userGoalId: number): Promise<UserGoalDTO> {
-  const response = await apiClient.get<UserGoalDTO>(
-    `/api/v2/goals-okr/user-goals/${userGoalId}`
-  )
-  return response.data
-}
 
 // ========== User-Specific Objectives ==========
 
@@ -1004,19 +852,6 @@ export async function createUserObjective(
   const response = await apiClient.post<UserObjectiveDTO>(
     `/api/v2/goals-okr/users/${userId}/user-objectives`,
     { ...request, userId }
-  )
-  return response.data
-}
-
-/**
- * Get all user-specific objectives for a user goal
- * GET /api/v2/goals-okr/user-goals/{userGoalId}/user-objectives
- */
-export async function getUserObjectivesByUserGoal(
-  userGoalId: number
-): Promise<UserObjectiveDTO[]> {
-  const response = await apiClient.get<UserObjectiveDTO[]>(
-    `/api/v2/goals-okr/user-goals/${userGoalId}/user-objectives`
   )
   return response.data
 }

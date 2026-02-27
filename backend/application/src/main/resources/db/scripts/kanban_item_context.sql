@@ -1,5 +1,6 @@
 -- Query to determine the Goals-OKR context (LIFE/BUSINESS/WORK) for a kanban item
 -- Usage: Replace :kanban_item_id with the actual id (e.g. 55)
+-- Goal layer removed: life_domain_id resolved via objectives only (no goals table).
 
 -- Kanban item 55 context lookup
 WITH kanban AS (
@@ -7,44 +8,33 @@ WITH kanban AS (
   FROM goals_okr.kanban_items
   WHERE id = 55
 ),
--- Resolve life_domain_id based on item_type
-goal_context AS (
-  SELECT k.id, g.life_domain_id
-  FROM kanban k
-  JOIN goals_okr.user_goal_instances ugi ON ugi.id = k.item_id
-  JOIN goals_okr.goals g ON g.id = ugi.goal_id
-  WHERE k.item_type = 'GOAL'
-),
+-- Resolve life_domain_id based on item_type (OBJECTIVE, KEY_RESULT, INITIATIVE)
 objective_context AS (
-  SELECT k.id, g.life_domain_id
+  SELECT k.id, o.life_domain_id
   FROM kanban k
   JOIN goals_okr.user_objective_instances uoi ON uoi.id = k.item_id
   JOIN goals_okr.objectives o ON o.id = uoi.objective_id
-  JOIN goals_okr.goals g ON g.id = o.goal_id
   WHERE k.item_type = 'OBJECTIVE'
 ),
 key_result_context AS (
-  SELECT k.id, g.life_domain_id
+  SELECT k.id, o.life_domain_id
   FROM kanban k
   JOIN goals_okr.user_key_result_instances ukri ON ukri.id = k.item_id
   JOIN goals_okr.key_results kr ON kr.id = ukri.key_result_id
   JOIN goals_okr.objectives o ON o.id = kr.objective_id
-  JOIN goals_okr.goals g ON g.id = o.goal_id
   WHERE k.item_type = 'KEY_RESULT'
 ),
 initiative_context AS (
-  SELECT k.id, g.life_domain_id
+  SELECT k.id, o.life_domain_id
   FROM kanban k
   JOIN goals_okr.user_initiative_instances uiinst ON uiinst.id = k.item_id
   JOIN goals_okr.user_key_result_instances ukri ON ukri.id = uiinst.user_key_result_instance_id
   JOIN goals_okr.key_results kr ON kr.id = ukri.key_result_id
   JOIN goals_okr.objectives o ON o.id = kr.objective_id
-  JOIN goals_okr.goals g ON g.id = o.goal_id
   WHERE k.item_type = 'INITIATIVE'
 ),
 all_contexts AS (
-  SELECT * FROM goal_context
-  UNION ALL SELECT * FROM objective_context
+  SELECT * FROM objective_context
   UNION ALL SELECT * FROM key_result_context
   UNION ALL SELECT * FROM initiative_context
 )

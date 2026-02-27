@@ -9,7 +9,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 
-export type CartItemType = 'GOAL' | 'OBJECTIVE' | 'KEY_RESULT'
+export type CartItemType = 'OBJECTIVE' | 'KEY_RESULT'
 
 export interface OKRCartItem {
   type: CartItemType
