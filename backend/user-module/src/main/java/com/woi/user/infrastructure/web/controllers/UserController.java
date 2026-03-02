@@ -15,10 +15,21 @@ import com.woi.user.application.handlers.commands.ResetPasswordCommandHandler;
 import com.woi.user.application.handlers.queries.GetUserQueryHandler;
 import com.woi.user.application.handlers.queries.GetUserPreferencesQueryHandler;
 import com.woi.user.application.handlers.commands.UpdateUserPreferencesCommandHandler;
+import com.woi.user.application.handlers.commands.StartFalahCycleCommandHandler;
+import com.woi.user.application.handlers.commands.CompleteFalahCycleCommandHandler;
+import com.woi.user.application.handlers.commands.ExitFalahCycleFlowCommandHandler;
+import com.woi.user.application.handlers.commands.ReEnterFalahCycleFlowCommandHandler;
+import com.woi.user.application.handlers.queries.GetUserFalahCyclesQueryHandler;
 import com.woi.user.application.queries.GetUserQuery;
 import com.woi.user.application.queries.GetUserPreferencesQuery;
 import com.woi.user.application.commands.UpdateUserPreferencesCommand;
+import com.woi.user.application.commands.StartFalahCycleCommand;
+import com.woi.user.application.commands.CompleteFalahCycleCommand;
+import com.woi.user.application.commands.ExitFalahCycleFlowCommand;
+import com.woi.user.application.commands.ReEnterFalahCycleFlowCommand;
+import com.woi.user.application.queries.GetUserFalahCyclesQuery;
 import com.woi.user.application.results.AuthResult;
+import com.woi.user.application.results.FalahCycleResult;
 import com.woi.user.application.results.UserResult;
 import com.woi.user.application.results.UserPreferenceResult;
 import com.woi.user.infrastructure.services.RateLimitingService;
@@ -33,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,8 +67,13 @@ public class UserController {
     private final GetUserQueryHandler getUserHandler;
     private final GetUserPreferencesQueryHandler getUserPreferencesHandler;
     private final UpdateUserPreferencesCommandHandler updateUserPreferencesHandler;
+    private final StartFalahCycleCommandHandler startFalahCycleHandler;
+    private final CompleteFalahCycleCommandHandler completeFalahCycleHandler;
+    private final ExitFalahCycleFlowCommandHandler exitFalahCycleFlowHandler;
+    private final ReEnterFalahCycleFlowCommandHandler reEnterFalahCycleFlowHandler;
+    private final GetUserFalahCyclesQueryHandler getUserFalahCyclesHandler;
     private final RateLimitingService rateLimitingService;
-    
+
     public UserController(
             RegisterUserCommandHandler registerHandler,
             LoginCommandHandler loginHandler,
@@ -67,6 +84,11 @@ public class UserController {
             GetUserQueryHandler getUserHandler,
             GetUserPreferencesQueryHandler getUserPreferencesHandler,
             UpdateUserPreferencesCommandHandler updateUserPreferencesHandler,
+            StartFalahCycleCommandHandler startFalahCycleHandler,
+            CompleteFalahCycleCommandHandler completeFalahCycleHandler,
+            ExitFalahCycleFlowCommandHandler exitFalahCycleFlowHandler,
+            ReEnterFalahCycleFlowCommandHandler reEnterFalahCycleFlowHandler,
+            GetUserFalahCyclesQueryHandler getUserFalahCyclesHandler,
             RateLimitingService rateLimitingService) {
         this.registerHandler = registerHandler;
         this.loginHandler = loginHandler;
@@ -77,6 +99,11 @@ public class UserController {
         this.getUserHandler = getUserHandler;
         this.getUserPreferencesHandler = getUserPreferencesHandler;
         this.updateUserPreferencesHandler = updateUserPreferencesHandler;
+        this.startFalahCycleHandler = startFalahCycleHandler;
+        this.completeFalahCycleHandler = completeFalahCycleHandler;
+        this.exitFalahCycleFlowHandler = exitFalahCycleFlowHandler;
+        this.reEnterFalahCycleFlowHandler = reEnterFalahCycleFlowHandler;
+        this.getUserFalahCyclesHandler = getUserFalahCyclesHandler;
         this.rateLimitingService = rateLimitingService;
     }
     
@@ -475,7 +502,130 @@ public class UserController {
                 .body(Map.of("error", "Er is een fout opgetreden bij het bijwerken van de voorkeuren."));
         }
     }
-    
+
+    /**
+     * Start a new Falah growth cycle
+     * POST /api/v2/user/{id}/falah-cycles
+     */
+    @PostMapping("/{id}/falah-cycles")
+    @Transactional
+    public ResponseEntity<?> startFalahCycle(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            StartFalahCycleCommand command = new StartFalahCycleCommand(id);
+            FalahCycleResult result = startFalahCycleHandler.handle(command);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toFalahCycleResponseDTO(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", safeErrorMessage(e)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Er is een fout opgetreden bij het starten van de Falah-cyclus."));
+        }
+    }
+
+    /**
+     * Get user's Falah cycles (active and history)
+     * GET /api/v2/user/{id}/falah-cycles
+     */
+    @GetMapping("/{id}/falah-cycles")
+    public ResponseEntity<?> getUserFalahCycles(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            GetUserFalahCyclesQuery query = new GetUserFalahCyclesQuery(id);
+            List<FalahCycleResult> results = getUserFalahCyclesHandler.handle(query);
+            return ResponseEntity.ok(results.stream()
+                .map(this::toFalahCycleResponseDTO)
+                .toList());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Exit the Falah cycle creation flow (Finish) - cycle stays active
+     * PATCH /api/v2/user/{id}/falah-cycles/{cycleId}/exit-flow
+     */
+    @PatchMapping("/{id}/falah-cycles/{cycleId}/exit-flow")
+    @Transactional
+    public ResponseEntity<?> exitFalahCycleFlow(
+            @PathVariable Long id,
+            @PathVariable Long cycleId,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            ExitFalahCycleFlowCommand command = new ExitFalahCycleFlowCommand(id, cycleId);
+            FalahCycleResult result = exitFalahCycleFlowHandler.handle(command);
+            return ResponseEntity.ok(toFalahCycleResponseDTO(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", safeErrorMessage(e)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Er is een fout opgetreden bij het verlaten van de flow."));
+        }
+    }
+
+    /**
+     * Re-enter the Falah cycle creation flow (Continue)
+     * PATCH /api/v2/user/{id}/falah-cycles/{cycleId}/re-enter-flow
+     */
+    @PatchMapping("/{id}/falah-cycles/{cycleId}/re-enter-flow")
+    @Transactional
+    public ResponseEntity<?> reEnterFalahCycleFlow(
+            @PathVariable Long id,
+            @PathVariable Long cycleId,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            ReEnterFalahCycleFlowCommand command = new ReEnterFalahCycleFlowCommand(id, cycleId);
+            FalahCycleResult result = reEnterFalahCycleFlowHandler.handle(command);
+            return ResponseEntity.ok(toFalahCycleResponseDTO(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", safeErrorMessage(e)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Er is een fout opgetreden bij het hervatten van de flow."));
+        }
+    }
+
+    /**
+     * Complete a Falah growth cycle
+     * PATCH /api/v2/user/{id}/falah-cycles/{cycleId}/complete
+     */
+    @PatchMapping("/{id}/falah-cycles/{cycleId}/complete")
+    @Transactional
+    public ResponseEntity<?> completeFalahCycle(
+            @PathVariable Long id,
+            @PathVariable Long cycleId,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            CompleteFalahCycleCommand command = new CompleteFalahCycleCommand(id, cycleId);
+            FalahCycleResult result = completeFalahCycleHandler.handle(command);
+            return ResponseEntity.ok(toFalahCycleResponseDTO(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", safeErrorMessage(e)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Er is een fout opgetreden bij het afronden van de Falah-cyclus."));
+        }
+    }
+
     // Mapper methods
     private RegisterResponseDTO toRegisterResponseDTO(UserResult result) {
         RegisterResponseDTO dto = new RegisterResponseDTO();
@@ -517,6 +667,18 @@ public class UserController {
         dto.setDefaultGoalsOkrContext(result.defaultGoalsOkrContext());
         dto.setCreatedAt(result.createdAt());
         dto.setUpdatedAt(result.updatedAt());
+        return dto;
+    }
+
+    private FalahCycleResponseDTO toFalahCycleResponseDTO(FalahCycleResult result) {
+        FalahCycleResponseDTO dto = new FalahCycleResponseDTO();
+        dto.setId(result.id());
+        dto.setUserId(result.userId());
+        dto.setStartedAt(result.startedAt());
+        dto.setFlowExitedAt(result.flowExitedAt());
+        dto.setCompletedAt(result.completedAt());
+        dto.setActive(result.active());
+        dto.setFlowExited(result.flowExited());
         return dto;
     }
 }

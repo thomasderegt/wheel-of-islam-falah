@@ -6,8 +6,10 @@
  * This is an alias for /goals-okr/kanban
  */
 
+import Link from 'next/link'
 import { Suspense, useEffect } from 'react'
-import { ProtectedRoute } from '@/features/auth'
+import { ProtectedRoute, useAuth } from '@/features/auth'
+import { useFalahCycles } from '@/features/auth/hooks/useFalahCycles'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { KanbanBoard } from '@/features/goals-okr/components/KanbanBoard'
@@ -16,8 +18,14 @@ import { useKanbanFilters } from '@/features/goals-okr/hooks/useKanbanFilters'
 import { useModeContext } from '@/shared/hooks/useModeContext'
 import { useRouter } from 'next/navigation'
 import { Loading } from '@/shared/components/ui/Loading'
+import { Button } from '@/shared/components/ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 function ExecuteContent() {
+  const { user } = useAuth()
+  const { data: cycles } = useFalahCycles(user?.id ?? null)
+  const activeCycle = cycles?.find((c) => c.active)
+  const isInFlow = !!activeCycle && !activeCycle.flowExited
   // TODO: Get from language context
   const language = 'en' as 'nl' | 'en'
   const { filters, setFilters } = useKanbanFilters()
@@ -52,6 +60,23 @@ function ExecuteContent() {
 
             {/* Progress Board */}
             <KanbanBoard language={language} filters={filters} />
+
+            {isInFlow && (
+              <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
+                <Link href="/goals-okr">
+                  <Button variant="outline" className="gap-2">
+                    <ChevronLeft className="h-4 w-4" />
+                    Back
+                  </Button>
+                </Link>
+                <Link href="/goals-okr/insight">
+                  <Button className="gap-2">
+                    Next: Reflection
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
           </Container>
         </main>
       </div>

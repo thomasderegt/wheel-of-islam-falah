@@ -5,7 +5,9 @@
  * Shows statistics about kanban items: objectives, key results, initiatives (no goal layer).
  */
 
+import Link from 'next/link'
 import { ProtectedRoute, useAuth } from '@/features/auth'
+import { useFalahCycles, useExitFalahCycleFlow, useCompleteFalahCycle } from '@/features/auth/hooks/useFalahCycles'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
@@ -20,9 +22,18 @@ import { useRouter } from 'next/navigation'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/shared/components/ui/chart'
 import { Pie, PieChart, Cell } from 'recharts'
 import { getObjective, getKeyResult, getUserObjectiveInstance, getUserKeyResultInstance, getAllLifeDomains, getAllWheels } from '@/features/goals-okr/api/goalsOkrApi'
+import { Button } from '@/shared/components/ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { routes } from '@/shared/constants/routes'
 
 export default function InsightPage() {
   const { user } = useAuth()
+  const { data: cycles } = useFalahCycles(user?.id ?? null)
+  const exitFlow = useExitFalahCycleFlow(user?.id ?? null)
+  const completeCycle = useCompleteFalahCycle(user?.id ?? null)
+  const activeCycle = cycles?.find((c) => c.active)
+  const hasActiveCycle = !!activeCycle
+  const isInFlow = hasActiveCycle && !activeCycle?.flowExited
   const { goalsOkrContext } = useModeContext()
   const { data: kanbanItems, isLoading } = useKanbanItems(user?.id || null)
   const { data: wheels } = useWheels()
@@ -492,6 +503,68 @@ export default function InsightPage() {
             <div className="space-y-6">
               <h1 className="text-3xl font-bold">Insight</h1>
 
+              {/* Falah cycle overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">
+                    Falah cycles
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {language === 'nl'
+                      ? 'Rond een cycle handmatig af. Pas daarna kun je een nieuwe starten.'
+                      : 'Complete a cycle manually. Only then can you start a new one.'}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {cycles && cycles.length > 0 ? (
+                    <div className="space-y-3">
+                      {cycles.map((cycle) => (
+                        <div
+                          key={cycle.id}
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"
+                        >
+                          <div className="text-sm">
+                            <p className="font-medium text-foreground">
+                              {cycle.active
+                                ? (language === 'nl' ? 'Actief' : 'Active')
+                                : (language === 'nl' ? 'Afgerond' : 'Completed')}
+                            </p>
+                            <p className="text-muted-foreground">
+                              {language === 'nl' ? 'Gestart' : 'Started'}: {new Date(cycle.startedAt).toLocaleString()}
+                            </p>
+                            {cycle.completedAt && (
+                              <p className="text-muted-foreground">
+                                {language === 'nl' ? 'Afgerond' : 'Completed'}: {new Date(cycle.completedAt).toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                          {cycle.active && (
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await completeCycle.mutateAsync(cycle.id)
+                                  router.push(routes.home)
+                                } catch (e) {
+                                  console.error('Failed to complete cycle:', e)
+                                }
+                              }}
+                              disabled={completeCycle.isPending}
+                            >
+                              {completeCycle.isPending ? '...' : language === 'nl' ? 'Rond af' : 'Complete'}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'nl' ? 'Nog geen cycles.' : 'No cycles yet.'}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Objectives and Key Results by domain */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {domainCharts}
@@ -597,6 +670,34 @@ export default function InsightPage() {
                 )}
               </div>
             </div>
+
+            {isInFlow && (
+              <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
+                <Link href="/goals-okr/execute">
+                  <Button variant="outline" className="gap-2">
+                    <ChevronLeft className="h-4 w-4" />
+                    Back
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  className="gap-2"
+                  disabled={exitFlow.isPending}
+                  onClick={async () => {
+                    if (!activeCycle) return
+                    try {
+                      await exitFlow.mutateAsync(activeCycle.id)
+                      router.push(routes.home)
+                    } catch (e) {
+                      console.error('Failed to exit flow:', e)
+                    }
+                  }}
+                >
+                  {exitFlow.isPending ? '...' : language === 'nl' ? 'Afronden' : 'Finish'}
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </Container>
         </main>
       </div>

@@ -10,6 +10,7 @@ import {
   UserResponse,
   UserPreferenceResponse,
   UpdateUserPreferencesRequest,
+  FalahCycleResponse,
 } from '@/shared/api/types'
 
 /**
@@ -87,6 +88,56 @@ export const authApi = {
     const response = await apiClient.put<UserPreferenceResponse>(
       `/api/v2/user/${userId}/preferences`,
       data
+    )
+    return response.data
+  },
+
+  /**
+   * Start a new Falah growth cycle
+   */
+  async startFalahCycle(userId: number): Promise<FalahCycleResponse> {
+    const response = await apiClient.post<FalahCycleResponse>(
+      `/api/v2/user/${userId}/falah-cycles`
+    )
+    return response.data
+  },
+
+  /**
+   * Get user's Falah cycles (active and history)
+   */
+  async getFalahCycles(userId: number): Promise<FalahCycleResponse[]> {
+    const response = await apiClient.get<FalahCycleResponse[]>(
+      `/api/v2/user/${userId}/falah-cycles`
+    )
+    return response.data
+  },
+
+  /**
+   * Exit the Falah cycle creation flow (Finish) - cycle stays active
+   */
+  async exitFalahCycleFlow(userId: number, cycleId: number): Promise<FalahCycleResponse> {
+    const response = await apiClient.patch<FalahCycleResponse>(
+      `/api/v2/user/${userId}/falah-cycles/${cycleId}/exit-flow`
+    )
+    return response.data
+  },
+
+  /**
+   * Re-enter the Falah cycle creation flow (Continue)
+   */
+  async reEnterFalahCycleFlow(userId: number, cycleId: number): Promise<FalahCycleResponse> {
+    const response = await apiClient.patch<FalahCycleResponse>(
+      `/api/v2/user/${userId}/falah-cycles/${cycleId}/re-enter-flow`
+    )
+    return response.data
+  },
+
+  /**
+   * Complete a Falah growth cycle
+   */
+  async completeFalahCycle(userId: number, cycleId: number): Promise<FalahCycleResponse> {
+    const response = await apiClient.patch<FalahCycleResponse>(
+      `/api/v2/user/${userId}/falah-cycles/${cycleId}/complete`
     )
     return response.data
   },

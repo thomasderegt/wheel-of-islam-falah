@@ -77,6 +77,18 @@ export interface UpdateUserPreferencesRequest {
   defaultGoalsOkrContext?: GoalsOkrContext  // Separate Goals-OKR context
 }
 
+// ========== Falah Cycle Types ==========
+
+export interface FalahCycleResponse {
+  id: number
+  userId: number
+  startedAt: string
+  flowExitedAt: string | null
+  completedAt: string | null
+  active: boolean
+  flowExited: boolean
+}
+
 // ========== Content Types ==========
 
 export interface WheelDTO {

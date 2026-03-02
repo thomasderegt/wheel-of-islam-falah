@@ -6,7 +6,9 @@
  * Falah Growth process: Success → Assessment → Goals → Execute → Insight.
  */
 
-import { ProtectedRoute } from '@/features/auth'
+import { useRouter } from 'next/navigation'
+import { ProtectedRoute, useAuth } from '@/features/auth'
+import { useFalahCycles, useStartFalahCycle, useReEnterFalahCycleFlow } from '@/features/auth/hooks/useFalahCycles'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import Link from 'next/link'
@@ -23,6 +25,37 @@ const falahGrowthSteps = [
 ]
 
 export default function HomePage() {
+  const router = useRouter()
+  const { user } = useAuth()
+  const { data: cycles } = useFalahCycles(user?.id ?? null)
+  const startCycle = useStartFalahCycle(user?.id ?? null)
+  const reEnterFlow = useReEnterFalahCycleFlow(user?.id ?? null)
+
+  const activeCycle = cycles?.find((c) => c.active)
+  const hasActiveCycle = !!activeCycle
+  let startButtonLabel = 'Start Falah growth cycle'
+  if (startCycle.isPending || reEnterFlow.isPending) startButtonLabel = 'Starting...'
+  else if (hasActiveCycle) startButtonLabel = 'Continue Falah growth cycle'
+
+  const handleStartOrContinue = async () => {
+    if (!user?.id) return
+    if (hasActiveCycle) {
+      try {
+        await reEnterFlow.mutateAsync(activeCycle!.id)
+        router.push(routes.success)
+      } catch (e) {
+        console.error('Failed to re-enter flow:', e)
+      }
+      return
+    }
+    try {
+      await startCycle.mutateAsync()
+      router.push(routes.success)
+    } catch (e) {
+      console.error('Failed to start Falah cycle:', e)
+    }
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen flex flex-col">
@@ -38,12 +71,15 @@ export default function HomePage() {
               Your dashboard. Start here and navigate to the main areas.
             </p>
 
-            <Link href={routes.success}>
-              <Button size="lg" className="w-full sm:w-auto gap-2">
-                <Play className="h-4 w-4" />
-                Start Falah growth cycle
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              className="w-full sm:w-auto gap-2"
+              onClick={handleStartOrContinue}
+              disabled={startCycle.isPending || reEnterFlow.isPending}
+            >
+              <Play className="h-4 w-4" />
+              {startButtonLabel}
+            </Button>
 
             <section>
               <div className="flex flex-col gap-3">

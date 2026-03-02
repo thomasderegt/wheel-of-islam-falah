@@ -13,6 +13,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useFalahCycles } from '@/features/auth/hooks/useFalahCycles'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useModeContext } from '@/shared/hooks/useModeContext'
 import { Home, Star, ClipboardCheck, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
@@ -30,6 +31,14 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
   const { isAuthenticated, user } = useAuth()
   const logout = useLogout()
   const { goalsOkrContext } = useModeContext()
+  const { data: cycles } = useFalahCycles(user?.id ?? null)
+  const activeCycle = cycles?.find((c) => c.active)
+  const isInFlow = !!activeCycle && !activeCycle.flowExited
+  const isOnCyclePage =
+    pathname === '/success' ||
+    pathname === '/assessment' ||
+    (pathname.startsWith('/goals-okr') && !pathname.startsWith('/goals-okr/insight'))
+  const navDisabled = isInFlow && isOnCyclePage
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const bottomNavScrollRef = useRef<HTMLDivElement>(null)
   const bottomNavDragRef = useRef({ isDragging: false, startX: 0, startScrollLeft: 0, hasMoved: false })
@@ -288,12 +297,16 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
               {bottomNavItems.map((item) => {
                 const Icon = item.icon
                 const active = isActive(item.href)
+                const disabled = navDisabled
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
-                    className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] rounded-lg transition-colors hover:bg-muted"
-                    onClick={() => setMobileMenuOpen(false)}
+                    href={disabled ? '#' : item.href}
+                    className={`flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] rounded-lg transition-colors ${
+                      disabled ? 'opacity-50 pointer-events-none cursor-not-allowed' : 'hover:bg-muted'
+                    }`}
+                    onClick={(e) => disabled ? e.preventDefault() : setMobileMenuOpen(false)}
+                    aria-disabled={disabled}
                   >
                     <Icon 
                       className={`h-5 w-5 transition-colors ${
@@ -314,7 +327,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
                   </Link>
                 )
               })}
-              {/* User settings */}
+              {/* User settings - always accessible */}
               <Link
                 href="/user/settings"
                 className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] max-w-[140px] rounded-lg transition-colors hover:bg-muted"
@@ -337,7 +350,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
                   {user?.email || 'User'}
                 </span>
               </Link>
-              {/* Logout button */}
+              {/* Logout button - always accessible */}
               <button
                 onClick={handleLogout}
                 className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] rounded-lg transition-colors hover:bg-muted"

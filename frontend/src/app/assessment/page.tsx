@@ -7,7 +7,9 @@
  * Part of the Falah growth cycle: Self Assessment → Insight → Direction.
  */
 
-import { ProtectedRoute } from '@/features/auth'
+import Link from 'next/link'
+import { ProtectedRoute, useAuth } from '@/features/auth'
+import { useFalahCycles } from '@/features/auth/hooks/useFalahCycles'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { useLifeDomains } from '@/features/goals-okr/hooks/useLifeDomains'
@@ -15,8 +17,8 @@ import { useWheels } from '@/features/goals-okr/hooks/useWheels'
 import { Loading } from '@/shared/components/ui/Loading'
 import { useMemo, useState, useEffect } from 'react'
 import { routes } from '@/shared/constants/routes'
-import Link from 'next/link'
 import { Button } from '@/shared/components/ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const STORAGE_KEY = 'woi-assessment-scores'
 
@@ -40,6 +42,11 @@ function saveScores(scores: Record<number, number>) {
 }
 
 export default function AssessmentPage() {
+  const { user } = useAuth()
+  const { data: cycles } = useFalahCycles(user?.id ?? null)
+  const activeCycle = cycles?.find((c) => c.active)
+  const isInFlow = !!activeCycle && !activeCycle.flowExited
+
   const { data: lifeDomains, isLoading: loadingDomains } = useLifeDomains()
   const { data: wheels, isLoading: loadingWheels } = useWheels()
 
@@ -141,15 +148,37 @@ export default function AssessmentPage() {
               </div>
             )}
 
-            <div className="pt-4 flex gap-3">
-              <Button variant="outline" asChild>
-                <Link href={routes.home}>{language === 'nl' ? 'Terug' : 'Back'}</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/goals-okr/insight">
-                  {language === 'nl' ? 'Naar Insight' : 'View Insight'}
-                </Link>
-              </Button>
+            <div className="pt-4 flex justify-between items-center pt-6 border-t border-border">
+              {isInFlow ? (
+                <>
+                  <Link href={routes.success}>
+                    <Button variant="outline" className="gap-2">
+                      <ChevronLeft className="h-4 w-4" />
+                      {language === 'nl' ? 'Terug' : 'Back'}
+                    </Button>
+                  </Link>
+                  <Link href="/goals-okr">
+                    <Button className="gap-2">
+                      {language === 'nl' ? 'Volgende: Richting' : 'Next: Direction'}
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href={routes.home}>
+                    <Button variant="outline" className="gap-2">
+                      <ChevronLeft className="h-4 w-4" />
+                      {language === 'nl' ? 'Terug' : 'Back'}
+                    </Button>
+                  </Link>
+                  <Link href="/goals-okr/insight">
+                    <Button className="gap-2">
+                      {language === 'nl' ? 'Bekijk resultaat' : 'View Result'}
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </Container>
         </main>
