@@ -30,6 +30,8 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class GoalsOKRController {
 
+    private static final String BAD_REQUEST_MESSAGE = "De actie kon niet worden uitgevoerd. Controleer de invoer.";
+
     // Command handlers
     private final CreateObjectiveCommandHandler createObjectiveHandler;
     private final CreateKeyResultCommandHandler createKeyResultHandler;
@@ -227,7 +229,7 @@ public class GoalsOKRController {
             ObjectiveResult result = createObjectiveHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -294,7 +296,7 @@ public class GoalsOKRController {
             deleteObjectiveHandler.handle(new DeleteObjectiveCommand(objectiveId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -323,7 +325,7 @@ public class GoalsOKRController {
             KeyResultResult result = createKeyResultHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -352,7 +354,7 @@ public class GoalsOKRController {
             deleteKeyResultHandler.handle(new DeleteKeyResultCommand(keyResultId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -443,7 +445,7 @@ public class GoalsOKRController {
                 new StartUserObjectiveInstanceCommand(userId, objectiveId));
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -498,7 +500,7 @@ public class GoalsOKRController {
                 new CompleteUserObjectiveInstanceCommand(userObjectiveInstanceId));
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -532,7 +534,7 @@ public class GoalsOKRController {
                 new StartUserKeyResultInstanceCommand(userId, userObjectiveInstanceId, keyResultId));
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -607,7 +609,7 @@ public class GoalsOKRController {
                 new CompleteUserKeyResultInstanceCommand(userKeyResultInstanceId));
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -636,7 +638,7 @@ public class GoalsOKRController {
                 new StartUserInitiativeInstanceCommand(userId, userKeyResultInstanceId, initiativeId));
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -670,7 +672,7 @@ public class GoalsOKRController {
             deleteUserInitiativeInstanceHandler.handle(new DeleteUserInitiativeInstanceCommand(userInitiativeInstanceId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -700,7 +702,7 @@ public class GoalsOKRController {
                 new CompleteUserInitiativeInstanceCommand(userInitiativeInstanceId));
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -734,7 +736,7 @@ public class GoalsOKRController {
             UserInitiativeResult result = createInitiativeHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -804,7 +806,7 @@ public class GoalsOKRController {
             UserInitiativeResult result = updateInitiativeHandler.handle(command);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -822,7 +824,7 @@ public class GoalsOKRController {
                 new CompleteInitiativeCommand(initiativeId));
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -839,7 +841,7 @@ public class GoalsOKRController {
             deleteUserInitiativeHandler.handle(new DeleteUserInitiativeCommand(initiativeId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -910,7 +912,7 @@ public class GoalsOKRController {
             KeyResultProgressResult result = updateKeyResultProgressHandler.handle(command);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -955,7 +957,7 @@ public class GoalsOKRController {
             return ResponseEntity.ok(results);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -983,7 +985,7 @@ public class GoalsOKRController {
             KanbanItemResult result = KanbanItemResult.from(item.get());
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -1012,9 +1014,9 @@ public class GoalsOKRController {
             KanbanItemResult result = addKanbanItemHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -1048,7 +1050,7 @@ public class GoalsOKRController {
             KanbanItemResult result = updateKanbanItemPositionHandler.handle(command);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -1081,7 +1083,7 @@ public class GoalsOKRController {
             KanbanItemResult result = updateKanbanItemNotesHandler.handle(command);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -1117,7 +1119,7 @@ public class GoalsOKRController {
             }
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -1135,7 +1137,7 @@ public class GoalsOKRController {
             deleteUserObjectiveInstanceHandler.handle(new DeleteUserObjectiveInstanceCommand(userObjectiveInstanceId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -1153,7 +1155,7 @@ public class GoalsOKRController {
             deleteUserKeyResultInstanceHandler.handle(new DeleteUserKeyResultInstanceCommand(userKeyResultInstanceId));
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));

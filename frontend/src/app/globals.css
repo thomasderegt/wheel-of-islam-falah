@@ -238,6 +238,24 @@
   --nav-category-circle-falah-stroke: oklch(0 0 0);       /* Falah stroke color (zwart) */
   --nav-category-circle-falah-hover: oklch(0.95 0 0);     /* Falah hover fill (lichtgrijs) */
   
+  /* Home Nav Circle - kleurrijke gradients (zoals Wheel of Success) */
+  --home-nav-sector-0-start: oklch(0.73 0.1 0);
+  --home-nav-sector-0-mid1: oklch(0.68 0.1 0);
+  --home-nav-sector-0-mid2: oklch(0.63 0.1 0);
+  --home-nav-sector-0-end: oklch(0.58 0.1 0);
+  --home-nav-sector-1-start: oklch(0.76 0.1 30);
+  --home-nav-sector-1-mid: oklch(0.68 0.1 30);
+  --home-nav-sector-1-end: oklch(0.6 0.1 30);
+  --home-nav-sector-2-start: oklch(0.78 0.1 60);
+  --home-nav-sector-2-mid: oklch(0.72 0.1 60);
+  --home-nav-sector-2-end: oklch(0.66 0.1 60);
+  --home-nav-sector-3-start: oklch(0.76 0.1 120);
+  --home-nav-sector-3-mid: oklch(0.68 0.1 120);
+  --home-nav-sector-3-end: oklch(0.6 0.1 120);
+  --home-nav-sector-4-start: oklch(0.72 0.1 210);
+  --home-nav-sector-4-mid: oklch(0.62 0.1 210);
+  --home-nav-sector-4-end: oklch(0.52 0.1 210);
+  
   /* Popover kleuren - voor popover/dropdown componenten */
   --popover: oklch(1 0 0);                     /* Wit - popover achtergrond */
   --popover-foreground: oklch(0.145 0 0);      /* Bijna zwart - tekst op popover */
@@ -366,6 +384,24 @@
   --border: oklch(1 0 0 / 10%);                /* 10% transparant wit - randen */
   --input: oklch(1 0 0 / 15%);                 /* 15% transparant wit - input achtergrond */
   --ring: oklch(0.556 0 0);                    /* Middengrijs - focus ring */
+  
+  /* Home Nav Circle - donkere variant voor dark mode */
+  --home-nav-sector-0-start: oklch(0.55 0.12 0);
+  --home-nav-sector-0-mid1: oklch(0.5 0.12 0);
+  --home-nav-sector-0-mid2: oklch(0.45 0.12 0);
+  --home-nav-sector-0-end: oklch(0.4 0.12 0);
+  --home-nav-sector-1-start: oklch(0.58 0.12 30);
+  --home-nav-sector-1-mid: oklch(0.52 0.12 30);
+  --home-nav-sector-1-end: oklch(0.46 0.12 30);
+  --home-nav-sector-2-start: oklch(0.6 0.12 60);
+  --home-nav-sector-2-mid: oklch(0.54 0.12 60);
+  --home-nav-sector-2-end: oklch(0.48 0.12 60);
+  --home-nav-sector-3-start: oklch(0.58 0.12 120);
+  --home-nav-sector-3-mid: oklch(0.52 0.12 120);
+  --home-nav-sector-3-end: oklch(0.46 0.12 120);
+  --home-nav-sector-4-start: oklch(0.52 0.12 210);
+  --home-nav-sector-4-mid: oklch(0.46 0.12 210);
+  --home-nav-sector-4-end: oklch(0.4 0.12 210);
   
   /* Chart kleuren - aangepast voor dark mode */
   --chart-1: oklch(0.488 0.243 264.376);

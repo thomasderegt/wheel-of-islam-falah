@@ -21,9 +21,11 @@ import com.woi.user.application.commands.UpdateUserPreferencesCommand;
 import com.woi.user.application.results.AuthResult;
 import com.woi.user.application.results.UserResult;
 import com.woi.user.application.results.UserPreferenceResult;
+import com.woi.user.infrastructure.services.RateLimitingService;
 import com.woi.user.infrastructure.web.dtos.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * REST Controller for User Management
@@ -52,6 +55,7 @@ public class UserController {
     private final GetUserQueryHandler getUserHandler;
     private final GetUserPreferencesQueryHandler getUserPreferencesHandler;
     private final UpdateUserPreferencesCommandHandler updateUserPreferencesHandler;
+    private final RateLimitingService rateLimitingService;
     
     public UserController(
             RegisterUserCommandHandler registerHandler,
@@ -62,7 +66,8 @@ public class UserController {
             ChangePasswordCommandHandler changePasswordHandler,
             GetUserQueryHandler getUserHandler,
             GetUserPreferencesQueryHandler getUserPreferencesHandler,
-            UpdateUserPreferencesCommandHandler updateUserPreferencesHandler) {
+            UpdateUserPreferencesCommandHandler updateUserPreferencesHandler,
+            RateLimitingService rateLimitingService) {
         this.registerHandler = registerHandler;
         this.loginHandler = loginHandler;
         this.refreshTokenHandler = refreshTokenHandler;
@@ -72,6 +77,7 @@ public class UserController {
         this.getUserHandler = getUserHandler;
         this.getUserPreferencesHandler = getUserPreferencesHandler;
         this.updateUserPreferencesHandler = updateUserPreferencesHandler;
+        this.rateLimitingService = rateLimitingService;
     }
     
     /**
@@ -89,7 +95,31 @@ public class UserController {
         }
         return request.getRemoteAddr();
     }
-    
+
+    /** Generic message when exception detail must not be exposed (ASVS V7). */
+    private static final String GENERIC_ERROR = "De actie kon niet worden uitgevoerd. Controleer de invoer.";
+
+    /** User-facing messages from auth handlers that are safe to return to the client. */
+    private static final Set<String> SAFE_AUTH_MESSAGES = Set.of(
+        "Ongeldige email of wachtwoord",
+        "Account is niet actief",
+        "Account is geblokkeerd. Probeer later opnieuw.",
+        "Email already exists",
+        "Ongeldige of verlopen refresh token",
+        "Gebruiker niet gevonden",
+        "Credential niet gevonden",
+        "Ongeldige of verlopen reset token",
+        "Oud wachtwoord is onjuist"
+    );
+
+    private static String safeErrorMessage(Exception e) {
+        String msg = e != null ? e.getMessage() : null;
+        if (msg == null) return GENERIC_ERROR;
+        if (SAFE_AUTH_MESSAGES.contains(msg)) return msg;
+        if (msg.startsWith("Account is geblokkeerd.")) return msg; // lockout message with minutes
+        return GENERIC_ERROR;
+    }
+
     /**
      * Register a new user
      * POST /api/v2/user/register
@@ -118,6 +148,19 @@ public class UserController {
             String clientIp = getClientIpAddress(httpRequest);
             String userAgent = httpRequest.getHeader("User-Agent");
             
+            // Rate limiting: 3 attempts per hour per IP
+            if (!rateLimitingService.isRegisterAllowed(clientIp)) {
+                long retryAfter = rateLimitingService.getTimeUntilReset(clientIp, false);
+                HttpHeaders headers = new HttpHeaders();
+                if (retryAfter > 0) {
+                    headers.set("Retry-After", String.valueOf(retryAfter));
+                }
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .headers(headers)
+                    .body(Map.of("error", "Te veel registratiepogingen. Probeer het later opnieuw."));
+            }
+            rateLimitingService.recordRegisterAttempt(clientIp);
+            
             // Create command (includes metadata for audit logging)
             RegisterUserCommand command = new RegisterUserCommand(
                 request.getEmail(),
@@ -134,7 +177,7 @@ public class UserController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", safeErrorMessage(e)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij de registratie. Probeer het later opnieuw."));
@@ -154,6 +197,7 @@ public class UserController {
             @Valid @RequestBody LoginRequestDTO request,
             BindingResult bindingResult,
             HttpServletRequest httpRequest) {
+        String clientIp = getClientIpAddress(httpRequest);
         try {
             // Check for validation errors (syntactical validation only)
             if (bindingResult.hasErrors()) {
@@ -165,9 +209,19 @@ public class UserController {
                     .body(Map.of("error", errorMessage));
             }
             
-            // Extract request metadata
-            String clientIp = getClientIpAddress(httpRequest);
             String userAgent = httpRequest.getHeader("User-Agent");
+            
+            // Rate limiting: 5 attempts per 15 minutes per IP
+            if (!rateLimitingService.isLoginAllowed(clientIp)) {
+                long retryAfter = rateLimitingService.getTimeUntilReset(clientIp, true);
+                HttpHeaders headers = new HttpHeaders();
+                if (retryAfter > 0) {
+                    headers.set("Retry-After", String.valueOf(retryAfter));
+                }
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .headers(headers)
+                    .body(Map.of("error", "Te veel inlogpogingen. Probeer het later opnieuw."));
+            }
             
             // Create command
             LoginCommand command = new LoginCommand(
@@ -180,13 +234,18 @@ public class UserController {
             // Handle command (use case handles business logic)
             AuthResult authResult = loginHandler.handle(command);
             
+            // Success: reset rate limit for this IP
+            rateLimitingService.resetLoginAttempts(clientIp);
+            
             // Convert to response DTO
             LoginResponseDTO response = toLoginResponseDTO(authResult);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
+            rateLimitingService.recordLoginAttempt(clientIp);
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", safeErrorMessage(e)));
         } catch (Exception e) {
+            rateLimitingService.recordLoginAttempt(clientIp);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het inloggen. Probeer het later opnieuw."));
         }
@@ -218,7 +277,7 @@ public class UserController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", safeErrorMessage(e)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verversen van de token."));
@@ -283,7 +342,7 @@ public class UserController {
             return ResponseEntity.ok(Map.of("message", "Wachtwoord is succesvol gewijzigd."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", safeErrorMessage(e)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het resetten van het wachtwoord."));
@@ -327,7 +386,7 @@ public class UserController {
             return ResponseEntity.ok(Map.of("message", "Wachtwoord is succesvol gewijzigd."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", safeErrorMessage(e)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het wijzigen van het wachtwoord."));
@@ -410,7 +469,7 @@ public class UserController {
             return ResponseEntity.ok(toUserPreferenceResponseDTO(result));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", safeErrorMessage(e)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het bijwerken van de voorkeuren."));

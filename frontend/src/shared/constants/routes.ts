@@ -12,6 +12,9 @@ export const routes = {
   
   // App (Protected)
   home: '/home',
+  success: '/success',
+  assessment: '/assessment',
+  onboarding: '/onboarding',
   
   // Goals
   goals: '/goals',

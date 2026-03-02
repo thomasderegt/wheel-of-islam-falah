@@ -16,15 +16,15 @@ import { useLifeDomains } from '../hooks/useLifeDomains'
 import { useWheels } from '../hooks/useWheels'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Loading } from '@/shared/components/ui/Loading'
-import { Button } from '@/shared/components/ui/button'
 import type { LifeDomainDTO } from '../api/goalsOkrApi'
 
 interface NavOKRLifeDomainCircleProps {
   readonly language?: 'nl' | 'en'
   readonly children?: ReactNode
+  readonly fitToScreen?: boolean
 }
 
-export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLifeDomainCircleProps) {
+export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen = false }: NavOKRLifeDomainCircleProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -141,21 +141,6 @@ export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLife
     }
   }, [pathname, ringDomains.length])
 
-  // Manual ring rotation functions
-  const rotateRingLeft = () => {
-    if (ringDomains.length > 0) {
-      const angleStep = 360 / ringDomains.length
-      setRingRotation(prev => prev - angleStep) // Rotate by one domain
-    }
-  }
-
-  const rotateRingRight = () => {
-    if (ringDomains.length > 0) {
-      const angleStep = 360 / ringDomains.length
-      setRingRotation(prev => prev + angleStep) // Rotate by one domain
-    }
-  }
-
   // Drag-to-rotate: hoek uit pointerpositie t.o.v. wrapper (viewBox 40 40 320 320, center 200,200)
   const getAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
     const el = wheelWrapperRef.current
@@ -206,7 +191,8 @@ export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLife
       }
       const currentAngle = getAngleFromPointer(e.clientX, e.clientY)
       const delta = normalizeAngleDelta(currentAngle - startAngle)
-      setRingRotation(startRotation - delta)
+      // Invert so drag-right rotates wheel right (natural feel)
+      setRingRotation(startRotation + delta)
     },
     [isDraggingWheel, getAngleFromPointer]
   )
@@ -278,6 +264,7 @@ export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLife
       <div
         ref={wheelWrapperRef}
         className="relative w-full aspect-square touch-none"
+        style={fitToScreen ? { maxWidth: 'min(100%, min(calc(100vh - 12rem), 72rem))', margin: '0 auto' } : undefined}
         onPointerDown={handleWheelPointerDown}
         onPointerMove={handleWheelPointerMove}
         onPointerUp={handleWheelPointerUp}
@@ -417,17 +404,23 @@ export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLife
                 className="cursor-pointer transition-opacity opacity-100"
                 style={{
                   fill: isWireframeTheme ? 'transparent' : 'url(#okr-life-domain-center-gradient)',
-                  stroke: 'var(--nav-category-circle-falah-stroke)',
+                  stroke: isWireframeTheme ? 'var(--nav-category-circle-falah-stroke)' : 'url(#okr-life-domain-center-gradient)',
                   strokeWidth: 2
                 }}
                 onMouseEnter={(e) => {
                   if (isWireframeTheme) {
                     e.currentTarget.style.fill = 'var(--nav-category-circle-falah-hover)'
+                    e.currentTarget.style.stroke = 'var(--nav-category-circle-falah-stroke)'
+                  } else {
+                    e.currentTarget.style.opacity = '0.9'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (isWireframeTheme) {
                     e.currentTarget.style.fill = 'transparent'
+                    e.currentTarget.style.stroke = 'var(--nav-category-circle-falah-stroke)'
+                  } else {
+                    e.currentTarget.style.opacity = '1'
                   }
                 }}
                 onClick={handleCenterClick}
@@ -468,28 +461,6 @@ export function NavOKRLifeDomainCircle({ language = 'en', children }: NavOKRLife
           )}
         </svg>
       </div>
-
-      {/* Rotation controls - onder de navigatie */}
-      {ringDomains.length > 0 && (
-        <div className="flex justify-center gap-4 w-full mb-4">
-          <Button
-            onClick={rotateRingLeft}
-            variant="outline"
-            className="rounded-full"
-            size="sm"
-          >
-            ← Spin Left
-          </Button>
-          <Button
-            onClick={rotateRingRight}
-            variant="outline"
-            className="rounded-full"
-            size="sm"
-          >
-            Spin Right →
-          </Button>
-        </div>
-      )}
 
       {children}
     </div>

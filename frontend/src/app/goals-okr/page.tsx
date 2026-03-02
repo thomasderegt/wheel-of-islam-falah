@@ -17,10 +17,14 @@ import { useWheels } from '@/features/goals-okr/hooks/useWheels'
 import { getWheelIdFromGoalsOkrContext } from '@/shared/utils/contextUtils'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/components/ui/select'
+import { Switch } from '@/shared/components/ui/switch'
+import { Label } from '@/shared/components/ui/label'
 import { Loading } from '@/shared/components/ui/Loading'
+import { useFitToScreen } from '@/shared/hooks/useFitToScreen'
 
 function GoalsOKRContent() {
   const { goalsOkrContext } = useModeContext()
+  const [fitToScreen, setFitToScreen] = useFitToScreen()
   const { data: wheels } = useWheels()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -72,7 +76,7 @@ function GoalsOKRContent() {
         <main className="flex-1 flex flex-col p-4 pb-24">
           <Container className="max-w-6xl mx-auto">
             <div className="space-y-4">
-              <NavOKRLifeDomainCircle>
+              <NavOKRLifeDomainCircle fitToScreen={fitToScreen}>
                 {goalsOkrContext === 'ALL' && availableWheels.length > 0 && (
                   <div className="flex items-center justify-center gap-2 mt-2">
                     <label className="text-sm font-medium text-muted-foreground">
@@ -107,6 +111,16 @@ function GoalsOKRContent() {
                   </div>
                 )}
               </NavOKRLifeDomainCircle>
+              <div className="flex items-center justify-center gap-2">
+                <Switch
+                  id="fit-to-screen-goal"
+                  checked={fitToScreen}
+                  onCheckedChange={setFitToScreen}
+                />
+                <Label htmlFor="fit-to-screen-goal" className="text-sm text-muted-foreground cursor-pointer">
+                  Fit to screen
+                </Label>
+              </div>
             </div>
           </Container>
         </main>

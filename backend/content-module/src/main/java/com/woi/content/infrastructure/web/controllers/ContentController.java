@@ -113,7 +113,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v2/content")
 @CrossOrigin(origins = "*")
 public class ContentController {
-    
+
+    private static final String BAD_REQUEST_MESSAGE = "De actie kon niet worden uitgevoerd. Controleer de invoer.";
+
     private final CreateCategoryCommandHandler createCategoryHandler;
     private final UpdateCategoryCommandHandler updateCategoryHandler;
     private final DeleteCategoryCommandHandler deleteCategoryHandler;
@@ -318,7 +320,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de category."));
@@ -359,7 +361,7 @@ public class ContentController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de category."));
@@ -382,7 +384,7 @@ public class ContentController {
             return ResponseEntity.ok(Map.of("message", "Category and all its content have been successfully deleted."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de category."));
@@ -505,7 +507,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de book."));
@@ -528,7 +530,7 @@ public class ContentController {
             return ResponseEntity.ok(Map.of("message", "Book and all its content have been successfully deleted."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de book."));
@@ -608,7 +610,7 @@ public class ContentController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de book."));
@@ -646,7 +648,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de chapter."));
@@ -756,7 +758,7 @@ public class ContentController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de chapter."));
@@ -779,7 +781,7 @@ public class ContentController {
             return ResponseEntity.ok(Map.of("message", "Chapter and all its content have been successfully deleted."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de chapter."));
@@ -817,7 +819,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de paragraph."));
@@ -897,7 +899,7 @@ public class ContentController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het updaten van de paragraph."));
@@ -921,10 +923,10 @@ public class ContentController {
             return ResponseEntity.ok(Map.of("message", "Paragraph has been successfully deleted."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de paragraph."));
@@ -963,7 +965,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de section."));
@@ -1005,7 +1007,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de section version."));
@@ -1047,7 +1049,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de book version."));
@@ -1089,7 +1091,7 @@ public class ContentController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de chapter version."));
@@ -1126,7 +1128,7 @@ public class ContentController {
             return ResponseEntity.ok(Map.of("message", "Section is succesvol gepubliceerd."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het publiceren van de section."));
@@ -1218,7 +1220,7 @@ public class ContentController {
             return ResponseEntity.ok(Map.of("message", "Section and all its paragraphs have been successfully deleted."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de section."));

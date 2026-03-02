@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 public class CustomObjectivesController {
 
     private static final Logger log = Logger.getLogger(CustomObjectivesController.class.getName());
+    private static final String BAD_REQUEST_MESSAGE = "De actie kon niet worden uitgevoerd. Controleer de invoer.";
 
     private final CreateCustomObjectiveCommandHandler createCustomObjectiveHandler;
     private final CreateCustomKeyResultCommandHandler createCustomKeyResultHandler;
@@ -69,7 +70,7 @@ public class CustomObjectivesController {
             UserObjectiveInstanceResult result = createCustomObjectiveHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));
@@ -105,7 +106,7 @@ public class CustomObjectivesController {
             UserKeyResultInstanceResult result = createCustomKeyResultHandler.handle(command);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred."));

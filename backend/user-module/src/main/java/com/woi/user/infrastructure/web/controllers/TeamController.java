@@ -47,6 +47,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v2/users/teams")
 @CrossOrigin(origins = "*")
 public class TeamController {
+
+    private static final String BAD_REQUEST_MESSAGE = "De actie kon niet worden uitgevoerd. Controleer de invoer.";
     
     private final CreateTeamCommandHandler createTeamHandler;
     private final GetTeamQueryHandler getTeamHandler;
@@ -362,7 +364,7 @@ public class TeamController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         }
     }
     
@@ -389,7 +391,7 @@ public class TeamController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         }
     }
     

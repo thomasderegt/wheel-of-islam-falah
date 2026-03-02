@@ -7,7 +7,7 @@
  * Vereenvoudigde versie die werkt met v2's auth setup.
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -15,7 +15,7 @@ import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useModeContext } from '@/shared/hooks/useModeContext'
-import { Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
+import { Home, Star, ClipboardCheck, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
 
 interface NavbarProps {
   variant?: 'default' | 'landing'
@@ -31,6 +31,8 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
   const logout = useLogout()
   const { goalsOkrContext } = useModeContext()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const bottomNavScrollRef = useRef<HTMLDivElement>(null)
+  const bottomNavDragRef = useRef({ isDragging: false, startX: 0, startScrollLeft: 0, hasMoved: false })
 
   const handleLogout = () => {
     logout()
@@ -38,10 +40,58 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
     setMobileMenuOpen(false)
   }
 
+  // Mouse wheel: scroll horizontally when user scrolls vertically over bottom nav (desktop UX)
+  const handleBottomNavWheel = (e: React.WheelEvent) => {
+    const el = bottomNavScrollRef.current
+    if (!el) return
+    const canScrollLeft = el.scrollLeft > 0
+    const canScrollRight = el.scrollLeft < el.scrollWidth - el.clientWidth
+    if ((e.deltaY !== 0 && (canScrollLeft || canScrollRight))) {
+      e.preventDefault()
+      el.scrollLeft += e.deltaY
+    }
+  }
+
+  // Click-and-drag to scroll horizontally (desktop UX)
+  const handleBottomNavMouseDown = (e: React.MouseEvent) => {
+    const el = bottomNavScrollRef.current
+    if (!el) return
+    bottomNavDragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startScrollLeft: el.scrollLeft,
+      hasMoved: false,
+    }
+    const onMove = (moveEvent: MouseEvent) => {
+      const drag = bottomNavDragRef.current
+      if (!drag.isDragging) return
+      const dx = drag.startX - moveEvent.clientX
+      if (Math.abs(dx) > 3) drag.hasMoved = true
+      el.scrollLeft = drag.startScrollLeft + dx
+    }
+    const onUp = () => {
+      bottomNavDragRef.current.isDragging = false
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      // Reset hasMoved after click would have fired
+      setTimeout(() => { bottomNavDragRef.current.hasMoved = false }, 0)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
+  const handleBottomNavClick = (e: React.MouseEvent) => {
+    if (bottomNavDragRef.current.hasMoved) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  }
 
   // Get page title based on pathname
   const getPageTitle = () => {
-    if (pathname === '/home') return 'Success'
+    if (pathname === '/home') return 'Home'
+    if (pathname === '/success') return 'Success'
+    if (pathname === '/assessment') return 'Assessment'
     if (pathname.startsWith('/goals-okr/insight')) return 'Insight'
     if (pathname.startsWith('/goals-okr/execute')) return 'Execute'
     if (pathname.startsWith('/goals-okr/kanban')) return 'Progress'
@@ -55,6 +105,12 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
   const isActive = (path: string) => {
     if (path === '/home') {
       return pathname === '/home'
+    }
+    if (path === '/success') {
+      return pathname === '/success'
+    }
+    if (path === '/assessment') {
+      return pathname === '/assessment'
     }
     if (path === '/user/settings') {
       return pathname === '/user/settings'
@@ -71,7 +127,9 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
   // Bottom navigation items - filtered based on Goals-OKR context
   const bottomNavItems = useMemo(() => {
     const items = [
-      { href: '/home', label: 'Succes', icon: Star },
+      { href: '/home', label: 'Home', icon: Home },
+      { href: '/success', label: 'Succes', icon: Star },
+      { href: '/assessment', label: 'Assessment', icon: ClipboardCheck },
     ]
 
     // Only add Goal, Execute, Insight if Goals-OKR context is not NONE
@@ -215,72 +273,81 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
         )}
       </div>
 
-      {/* Bottom Navigation Bar - Always visible */}
+      {/* Bottom Navigation Bar - Always visible, swipeable on mobile when many items */}
       {isAuthenticated && (
         <div className="fixed bottom-0 left-0 right-0 bg-background backdrop-blur-md border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="flex items-center justify-around px-2 py-2 max-w-6xl mx-auto">
-            {bottomNavItems.map((item) => {
-              const Icon = item.icon
-              const active = isActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Icon 
-                    className={`h-5 w-5 transition-colors ${
-                      active 
-                        ? 'text-primary' 
-                        : 'text-muted-foreground'
-                    }`} 
-                  />
-                  <span 
-                    className={`text-xs font-medium transition-colors ${
-                      active 
-                        ? 'text-primary' 
-                        : 'text-muted-foreground'
-                    }`}
+          <div
+            ref={bottomNavScrollRef}
+            className="w-full min-w-0 overflow-x-scroll overflow-y-hidden px-2 py-2 select-none cursor-grab active:cursor-grabbing"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+            onWheel={handleBottomNavWheel}
+            onMouseDown={handleBottomNavMouseDown}
+            onClickCapture={handleBottomNavClick}
+          >
+            <div className="flex items-center flex-nowrap gap-0 min-w-max lg:min-w-0 lg:w-full lg:max-w-6xl lg:mx-auto lg:justify-around">
+              {bottomNavItems.map((item) => {
+                const Icon = item.icon
+                const active = isActive(item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] rounded-lg transition-colors hover:bg-muted"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
-                    {item.label}
-                  </span>
-                </Link>
-              )
-            })}
-            {/* User settings */}
-            <Link
-              href="/user/settings"
-              className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors hover:bg-muted"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <UserCircle 
-                className={`h-5 w-5 transition-colors ${
-                  pathname === '/user/settings' 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground'
-                }`} 
-              />
-              <span 
-                className={`text-xs font-medium transition-colors truncate max-w-[120px] text-center ${
-                  pathname === '/user/settings' 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground'
-                }`}
+                    <Icon 
+                      className={`h-5 w-5 transition-colors ${
+                        active 
+                          ? 'text-primary' 
+                          : 'text-muted-foreground'
+                      }`} 
+                    />
+                    <span 
+                      className={`text-xs font-medium transition-colors ${
+                        active 
+                          ? 'text-primary' 
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                )
+              })}
+              {/* User settings */}
+              <Link
+                href="/user/settings"
+                className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] max-w-[140px] rounded-lg transition-colors hover:bg-muted"
+                onClick={() => setMobileMenuOpen(false)}
               >
-                {user?.email || 'User'}
-              </span>
-            </Link>
-            {/* Logout button */}
-            <button
-              onClick={handleLogout}
-              className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[60px] rounded-lg transition-colors hover:bg-muted"
-            >
-              <LogOut className="h-5 w-5 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">
-                Uitloggen
-              </span>
-            </button>
+                <UserCircle 
+                  className={`h-5 w-5 transition-colors ${
+                    pathname === '/user/settings' 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground'
+                  }`} 
+                />
+                <span 
+                  className={`text-xs font-medium transition-colors truncate max-w-[120px] text-center block min-w-0 ${
+                    pathname === '/user/settings' 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {user?.email || 'User'}
+                </span>
+              </Link>
+              {/* Logout button */}
+              <button
+                onClick={handleLogout}
+                className="flex flex-shrink-0 flex-col items-center justify-center gap-1 px-3 py-2 min-w-[72px] rounded-lg transition-colors hover:bg-muted"
+              >
+                <LogOut className="h-5 w-5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">
+                  Uitloggen
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       )}

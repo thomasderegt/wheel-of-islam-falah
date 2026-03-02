@@ -24,7 +24,9 @@ import java.util.Map;
 @RequestMapping("/api/v2/learning")
 @CrossOrigin(origins = "*")
 public class LearningController {
-    
+
+    private static final String BAD_REQUEST_MESSAGE = "De actie kon niet worden uitgevoerd. Controleer de invoer.";
+
     // Command handlers
     private final CreateTemplateCommandHandler createTemplateHandler;
     private final CreateStepCommandHandler createStepHandler;
@@ -103,7 +105,7 @@ public class LearningController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de template."));
@@ -131,7 +133,7 @@ public class LearningController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         }
     }
     
@@ -158,11 +160,11 @@ public class LearningController {
             return ResponseEntity.ok(Map.of("message", "Template successfully deleted."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (IllegalStateException e) {
             // Template has enrollments - return 400 Bad Request
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de template."));
@@ -191,7 +193,7 @@ public class LearningController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het aanmaken van de step."));
@@ -221,7 +223,7 @@ public class LearningController {
             return ResponseEntity.ok(Map.of("message", "Step successfully deleted."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het verwijderen van de step."));
@@ -253,7 +255,7 @@ public class LearningController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het starten van de enrollment."));
@@ -271,7 +273,7 @@ public class LearningController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         }
     }
     
@@ -304,7 +306,7 @@ public class LearningController {
             return ResponseEntity.ok(Map.of("message", "Enrollment successfully completed."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het voltooien van de enrollment."));
@@ -337,7 +339,7 @@ public class LearningController {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het toevoegen van het antwoord."));
@@ -389,7 +391,7 @@ public class LearningController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of("error", BAD_REQUEST_MESSAGE));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Er is een fout opgetreden bij het bijwerken van de voortgang."));

@@ -33,7 +33,11 @@ interface CircleOption {
 const INITIAL_SVG_ROTATION = 0
 const INITIAL_FALAH_TEXT_ROTATION = 0
 
-export function NavCategoryCircle() {
+interface NavCategoryCircleProps {
+  readonly fitToScreen?: boolean
+}
+
+export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProps) {
   const router = useRouter()
   const language = 'en' as 'nl' | 'en' // TODO: Add language context later
   const { userGroup } = useTheme()
@@ -173,7 +177,10 @@ export function NavCategoryCircle() {
 
   return (
     <div className="w-full">
-      <div className="relative w-full aspect-square">
+      <div
+        className="relative w-full aspect-square"
+        style={fitToScreen ? { maxWidth: 'min(100%, min(calc(100vh - 12rem), 72rem))', margin: '0 auto' } : undefined}
+      >
         {/* SVG Circular Menu - Donut met drie sectoren + Falah in het midden */}
         <svg 
           className="absolute inset-0 w-full h-full" 

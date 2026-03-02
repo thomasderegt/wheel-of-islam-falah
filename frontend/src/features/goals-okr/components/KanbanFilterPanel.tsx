@@ -39,7 +39,7 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
   const { data: lifeDomains } = useLifeDomains()
   const { data: wheels } = useWheels()
   const { goalsOkrContext } = useModeContext()
-  const hasActiveFilters = !!value.itemType || !!value.lifeDomainId || !!value.columnName
+  const hasActiveFilters = !!value.itemType || !!value.lifeDomainId || !!value.columnName || !!value.wheelType
   const [isOpen, setIsOpen] = useState(false)
 
   // Get target wheelId from goalsOkrContext
@@ -74,6 +74,10 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
 
   const handleLifeDomainChange = (lifeDomainId: string) => {
     onChange({ ...value, lifeDomainId: lifeDomainId === 'ALL' ? undefined : parseInt(lifeDomainId) })
+  }
+
+  const handleWheelTypeChange = (wheelType: string) => {
+    onChange({ ...value, wheelType: wheelType === 'ALL' ? undefined : (wheelType as 'life' | 'business') })
   }
 
   const handleColumnNameChange = (columnName: string) => {
@@ -208,7 +212,25 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
               )}
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {goalsOkrContext === 'ALL' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="wheel-type-filter">Wheel Type</Label>
+                    <Select
+                      value={value.wheelType || 'ALL'}
+                      onValueChange={handleWheelTypeChange}
+                    >
+                      <SelectTrigger id="wheel-type-filter">
+                        <SelectValue placeholder="All Wheels" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All Wheels</SelectItem>
+                        <SelectItem value="life">{language === 'nl' ? 'Wheel of Life' : 'Wheel of Life'}</SelectItem>
+                        <SelectItem value="business">{language === 'nl' ? 'Wheel of Business' : 'Wheel of Business'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="item-type-filter">Item Type</Label>
                   <Select

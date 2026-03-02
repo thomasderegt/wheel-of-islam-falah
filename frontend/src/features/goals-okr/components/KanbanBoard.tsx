@@ -394,6 +394,18 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       filtered = filtered.filter(item => item.lifeDomainId === filters.lifeDomainId)
     }
 
+    // Filter by wheelType (only relevant when goalsOkrContext is ALL - viewing all wheels)
+    if (filters.wheelType && lifeDomainIdToWheelId.size > 0 && wheelIdToType.size > 0) {
+      filtered = filtered.filter(item => {
+        const lifeDomainId = item.lifeDomainId
+        if (!lifeDomainId) return false
+        const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
+        if (!wheelId) return false
+        const itemWheelType = wheelIdToType.get(wheelId)
+        return itemWheelType === filters.wheelType
+      })
+    }
+
     // Filter by goalsOkrContext (wheelId) - Skip if ALL (show all wheels)
     if (goalsOkrContext !== 'ALL' && targetWheelId && lifeDomainIdToWheelId.size > 0) {
       filtered = filtered.filter(item => {
@@ -406,7 +418,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
     }
 
     return filtered
-  }, [kanbanItems, filters, lifeDomainIdToWheelId, goalsOkrContext, targetWheelId])
+  }, [kanbanItems, filters, lifeDomainIdToWheelId, wheelIdToType, goalsOkrContext, targetWheelId])
 
   // Group items by column
   const itemsByColumn = useMemo(() => {

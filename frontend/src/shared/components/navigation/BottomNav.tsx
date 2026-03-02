@@ -18,7 +18,8 @@ import Link from 'next/link'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useModeContext } from '@/shared/hooks/useModeContext'
-import { Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
+import { Home, Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle, BookOpen } from 'lucide-react'
+import { routes } from '@/shared/constants/routes'
 
 export function BottomNav() {
   const router = useRouter()
@@ -38,6 +39,9 @@ export function BottomNav() {
     if (path === '/home') {
       return pathname === '/home'
     }
+    if (path === '/success') {
+      return pathname === '/success'
+    }
     if (path === '/user/settings') {
       return pathname === '/user/settings'
     }
@@ -46,6 +50,9 @@ export function BottomNav() {
     }
     if (path === '/goals-okr/execute') {
       return pathname.startsWith('/goals-okr/execute') || pathname.startsWith('/goals-okr/kanban')
+    }
+    if (path === routes.onboarding) {
+      return pathname === routes.onboarding
     }
     return pathname.startsWith(path)
   }
@@ -58,7 +65,8 @@ export function BottomNav() {
   // Bottom navigation items - filtered based on Goals-OKR context
   const bottomNavItems = useMemo(() => {
     const items = [
-      { href: '/home', label: 'Succes', icon: Star },
+      { href: '/home', label: 'Home', icon: Home },
+      { href: '/success', label: 'Succes', icon: Star },
     ]
 
     // Only add Goal, Execute, Insight if Goals-OKR context is not NONE
@@ -71,8 +79,9 @@ export function BottomNav() {
       )
     }
 
-    // MySpace is always shown
+    // Onboarding (welkom / Lesson 1) and MySpace - always shown
     items.push(
+      { href: routes.onboarding, label: 'Onboarding', icon: BookOpen },
       { href: '/mywoispace', label: 'MySpace', icon: User }
     )
 
@@ -97,10 +106,13 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background backdrop-blur-md border-t border-border z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      {/* Scroll container: full width, horizontal scroll (mouse wheel or touch swipe) when content overflows */}
       <div
-        className="flex items-center flex-nowrap gap-0 px-2 py-2 max-w-6xl mx-auto overflow-x-auto overflow-y-hidden"
+        className="w-full min-w-0 overflow-x-auto overflow-y-hidden px-2 py-2"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
+        {/* Flex row: min-w-max so content never shrinks; overflow triggers horizontal scroll on small screens */}
+        <div className="flex items-center flex-nowrap gap-0 min-w-max max-w-6xl mx-auto w-max">
         {bottomNavItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
@@ -162,6 +174,7 @@ export function BottomNav() {
             Uitloggen
           </span>
         </button>
+        </div>
       </div>
     </div>
   )
