@@ -3,7 +3,7 @@
 /**
  * NavCategoryCircle Component
  *
- * Donut met twee sectoren: Fiqh en Tazkiyyah (Dunya en Akhirah zijn onderdeel van Falah)
+ * 8-punts compass rose: Tazkiyyah (bovenste 4 punten), Fiqh (onderste 4 punten)
  * Falah in het midden
  */
 
@@ -26,12 +26,21 @@ interface CircleOption {
   colorVar: string
 }
 
-// Begin stand configuratie
-// SVG rotatie: 0deg (geen rotatie)
-// Falah tekst rotatie: 0deg (horizontaal)
-// Categorie posities: Tazkiyyah=boven, Fiqh=onder (2 sectoren van 180°)
+// Compass rose: 8 punten, top 4 = Tazkiyyah, bottom 4 = Fiqh
 const INITIAL_SVG_ROTATION = 0
 const INITIAL_FALAH_TEXT_ROTATION = 0
+const OUTER_RADIUS = 160
+const INNER_RADIUS = 70 // Rand van Falah center
+const POINT_SPAN = 22.5 // Kardinaal: halve hoek (45° totaal)
+const ORDINAL_POINT_SPAN = 11.25 // Ordinaal: 50% kleiner (22.5° totaal)
+const ORDINAL_OUTER_RADIUS = 115 // Ordinaal: 50% korter (70 + 45)
+const RING_INNER = 118
+const RING_OUTER = 132
+const TICK_COUNT = 16
+const TICK_ANGLE = 360 / TICK_COUNT
+// Hoeken: 0=E, 45=SE, 90=S, 135=SW, 180=W, 225=NW, 270=N, 315=NE
+const TAZKIYYAH_ANGLES = [180, 225, 270, 315] // Bovenste helft
+const FIQH_ANGLES = [0, 45, 90, 135] // Onderste helft
 
 interface NavCategoryCircleProps {
   readonly fitToScreen?: boolean
@@ -135,7 +144,7 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
         className="relative w-full aspect-square"
         style={fitToScreen ? { maxWidth: 'min(100%, min(calc(100vh - 12rem), 72rem))', margin: '0 auto' } : undefined}
       >
-        {/* SVG Circular Menu - Donut met drie sectoren + Falah in het midden */}
+        {/* SVG Compass Rose - 8 punten + Falah in het midden */}
         <svg 
           className="absolute inset-0 w-full h-full" 
           viewBox="40 40 320 320"
@@ -160,26 +169,19 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               )}
             </radialGradient>
             
-            {/* ROYGBIV gradient per sector - full spectrum over both segments (like NavOKRLifeDomainCircle) */}
+            {/* ROYGBIV gradient per sector - top-to-bottom voor compass punten */}
             {!isUniversalTheme &&
               orderedCategories.map((sector, index) => {
-                const sectorStartAngle = index === 0 ? 180 : 0
-                const sectorEndAngle = index === 0 ? 360 : 180
-                const midRadius = 127.5
-                const startRad = (sectorStartAngle * Math.PI) / 180
-                const endRad = (sectorEndAngle * Math.PI) / 180
-                const x1 = round(200 + midRadius * Math.cos(startRad))
-                const y1 = round(200 + midRadius * Math.sin(startRad))
-                const x2 = round(200 + midRadius * Math.cos(endRad))
-                const y2 = round(200 + midRadius * Math.sin(endRad))
+                const y1 = index === 0 ? 40 : 200
+                const y2 = index === 0 ? 200 : 360
                 const stops = getGradientStopsForSegment(index, 2)
                 return (
                   <linearGradient
                     key={`roygbiv-${sector.id}`}
                     id={`category-roygbiv-${index}`}
-                    x1={x1}
+                    x1="200"
                     y1={y1}
-                    x2={x2}
+                    x2="200"
                     y2={y2}
                     gradientUnits="userSpaceOnUse"
                   >
@@ -190,73 +192,79 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
                 )
               })}
           </defs>
+
+          {/* Ronde ring met streepjes - onder de compass punten */}
+          <g
+            stroke="var(--nav-category-circle-sector-stroke)"
+            strokeWidth="1"
+            opacity="0.85"
+          >
+            <circle cx="200" cy="200" r={RING_INNER} fill="none" />
+            <circle cx="200" cy="200" r={RING_OUTER} fill="none" />
+            {Array.from({ length: TICK_COUNT }, (_, i) => {
+              const angle = (i * TICK_ANGLE * Math.PI) / 180
+              const x1 = round(200 + RING_INNER * Math.cos(angle))
+              const y1 = round(200 + RING_INNER * Math.sin(angle))
+              const x2 = round(200 + RING_OUTER * Math.cos(angle))
+              const y2 = round(200 + RING_OUTER * Math.sin(angle))
+              return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+            })}
+          </g>
           
-          {/* Twee sectoren: Tazkiyyah boven, Fiqh onder */}
+          {/* 8-punts compass rose: 4 punten Tazkiyyah (boven), 4 punten Fiqh (onder) */}
           <g>
             {orderedCategories.map((sector, index) => {
-              const startAngle = index === 0 ? 180 : 0
-              const endAngle = index === 0 ? 360 : 180
-              const largeArcFlag = 1
-              const outerRadius = 160
-              const innerRadius = 95
-              
-              const startX = round(200 + outerRadius * Math.cos((startAngle * Math.PI) / 180))
-              const startY = round(200 + outerRadius * Math.sin((startAngle * Math.PI) / 180))
-              const endX = round(200 + outerRadius * Math.cos((endAngle * Math.PI) / 180))
-              const endY = round(200 + outerRadius * Math.sin((endAngle * Math.PI) / 180))
-              const innerStartX = round(200 + innerRadius * Math.cos((startAngle * Math.PI) / 180))
-              const innerStartY = round(200 + innerRadius * Math.sin((startAngle * Math.PI) / 180))
-              const innerEndX = round(200 + innerRadius * Math.cos((endAngle * Math.PI) / 180))
-              const innerEndY = round(200 + innerRadius * Math.sin((endAngle * Math.PI) / 180))
-
-              const pathData = [
-                `M ${startX} ${startY}`,
-                `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
-                `L ${innerEndX} ${innerEndY}`,
-                `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${innerStartX} ${innerStartY}`,
-                'Z'
-              ].join(' ')
-
-              const textAngle = startAngle + 90
-              const textRadius = (outerRadius + innerRadius) / 2
-              const textX = round(200 + textRadius * Math.cos((textAngle * Math.PI) / 180))
-              const textY = round(200 + textRadius * Math.sin((textAngle * Math.PI) / 180))
-              // Tekst horizontaal en leesbaar (niet ondersteboven)
-              const textRotation = 0
+              const angles = index === 0 ? TAZKIYYAH_ANGLES : FIQH_ANGLES
+              // Tazkiyyah bij N-punt (y≈55), Fiqh bij S-punt (y≈345)
+              const textY = index === 0 ? 55 : 345
 
               return (
                 <g key={sector.id}>
-                  <path
-                    d={pathData}
-                    className="stroke-2 cursor-pointer transition-opacity opacity-100"
-                    style={{ 
-                      fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
-                      stroke: isUniversalTheme ? 'var(--nav-category-circle-sector-stroke)' : 'oklch(0.7 0 0 / 0.4)',
-                      strokeWidth: isUniversalTheme ? 2 : 1.5
-                    }}
-                    onMouseEnter={(e) => {
-                      if (isUniversalTheme) {
-                        e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
-                        e.currentTarget.style.stroke = 'var(--nav-category-circle-sector-stroke)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (isUniversalTheme) {
-                        e.currentTarget.style.fill = 'transparent'
-                        e.currentTarget.style.stroke = 'var(--nav-category-circle-sector-stroke)'
-                      }
-                    }}
-                    onClick={() => handleSectorClick(sector.categoryNumber)}
-                  />
-                  <g
-                    style={{ 
-                      transform: `rotate(${textRotation}deg)`,
-                      transformOrigin: `${textX}px ${textY}px`,
-                      pointerEvents: 'none'
-                    }}
-                  >
+                  {angles.map((angle) => {
+                    const isCardinal = angle % 90 === 0
+                    const pointSpan = isCardinal ? POINT_SPAN : ORDINAL_POINT_SPAN
+                    const outerR = isCardinal ? OUTER_RADIUS : ORDINAL_OUTER_RADIUS
+                    const rad = (angle * Math.PI) / 180
+                    const radLo = ((angle - pointSpan) * Math.PI) / 180
+                    const radHi = ((angle + pointSpan) * Math.PI) / 180
+                    const apexX = round(200 + outerR * Math.cos(rad))
+                    const apexY = round(200 + outerR * Math.sin(rad))
+                    const baseLoX = round(200 + INNER_RADIUS * Math.cos(radLo))
+                    const baseLoY = round(200 + INNER_RADIUS * Math.sin(radLo))
+                    const baseHiX = round(200 + INNER_RADIUS * Math.cos(radHi))
+                    const baseHiY = round(200 + INNER_RADIUS * Math.sin(radHi))
+                    const pathData = `M ${apexX} ${apexY} L ${baseLoX} ${baseLoY} L ${baseHiX} ${baseHiY} Z`
+
+                    return (
+                      <path
+                        key={angle}
+                        d={pathData}
+                        className="stroke-2 cursor-pointer transition-opacity opacity-100"
+                        style={{
+                          fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
+                          stroke: isUniversalTheme ? 'var(--nav-category-circle-sector-stroke)' : 'oklch(0.7 0 0 / 0.4)',
+                          strokeWidth: isUniversalTheme ? 2 : 1.5,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (isUniversalTheme) {
+                            e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
+                            e.currentTarget.style.stroke = 'var(--nav-category-circle-sector-stroke)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isUniversalTheme) {
+                            e.currentTarget.style.fill = 'transparent'
+                            e.currentTarget.style.stroke = 'var(--nav-category-circle-sector-stroke)'
+                          }
+                        }}
+                        onClick={() => handleSectorClick(sector.categoryNumber)}
+                      />
+                    )
+                  })}
+                  {/* Sector labels */}
+                  <g pointerEvents="none">
                     <text
-                      x={textX}
+                      x="200"
                       y={textY - 8}
                       className="fill-foreground font-bold pointer-events-none"
                       textAnchor="middle"
@@ -267,7 +275,7 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
                     </text>
                     {(language === 'nl' ? sector.subtitleNl : sector.subtitleEn) && (
                       <text
-                        x={textX}
+                        x="200"
                         y={textY + 10}
                         className="fill-foreground pointer-events-none"
                         textAnchor="middle"
@@ -285,7 +293,6 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
           
           {/* Falah center circle */}
           <g>
-            {/* Center circle background */}
             <circle
               cx="200"
               cy="200"
@@ -310,40 +317,38 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               }}
               onClick={handleFalahClick}
             />
-            
-            {/* Falah text (rotated back to normal orientation to stay horizontal) */}
             <g
               style={{
                 transform: `rotate(${INITIAL_FALAH_TEXT_ROTATION}deg)`,
                 transformOrigin: '200px 200px'
               }}
             >
+            <text
+              x="200"
+              y="190"
+              className="fill-foreground font-bold pointer-events-none"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              style={{ fontSize: '24px', fontWeight: 'bold' }}
+            >
+              {language === 'nl' 
+                ? finalCenterCategory.titleNl
+                : finalCenterCategory.titleEn}
+            </text>
+            {(language === 'nl' ? finalCenterCategory.subtitleNl : finalCenterCategory.subtitleEn) && (
               <text
                 x="200"
-                y="190"
-                className="fill-foreground font-bold pointer-events-none"
+                y="210"
+                className="fill-foreground pointer-events-none"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '24px', fontWeight: 'bold' }}
+                style={{ fontSize: '14px', opacity: 0.8 }}
               >
                 {language === 'nl' 
-                  ? finalCenterCategory.titleNl
-                  : finalCenterCategory.titleEn}
+                  ? finalCenterCategory.subtitleNl
+                  : finalCenterCategory.subtitleEn}
               </text>
-              {(language === 'nl' ? finalCenterCategory.subtitleNl : finalCenterCategory.subtitleEn) && (
-                <text
-                  x="200"
-                  y="210"
-                  className="fill-foreground pointer-events-none"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  style={{ fontSize: '14px', opacity: 0.8 }}
-                >
-                  {language === 'nl' 
-                    ? finalCenterCategory.subtitleNl
-                    : finalCenterCategory.subtitleEn}
-                </text>
-              )}
+            )}
             </g>
           </g>
         </svg>

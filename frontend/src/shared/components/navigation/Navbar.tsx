@@ -16,7 +16,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useFalahCycles } from '@/features/auth/hooks/useFalahCycles'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useModeContext } from '@/shared/hooks/useModeContext'
-import { Home, Star, ClipboardCheck, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
+import { Home, Compass, ClipboardCheck, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle } from 'lucide-react'
 
 interface NavbarProps {
   variant?: 'default' | 'landing'
@@ -137,7 +137,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
   const bottomNavItems = useMemo(() => {
     const items = [
       { href: '/home', label: 'Home', icon: Home },
-      { href: '/success', label: 'Succes', icon: Star },
+      { href: '/success', label: 'Succes', icon: Compass },
       { href: '/assessment', label: 'Priorities', icon: ClipboardCheck },
     ]
 

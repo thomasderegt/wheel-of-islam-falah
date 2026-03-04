@@ -18,7 +18,7 @@ import Link from 'next/link'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useModeContext } from '@/shared/hooks/useModeContext'
-import { Home, Star, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle, BookOpen } from 'lucide-react'
+import { Home, Compass, Target, TrendingUp, Lightbulb, User, LogOut, UserCircle, BookOpen } from 'lucide-react'
 import { routes } from '@/shared/constants/routes'
 
 export function BottomNav() {
@@ -66,7 +66,7 @@ export function BottomNav() {
   const bottomNavItems = useMemo(() => {
     const items = [
       { href: '/home', label: 'Home', icon: Home },
-      { href: '/success', label: 'Succes', icon: Star },
+      { href: '/success', label: 'Succes', icon: Compass },
     ]
 
     // Only add Goal, Execute, Insight if Goals-OKR context is not NONE
