@@ -4,7 +4,7 @@
  * HomeNavCircle Component
  *
  * Circular navigation for Home dashboard (like Wheel of Life).
- * Center: 1. Success. Ring: 2. Assessment, 3. Goals, 4. Execute, 5. Insight.
+ * Center: 1. Success. Ring: 2. Priorities, 3. Goals, 4. Execute, 5. Insight.
  * Drag to rotate. Uses theme colors (--nav-category-circle-falah, --home-nav-sector-*).
  */
 
@@ -19,7 +19,7 @@ const round = (num: number, decimals = 10) =>
 const centerItem = { href: routes.success, label: '1. Success' }
 
 const ringItems = [
-  { href: routes.assessment, label: '2. Assessment' },
+  { href: routes.assessment, label: '2. Priorities' },
   { href: '/goals-okr', label: '3. Goals' },
   { href: '/goals-okr/execute', label: '4. Execute' },
   { href: '/goals-okr/insight', label: '5. Insight' },

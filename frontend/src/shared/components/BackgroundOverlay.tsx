@@ -23,6 +23,6 @@ export function BackgroundOverlay() {
   }
 
   return (
-    <div className="fixed inset-0 bg-white/10 -z-10" />
+    <div className="fixed inset-0 bg-white/0 -z-10" />
   )
 }

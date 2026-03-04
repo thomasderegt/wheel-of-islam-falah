@@ -173,7 +173,7 @@ interface KanbanColumnProps {
     life?: number
     business?: number
   }
-  wheelIdToType?: Map<number, 'life' | 'business'>
+  wheelIdToType?: Map<number, 'success' | 'life' | 'business' | 'work'>
   lifeDomainIdToWheelId?: Map<number, number>
   targetWheelId?: number | null
   readOnly?: boolean
@@ -336,13 +336,17 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
   
   // Create maps for wheel type filtering (still needed for WIP limits display)
   const wheelIdToType = useMemo(() => {
-    if (!wheels) return new Map<number, 'life' | 'business'>()
-    const map = new Map<number, 'life' | 'business'>()
+    if (!wheels) return new Map<number, 'success' | 'life' | 'business' | 'work'>()
+    const map = new Map<number, 'success' | 'life' | 'business' | 'work'>()
     wheels.forEach(wheel => {
-      if (wheel.wheelKey === 'WHEEL_OF_LIFE') {
+      if (wheel.wheelKey === 'WHEEL_OF_SUCCESS') {
+        map.set(wheel.id, 'success')
+      } else if (wheel.wheelKey === 'WHEEL_OF_LIFE') {
         map.set(wheel.id, 'life')
       } else if (wheel.wheelKey === 'WHEEL_OF_BUSINESS') {
         map.set(wheel.id, 'business')
+      } else if (wheel.wheelKey === 'WHEEL_OF_WORK') {
+        map.set(wheel.id, 'work')
       }
     })
     return map
@@ -476,7 +480,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
 
     // Determine wheel type of the item being moved (using enriched item.lifeDomainId)
     const lifeDomainId = item.lifeDomainId
-    let itemWheelType: 'life' | 'business' | undefined = undefined
+    let itemWheelType: 'success' | 'life' | 'business' | 'work' | undefined = undefined
 
     if (lifeDomainId && lifeDomainIdToWheelId.size > 0 && wheelIdToType.size > 0) {
       const wheelId = lifeDomainIdToWheelId.get(lifeDomainId)
@@ -485,8 +489,8 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
       }
     }
 
-    // Check WIP limit for target column and wheel type
-    if (itemWheelType) {
+    // Check WIP limit for target column and wheel type (only life/business have WIP limits)
+    if (itemWheelType && (itemWheelType === 'life' || itemWheelType === 'business')) {
       const wipLimit = filters.wipLimits?.[itemWheelType]?.[targetColumn]
       if (wipLimit !== undefined) {
         // Count only items of the same wheel type in the target column
@@ -507,9 +511,13 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
         if (item.columnName !== targetColumn && currentCount >= wipLimit) {
           // Show alert to user
           const columnLabel = COLUMNS.find(c => c.id === targetColumn)?.label || targetColumn
-          const wheelLabel = itemWheelType === 'life' 
-            ? (language === 'nl' ? 'Wheel of Life' : 'Wheel of Life')
-            : (language === 'nl' ? 'Wheel of Business' : 'Wheel of Business')
+          const wheelLabels: Record<string, string> = {
+            life: language === 'nl' ? 'Wheel of Life' : 'Wheel of Life',
+            business: language === 'nl' ? 'Wheel of Business' : 'Wheel of Business',
+            success: language === 'nl' ? 'Wheel of Success' : 'Wheel of Success',
+            work: language === 'nl' ? 'Wheel of Work' : 'Wheel of Work',
+          }
+          const wheelLabel = itemWheelType ? wheelLabels[itemWheelType] ?? itemWheelType : ''
           alert(language === 'nl' 
             ? `WIP limit bereikt voor ${wheelLabel}! Maximum ${wipLimit} items in "${columnLabel}". Verplaats eerst een item naar een andere kolom.`
             : `WIP limit reached for ${wheelLabel}! Maximum ${wipLimit} items in "${columnLabel}". Please move an item to another column first.`

@@ -14,6 +14,7 @@ export const routes = {
   home: '/home',
   success: '/success',
   assessment: '/assessment',
+  priorities: '/assessment', // alias, same route
   onboarding: '/onboarding',
   
   // Goals

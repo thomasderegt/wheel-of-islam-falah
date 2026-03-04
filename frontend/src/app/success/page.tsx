@@ -9,8 +9,9 @@
  */
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ProtectedRoute, useAuth } from '@/features/auth'
-import { useFalahCycles } from '@/features/auth/hooks/useFalahCycles'
+import { useFalahCycles, useExitFalahCycleFlow } from '@/features/auth/hooks/useFalahCycles'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { NavCategoryCircle } from '@/shared/components/navigation/NavCategoryCircle'
@@ -23,10 +24,12 @@ import { routes } from '@/shared/constants/routes'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function SuccessPage() {
+  const router = useRouter()
   const { contentContext } = useModeContext()
   const [fitToScreen, setFitToScreen] = useFitToScreen()
   const { user } = useAuth()
   const { data: cycles } = useFalahCycles(user?.id ?? null)
+  const exitFlow = useExitFalahCycleFlow(user?.id ?? null)
 
   const showWheelOfIslam = contentContext === 'SUCCESS'
   const activeCycle = cycles?.find((c) => c.active)
@@ -62,16 +65,26 @@ export default function SuccessPage() {
             )}
 
             {isInFlow && (
-              <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
+              <div className="flex justify-between items-center gap-2 mt-8 pt-6 border-t border-border">
                 <Link href="/home">
                   <Button variant="outline" className="gap-2">
                     <ChevronLeft className="h-4 w-4" />
                     Back
                   </Button>
                 </Link>
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground"
+                  onClick={() =>
+                    activeCycle &&
+                    exitFlow.mutate(activeCycle.id, { onSuccess: () => router.push('/home') })
+                  }
+                >
+                  Quit
+                </Button>
                 <Link href={routes.assessment}>
                   <Button className="gap-2">
-                    Next: Self-assessment
+                    Next: Priorities
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </Link>

@@ -77,7 +77,7 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
   }
 
   const handleWheelTypeChange = (wheelType: string) => {
-    onChange({ ...value, wheelType: wheelType === 'ALL' ? undefined : (wheelType as 'life' | 'business') })
+    onChange({ ...value, wheelType: wheelType === 'ALL' ? undefined : (wheelType as 'success' | 'life' | 'business' | 'work') })
   }
 
   const handleColumnNameChange = (columnName: string) => {
@@ -103,9 +103,13 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
   }, [goalsOkrContext])
 
   // Get wheel name for display
-  const getWheelName = (wheelType: 'life' | 'business' | null): string => {
+  const getWheelName = (wheelType: 'success' | 'life' | 'business' | 'work' | null): string => {
     if (!wheelType) return ''
     switch (wheelType) {
+      case 'success':
+        return 'Wheel of Success'
+      case 'work':
+        return 'Wheel of Work'
       case 'life':
         return language === 'nl' ? 'Wheel of Life' : 'Wheel of Life'
       case 'business':
@@ -225,8 +229,10 @@ export function KanbanFilterPanel({ value, onChange, language = 'en' }: KanbanFi
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ALL">All Wheels</SelectItem>
-                        <SelectItem value="life">{language === 'nl' ? 'Wheel of Life' : 'Wheel of Life'}</SelectItem>
-                        <SelectItem value="business">{language === 'nl' ? 'Wheel of Business' : 'Wheel of Business'}</SelectItem>
+                        <SelectItem value="success">Wheel of Success</SelectItem>
+                        <SelectItem value="life">Wheel of Life</SelectItem>
+                        <SelectItem value="business">Wheel of Business</SelectItem>
+                        <SelectItem value="work">Wheel of Work</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

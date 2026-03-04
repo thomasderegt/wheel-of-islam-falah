@@ -206,7 +206,7 @@ export default function OnboardingPage() {
                         <p className="text-sm text-muted-foreground mt-1">Starting with Falah enables you to set meaningful formative goals.</p>
                       </div>
                     </div>
-                    {/* Phase 2: Self Assessment */}
+                    {/* Phase 2: Priorities */}
                     <div className="flex gap-4">
                       <div className="flex flex-col items-center">
                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
@@ -215,8 +215,8 @@ export default function OnboardingPage() {
                         <div className="w-px flex-1 min-h-[24px] bg-border mt-2" />
                       </div>
                       <div className="flex-1 pb-6">
-                        <h3 className="font-semibold text-foreground flex items-center gap-2">Self-assessment</h3>
-                        <p className="text-sm text-muted-foreground mt-1">Assessment and Insight dashboard – where do you stand?</p>
+                        <h3 className="font-semibold text-foreground flex items-center gap-2">Priorities</h3>
+                        <p className="text-sm text-muted-foreground mt-1">Where do you want to focus this cycle? Set priorities for your direction and goals.</p>
                       </div>
                     </div>
                     {/* Phase 3: Direction */}

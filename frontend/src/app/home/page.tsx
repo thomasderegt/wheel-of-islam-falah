@@ -3,7 +3,7 @@
 /**
  * Home Page - Dashboard
  *
- * Falah Growth process: Success → Assessment → Goals → Execute → Insight.
+ * Falah Growth process: Success → Priorities → Goals → Execute → Insight.
  */
 
 import { useRouter } from 'next/navigation'
@@ -17,11 +17,41 @@ import { Button } from '@/shared/components/ui/button'
 import { routes } from '@/shared/constants/routes'
 
 const falahGrowthSteps = [
-  { href: routes.success, label: 'Falah', description: 'Wheel of Falah – formation of heart and action', icon: Star },
-  { href: routes.assessment, label: 'Self-assessment', description: '360° assessment – where do you stand?', icon: ClipboardCheck },
-  { href: '/goals-okr', label: 'Direction', description: 'Set and track your objectives', icon: Target },
-  { href: '/goals-okr/execute', label: 'Execution', description: 'Kanban board – daily action', icon: TrendingUp },
-  { href: '/goals-okr/insight', label: 'Reflection', description: 'Progress and insight – then back to Falah', icon: Lightbulb },
+  {
+    href: routes.success,
+    label: 'Success',
+    description:
+      'The Falah compass: the formation of your heart and action. Explore the core of Falah, Tazkiyyah and Fiqh. This is the starting point of your growth cycle and helps you clarify what truly matters before you set priorities and goals.',
+    icon: Star,
+  },
+  {
+    href: routes.assessment,
+    label: 'Priorities',
+    description:
+      'Determine where you want to focus this growth cycle. Choose from the domains of your life (family, work, health, etc.) and identify what needs the most attention now. This creates a clear foundation for your goals.',
+    icon: ClipboardCheck,
+  },
+  {
+    href: '/goals-okr',
+    label: 'Goals',
+    description:
+      'Set your objectives, key results and activities. Turn your priorities into concrete goals and measurable results. Here you move from "what do I want?" to "what will I do?" and how you will measure it.',
+    icon: Target,
+  },
+  {
+    href: '/goals-okr/execute',
+    label: 'Execution',
+    description:
+      'Plan and carry out your daily actions. Use the Kanban board to organise tasks, track progress and stay focused. This is where your plan becomes action and your growth shows in practice.',
+    icon: TrendingUp,
+  },
+  {
+    href: '/goals-okr/insight',
+    label: 'Insight',
+    description:
+      'Overview and insight into your progress. See how far you\'ve come, what works and what you can improve. Reflect on your cycle and use these insights to move on to the next Success step.',
+    icon: Lightbulb,
+  },
 ]
 
 export default function HomePage() {
@@ -68,7 +98,7 @@ export default function HomePage() {
             </h1>
 
             <p className="text-foreground/90">
-              Your dashboard. Start here and navigate to the main areas.
+              The Falah compass: the formation of your heart and action. Explore the core of Falah, Tazkiyyah and Fiqh. This is the starting point of your growth cycle and helps you clarify what truly matters before you set priorities and goals.
             </p>
 
             <Button

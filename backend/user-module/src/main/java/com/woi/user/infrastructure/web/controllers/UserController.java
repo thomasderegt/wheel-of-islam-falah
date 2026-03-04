@@ -20,6 +20,8 @@ import com.woi.user.application.handlers.commands.CompleteFalahCycleCommandHandl
 import com.woi.user.application.handlers.commands.ExitFalahCycleFlowCommandHandler;
 import com.woi.user.application.handlers.commands.ReEnterFalahCycleFlowCommandHandler;
 import com.woi.user.application.handlers.queries.GetUserFalahCyclesQueryHandler;
+import com.woi.user.application.handlers.commands.SavePriorityAssessmentCommandHandler;
+import com.woi.user.application.handlers.queries.GetPriorityAssessmentQueryHandler;
 import com.woi.user.application.queries.GetUserQuery;
 import com.woi.user.application.queries.GetUserPreferencesQuery;
 import com.woi.user.application.commands.UpdateUserPreferencesCommand;
@@ -28,14 +30,19 @@ import com.woi.user.application.commands.CompleteFalahCycleCommand;
 import com.woi.user.application.commands.ExitFalahCycleFlowCommand;
 import com.woi.user.application.commands.ReEnterFalahCycleFlowCommand;
 import com.woi.user.application.queries.GetUserFalahCyclesQuery;
+import com.woi.user.application.commands.SavePriorityAssessmentCommand;
+import com.woi.user.application.queries.GetPriorityAssessmentQuery;
 import com.woi.user.application.results.AuthResult;
 import com.woi.user.application.results.FalahCycleResult;
+import com.woi.user.application.results.PriorityAssessmentResult;
 import com.woi.user.application.results.UserResult;
 import com.woi.user.application.results.UserPreferenceResult;
 import com.woi.user.infrastructure.services.RateLimitingService;
 import com.woi.user.infrastructure.web.dtos.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +64,8 @@ import java.util.Set;
 @RequestMapping("/api/v2/user")
 @CrossOrigin(origins = "*")
 public class UserController {
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     
     private final RegisterUserCommandHandler registerHandler;
     private final LoginCommandHandler loginHandler;
@@ -72,6 +81,8 @@ public class UserController {
     private final ExitFalahCycleFlowCommandHandler exitFalahCycleFlowHandler;
     private final ReEnterFalahCycleFlowCommandHandler reEnterFalahCycleFlowHandler;
     private final GetUserFalahCyclesQueryHandler getUserFalahCyclesHandler;
+    private final SavePriorityAssessmentCommandHandler savePriorityAssessmentHandler;
+    private final GetPriorityAssessmentQueryHandler getPriorityAssessmentHandler;
     private final RateLimitingService rateLimitingService;
 
     public UserController(
@@ -89,6 +100,8 @@ public class UserController {
             ExitFalahCycleFlowCommandHandler exitFalahCycleFlowHandler,
             ReEnterFalahCycleFlowCommandHandler reEnterFalahCycleFlowHandler,
             GetUserFalahCyclesQueryHandler getUserFalahCyclesHandler,
+            SavePriorityAssessmentCommandHandler savePriorityAssessmentHandler,
+            GetPriorityAssessmentQueryHandler getPriorityAssessmentHandler,
             RateLimitingService rateLimitingService) {
         this.registerHandler = registerHandler;
         this.loginHandler = loginHandler;
@@ -104,6 +117,8 @@ public class UserController {
         this.exitFalahCycleFlowHandler = exitFalahCycleFlowHandler;
         this.reEnterFalahCycleFlowHandler = reEnterFalahCycleFlowHandler;
         this.getUserFalahCyclesHandler = getUserFalahCyclesHandler;
+        this.savePriorityAssessmentHandler = savePriorityAssessmentHandler;
+        this.getPriorityAssessmentHandler = getPriorityAssessmentHandler;
         this.rateLimitingService = rateLimitingService;
     }
     
@@ -421,6 +436,75 @@ public class UserController {
     }
     
     /**
+     * Get priority assessment for user
+     * GET /api/v2/user/{id}/priority-assessment?falahCycleId=123
+     * If falahCycleId omitted, returns standalone assessment.
+     */
+    @GetMapping("/{id}/priority-assessment")
+    public ResponseEntity<?> getPriorityAssessment(
+            @PathVariable Long id,
+            @RequestParam(required = false) Long falahCycleId,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            GetPriorityAssessmentQuery query = new GetPriorityAssessmentQuery(id, falahCycleId);
+            Optional<PriorityAssessmentResult> result = getPriorityAssessmentHandler.handle(query);
+            return result.map(r -> ResponseEntity.ok(toPriorityAssessmentResponseDTO(r)))
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("500 on GET /{id}/priority-assessment: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Save priority assessment
+     * POST /api/v2/user/{id}/priority-assessment
+     */
+    @PostMapping("/{id}/priority-assessment")
+    @Transactional
+    public ResponseEntity<?> savePriorityAssessment(
+            @PathVariable Long id,
+            @Valid @RequestBody SavePriorityAssessmentRequestDTO request,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal Long authUserId) {
+        if (authUserId == null || !id.equals(authUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            if (bindingResult.hasErrors()) {
+                String errorMessage = bindingResult.getFieldErrors().stream()
+                        .map(error -> error.getDefaultMessage())
+                        .findFirst()
+                        .orElse("Ongeldige invoer");
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", errorMessage));
+            }
+            java.util.Set<String> skipped = request.getSkippedWheels() == null
+                    ? java.util.Set.of()
+                    : new java.util.HashSet<>(request.getSkippedWheels());
+            SavePriorityAssessmentCommand command = new SavePriorityAssessmentCommand(
+                    id,
+                    request.getScores() == null ? Map.of() : request.getScores(),
+                    skipped,
+                    request.getFalahCycleId()
+            );
+            PriorityAssessmentResult result = savePriorityAssessmentHandler.handle(command);
+            return ResponseEntity.ok(toPriorityAssessmentResponseDTO(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", safeErrorMessage(e)));
+        } catch (Exception e) {
+            log.error("500 on POST /{id}/priority-assessment: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Er is een fout opgetreden bij het opslaan van de prioriteiten."));
+        }
+    }
+
+    /**
      * Get user by ID
      * GET /api/v2/user/{id}
      */
@@ -547,6 +631,7 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
+            log.error("500 on GET /{id}/falah-cycles: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -679,6 +764,18 @@ public class UserController {
         dto.setCompletedAt(result.completedAt());
         dto.setActive(result.active());
         dto.setFlowExited(result.flowExited());
+        return dto;
+    }
+
+    private PriorityAssessmentResponseDTO toPriorityAssessmentResponseDTO(PriorityAssessmentResult result) {
+        PriorityAssessmentResponseDTO dto = new PriorityAssessmentResponseDTO();
+        dto.setId(result.id());
+        dto.setUserId(result.userId());
+        dto.setFalahCycleId(result.falahCycleId());
+        dto.setScores(result.scores());
+        dto.setSkippedWheels(result.skippedWheels());
+        dto.setCreatedAt(result.createdAt());
+        dto.setUpdatedAt(result.updatedAt());
         return dto;
     }
 }

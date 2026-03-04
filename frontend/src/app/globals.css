@@ -446,7 +446,7 @@
     /* text-foreground: gebruik --foreground voor body tekst */
     @apply bg-background text-foreground;
     background-image: var(--background-image);  /* Gebruik CSS variabele die per theme verschilt */
-    background-size: 100% 100%;  /* Vult het hele scherm en past zich aan aan schermgrootte */
+    background-size: cover;  /* Vult het scherm, behoudt verhoudingen (kan randen bijsnijden) */
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;

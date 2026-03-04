@@ -12,7 +12,7 @@ export function useLifeDomains() {
   return useQuery({
     queryKey: ['goals-okr', 'lifeDomains'],
     queryFn: getAllLifeDomains,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 1000, // 1 minute
     retry: (failureCount, error: any) => {
       // Don't retry on network errors (no response) - backend might not be available
       if (!error?.response && failureCount >= 1) {

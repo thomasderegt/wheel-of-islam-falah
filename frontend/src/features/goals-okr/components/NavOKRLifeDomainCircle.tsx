@@ -17,6 +17,7 @@ import { useWheels } from '../hooks/useWheels'
 import { useTheme } from '@/shared/contexts/ThemeContext'
 import { Loading } from '@/shared/components/ui/Loading'
 import type { LifeDomainDTO } from '../api/goalsOkrApi'
+import { getGradientStopsForSegment } from '@/shared/utils/roygbivGradient'
 
 interface NavOKRLifeDomainCircleProps {
   readonly language?: 'nl' | 'en'
@@ -58,8 +59,10 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
   // Set wheel from URL query parameter or default to Wheel of Life
   useEffect(() => {
     if (!wheels || wheels.length === 0) return
-    
-    // Check for wheelId in URL query parameter (always respect URL)
+
+    const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
+    const fallbackWheelId = wheelOfLife?.id ?? wheels[0]?.id
+
     if (wheelIdFromUrl) {
       const wheelId = Number(wheelIdFromUrl)
       const wheel = wheels.find(w => w.id === wheelId)
@@ -67,26 +70,20 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
         setSelectedWheelId(wheel.id)
         return
       }
-    } else {
-      // Only set default if no wheelId in URL and no wheel selected yet
-      // But wait until searchParams is definitely available (not undefined)
-      if (hasSearchParams && selectedWheelId === null) {
-      // Default to Wheel of Life
-      const wheelOfLife = wheels.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
-      if (wheelOfLife) {
-        setSelectedWheelId(wheelOfLife.id)
-      } else if (wheels.length > 0) {
-        // Fallback to first wheel if WHEEL_OF_LIFE not found
-        setSelectedWheelId(wheels[0].id)
+      // URL has wheelId but wheel not found – fall back to valid wheel
+      if (!wheel && fallbackWheelId && selectedWheelId !== fallbackWheelId) {
+        setSelectedWheelId(fallbackWheelId)
       }
-    }
+    } else if (hasSearchParams && selectedWheelId === null && fallbackWheelId) {
+      setSelectedWheelId(fallbackWheelId)
     }
   }, [wheels, wheelIdFromUrl, hasSearchParams, selectedWheelId])
 
-  // Filter life domains by selected wheel
+  // Filter life domains by selected wheel (use == for string/number coercion)
   const filteredDomains = useMemo(() => {
-    if (!lifeDomains || !selectedWheelId) return []
-    return lifeDomains.filter(d => d.wheelId === selectedWheelId)
+    if (!lifeDomains || selectedWheelId == null) return []
+    const match = lifeDomains.filter(d => d.wheelId != null && Number(d.wheelId) === Number(selectedWheelId))
+    return match
   }, [lifeDomains, selectedWheelId])
 
   // Helper function to get domain title based on language
@@ -251,6 +248,19 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
     )
   }
 
+  // No domains at all (not even fallback)
+  if (filteredDomains.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="relative w-full aspect-square flex flex-col items-center justify-center gap-4">
+          <div className="text-muted-foreground text-center">
+            No life domains for this wheel yet
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const round = (num: number, decimals: number = 10) => 
     Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals)
 
@@ -294,6 +304,36 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
                 </>
               )}
             </radialGradient>
+            {/* ROYGBIV gradient per segment - multiple stops so spectrum visible with few domains */}
+            {!isWireframeTheme &&
+              ringDomains.map((domain, index) => {
+                const angleStep = 360 / ringDomains.length
+                const startAngle = index * angleStep
+                const endAngle = (index + 1) * angleStep
+                const midRadius = (innerRadius + outerRadius) / 2
+                const startRad = (startAngle * Math.PI) / 180
+                const endRad = (endAngle * Math.PI) / 180
+                const x1 = round(centerX + midRadius * Math.cos(startRad))
+                const y1 = round(centerY + midRadius * Math.sin(startRad))
+                const x2 = round(centerX + midRadius * Math.cos(endRad))
+                const y2 = round(centerY + midRadius * Math.sin(endRad))
+                const stops = getGradientStopsForSegment(index, ringDomains.length)
+                return (
+                  <linearGradient
+                    key={`roygbiv-${domain.id}`}
+                    id={`okr-roygbiv-${domain.id}`}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    {stops.map((s, i) => (
+                      <stop key={i} offset={s.offset} stopColor={s.color} />
+                    ))}
+                  </linearGradient>
+                )
+              })}
           </defs>
 
           {/* Ring domains */}
@@ -340,11 +380,11 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
                   <g key={domain.id}>
                     <path
                       d={pathData}
-                      className="stroke-2 cursor-pointer transition-opacity opacity-100"
+                      className="cursor-pointer transition-opacity opacity-100"
                       style={{ 
-                        fill: isWireframeTheme ? 'transparent' : `var(--circular-menu-chapter-${index % 10}-fill, var(--circular-menu-chapter-${index % 10}))`,
-                        stroke: isWireframeTheme ? 'var(--nav-category-circle-sector-stroke)' : `var(--circular-menu-chapter-${index % 10})`,
-                        strokeWidth: '2'
+                        fill: isWireframeTheme ? 'transparent' : `url(#okr-roygbiv-${domain.id})`,
+                        stroke: 'oklch(0.7 0 0 / 0.4)',
+                        strokeWidth: 1.5
                       }}
                       onMouseEnter={(e) => {
                         if (isWireframeTheme) {
@@ -404,13 +444,12 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
                 className="cursor-pointer transition-opacity opacity-100"
                 style={{
                   fill: isWireframeTheme ? 'transparent' : 'url(#okr-life-domain-center-gradient)',
-                  stroke: isWireframeTheme ? 'var(--nav-category-circle-falah-stroke)' : 'url(#okr-life-domain-center-gradient)',
-                  strokeWidth: 2
+                  stroke: 'oklch(0.7 0 0 / 0.4)',
+                  strokeWidth: 1.5
                 }}
                 onMouseEnter={(e) => {
                   if (isWireframeTheme) {
                     e.currentTarget.style.fill = 'var(--nav-category-circle-falah-hover)'
-                    e.currentTarget.style.stroke = 'var(--nav-category-circle-falah-stroke)'
                   } else {
                     e.currentTarget.style.opacity = '0.9'
                   }
@@ -418,7 +457,6 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
                 onMouseLeave={(e) => {
                   if (isWireframeTheme) {
                     e.currentTarget.style.fill = 'transparent'
-                    e.currentTarget.style.stroke = 'var(--nav-category-circle-falah-stroke)'
                   } else {
                     e.currentTarget.style.opacity = '1'
                   }

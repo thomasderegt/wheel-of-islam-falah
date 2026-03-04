@@ -21,11 +21,18 @@ import { GoalsOkrContext } from '@/shared/api/types'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Users, Lock } from 'lucide-react'
+import { Users, Lock, Image } from 'lucide-react'
 
 export default function UserSettingsPage() {
   const { user } = useAuth()
-  const { userGroup, setUserGroup, availableGroups } = useTheme()
+  const {
+    userGroup,
+    setUserGroup,
+    availableGroups,
+    backgroundImage,
+    setBackgroundImage,
+    availableBackgrounds,
+  } = useTheme()
   const router = useRouter()
   
   // User preferences
@@ -192,6 +199,44 @@ export default function UserSettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Background Image Card - only for themes that support backgrounds */}
+              {userGroup &&
+                userGroup !== 'universal' &&
+                userGroup !== 'premium' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Image className="h-5 w-5" />
+                        Achtergrond
+                      </CardTitle>
+                      <CardDescription>
+                        Kies een achtergrondafbeelding voor je pagina&apos;s
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <Label htmlFor="background">Achtergrond</Label>
+                        <Select
+                          value={backgroundImage ?? '__default__'}
+                          onValueChange={(v) => setBackgroundImage(v === '__default__' ? null : v)}
+                        >
+                          <SelectTrigger id="background" className="w-full">
+                            <SelectValue placeholder="Kies achtergrond" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__default__">Standaard</SelectItem>
+                            {availableBackgrounds.map((filename) => (
+                              <SelectItem key={filename} value={filename}>
+                                {filename}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
               {/* Teams Card */}
               <Card>

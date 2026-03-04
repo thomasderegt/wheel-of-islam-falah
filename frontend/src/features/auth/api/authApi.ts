@@ -1,3 +1,4 @@
+import axios from 'axios'
 import apiClient from '@/shared/api/client'
 import {
   LoginRequest,
@@ -11,6 +12,8 @@ import {
   UserPreferenceResponse,
   UpdateUserPreferencesRequest,
   FalahCycleResponse,
+  PriorityAssessmentResponse,
+  SavePriorityAssessmentRequest,
 } from '@/shared/api/types'
 
 /**
@@ -138,6 +141,42 @@ export const authApi = {
   async completeFalahCycle(userId: number, cycleId: number): Promise<FalahCycleResponse> {
     const response = await apiClient.patch<FalahCycleResponse>(
       `/api/v2/user/${userId}/falah-cycles/${cycleId}/complete`
+    )
+    return response.data
+  },
+
+  /**
+   * Get priority assessment for user.
+   * Returns null when no assessment exists (404).
+   */
+  async getPriorityAssessment(
+    userId: number,
+    falahCycleId?: number | null
+  ): Promise<PriorityAssessmentResponse | null> {
+    try {
+      const params = falahCycleId != null ? `?falahCycleId=${falahCycleId}` : ''
+      const response = await apiClient.get<PriorityAssessmentResponse>(
+        `/api/v2/user/${userId}/priority-assessment${params}`
+      )
+      return response.data
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.status === 404) {
+        return null
+      }
+      throw err
+    }
+  },
+
+  /**
+   * Save priority assessment
+   */
+  async savePriorityAssessment(
+    userId: number,
+    data: SavePriorityAssessmentRequest
+  ): Promise<PriorityAssessmentResponse> {
+    const response = await apiClient.post<PriorityAssessmentResponse>(
+      `/api/v2/user/${userId}/priority-assessment`,
+      data
     )
     return response.data
   },

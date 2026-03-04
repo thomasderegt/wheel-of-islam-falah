@@ -11,9 +11,10 @@ import java.util.List;
  */
 @Repository
 public interface LifeDomainJpaRepository extends JpaRepository<LifeDomainJpaEntity, Long> {
-    
+
     /**
      * Find all life domains ordered by display order
      */
     List<LifeDomainJpaEntity> findAllByOrderByDisplayOrderAsc();
+
 }

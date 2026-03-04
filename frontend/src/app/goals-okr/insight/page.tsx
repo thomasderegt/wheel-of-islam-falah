@@ -25,6 +25,7 @@ import { getObjective, getKeyResult, getUserObjectiveInstance, getUserKeyResultI
 import { Button } from '@/shared/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { routes } from '@/shared/constants/routes'
+import { PrioritySummaryCard } from '@/shared/components/priorities/PrioritySummaryCard'
 
 export default function InsightPage() {
   const { user } = useAuth()
@@ -191,11 +192,12 @@ export default function InsightPage() {
         getAllLifeDomains()
       ])
 
+      const wheelOfSuccess = wheelsData.find(w => w.wheelKey === 'WHEEL_OF_SUCCESS')
       const wheelOfLife = wheelsData.find(w => w.wheelKey === 'WHEEL_OF_LIFE')
       const wheelOfBusiness = wheelsData.find(w => w.wheelKey === 'WHEEL_OF_BUSINESS')
       const wheelOfWork = wheelsData.find(w => w.wheelKey === 'WHEEL_OF_WORK')
 
-      if (!wheelOfLife && !wheelOfBusiness && !wheelOfWork) {
+      if (!wheelOfSuccess && !wheelOfLife && !wheelOfBusiness && !wheelOfWork) {
         setIsLoadingObjectivesByDomain(false)
         setIsLoadingKeyResultsByDomain(false)
         return
@@ -214,6 +216,11 @@ export default function InsightPage() {
       })
 
       const allDomainsByWheel = new Map<string, Array<{ id: number; nameNl: string; nameEn: string }>>()
+      if (wheelOfSuccess) {
+        allDomainsByWheel.set('WHEEL_OF_SUCCESS', lifeDomainsData
+          .filter(d => d.wheelId === wheelOfSuccess.id)
+          .map(d => ({ id: d.id, nameNl: d.titleNl, nameEn: d.titleEn })))
+      }
       if (wheelOfLife) {
         allDomainsByWheel.set('WHEEL_OF_LIFE', lifeDomainsData
           .filter(d => d.wheelId === wheelOfLife.id)
@@ -266,7 +273,8 @@ export default function InsightPage() {
           if (!wheelId) continue
 
           let wheelKey: string | null = null
-          if (wheelId === wheelOfLife?.id) wheelKey = 'WHEEL_OF_LIFE'
+          if (wheelId === wheelOfSuccess?.id) wheelKey = 'WHEEL_OF_SUCCESS'
+          else if (wheelId === wheelOfLife?.id) wheelKey = 'WHEEL_OF_LIFE'
           else if (wheelId === wheelOfBusiness?.id) wheelKey = 'WHEEL_OF_BUSINESS'
           else if (wheelId === wheelOfWork?.id) wheelKey = 'WHEEL_OF_WORK'
           if (!wheelKey || (targetKey && wheelKey !== targetKey)) continue
@@ -335,8 +343,9 @@ export default function InsightPage() {
 
   const wheelOrder = targetWheelKey
     ? [targetWheelKey]
-    : ['WHEEL_OF_LIFE', 'WHEEL_OF_BUSINESS', 'WHEEL_OF_WORK']
+    : ['WHEEL_OF_SUCCESS', 'WHEEL_OF_LIFE', 'WHEEL_OF_BUSINESS', 'WHEEL_OF_WORK']
   const wheelNames: Record<string, string> = {
+    'WHEEL_OF_SUCCESS': 'Wheel of Success',
     'WHEEL_OF_LIFE': 'Wheel of Life',
     'WHEEL_OF_BUSINESS': 'Wheel of Business',
     'WHEEL_OF_WORK': 'Wheel of Work'
@@ -503,6 +512,8 @@ export default function InsightPage() {
             <div className="space-y-6">
               <h1 className="text-3xl font-bold">Insight</h1>
 
+              <PrioritySummaryCard language={language} />
+
               {/* Falah cycle overview */}
               <Card>
                 <CardHeader>
@@ -586,7 +597,7 @@ export default function InsightPage() {
                     </CardContent>
                   </Card>
                 ) : (
-                  (['WHEEL_OF_LIFE', 'WHEEL_OF_BUSINESS', 'WHEEL_OF_WORK'] as const).map((wheelKey) => {
+                  wheelOrder.map((wheelKey) => {
                       const wheelStats = objectiveStatsByWheel.get(wheelKey) ?? {
                         todo: 0,
                         inProgress: 0,

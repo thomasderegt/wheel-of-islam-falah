@@ -9,7 +9,7 @@
 import Link from 'next/link'
 import { Suspense, useEffect } from 'react'
 import { ProtectedRoute, useAuth } from '@/features/auth'
-import { useFalahCycles } from '@/features/auth/hooks/useFalahCycles'
+import { useFalahCycles, useExitFalahCycleFlow } from '@/features/auth/hooks/useFalahCycles'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { KanbanBoard } from '@/features/goals-okr/components/KanbanBoard'
@@ -24,6 +24,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 function ExecuteContent() {
   const { user } = useAuth()
   const { data: cycles } = useFalahCycles(user?.id ?? null)
+  const exitFlow = useExitFalahCycleFlow(user?.id ?? null)
   const activeCycle = cycles?.find((c) => c.active)
   const isInFlow = !!activeCycle && !activeCycle.flowExited
   // TODO: Get from language context
@@ -62,13 +63,23 @@ function ExecuteContent() {
             <KanbanBoard language={language} filters={filters} />
 
             {isInFlow && (
-              <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
+              <div className="flex justify-between items-center gap-2 mt-8 pt-6 border-t border-border">
                 <Link href="/goals-okr">
                   <Button variant="outline" className="gap-2">
                     <ChevronLeft className="h-4 w-4" />
                     Back
                   </Button>
                 </Link>
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground"
+                  onClick={() =>
+                    activeCycle &&
+                    exitFlow.mutate(activeCycle.id, { onSuccess: () => router.push('/home') })
+                  }
+                >
+                  Quit
+                </Button>
                 <Link href="/goals-okr/insight">
                   <Button className="gap-2">
                     Next: Reflection

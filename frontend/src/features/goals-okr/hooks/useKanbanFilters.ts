@@ -6,7 +6,7 @@ export type KanbanViewMode = 'all' | 'okrs' | 'initiatives'
 export interface KanbanFilters {
   itemType?: 'OBJECTIVE' | 'KEY_RESULT' | 'INITIATIVE'
   lifeDomainId?: number
-  wheelType?: 'life' | 'business'
+  wheelType?: 'success' | 'life' | 'business' | 'work'
   /** @deprecated Use viewMode instead. Kept for URL backward compatibility. */
   showInitiatives?: boolean
   /** View mode: 'all' = OKRs + Initiatives (default), 'okrs' = only Goals/Objectives/Key Results, 'initiatives' = only Initiatives */
@@ -81,8 +81,8 @@ export function useKanbanFilters(initialFilters: KanbanFilters = {}) {
     }
     
     const wheelType = params.get('wheelType')
-    if (wheelType && (wheelType === 'life' || wheelType === 'business')) {
-      filters.wheelType = wheelType as 'life' | 'business'
+    if (wheelType && ['success', 'life', 'business', 'work'].includes(wheelType)) {
+      filters.wheelType = wheelType as 'success' | 'life' | 'business' | 'work'
     }
     
     const viewMode = params.get('viewMode')

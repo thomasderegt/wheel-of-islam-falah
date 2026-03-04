@@ -7,6 +7,11 @@ package com.woi.goalsokr.domain.enums;
  * Includes both personal life domains (Wheel of Life) and business domains (Wheel of Business)
  */
 public enum LifeDomainType {
+    // Wheel of Success (vormingsdoelen)
+    FALAH,
+    FIQH,
+    TAZKIYYAH,
+
     // Personal Life Domains (Wheel of Life)
     RELIGION,
     FAMILY,

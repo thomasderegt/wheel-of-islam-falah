@@ -2,8 +2,6 @@
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { config } from '@/shared/constants/config'
-import { ApiError } from './types'
-
 /**
  * Axios instance with base configuration
  */
@@ -47,7 +45,7 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<unknown>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
       // Enhanced error logging (skip 404 errors as they're often expected for missing resources)

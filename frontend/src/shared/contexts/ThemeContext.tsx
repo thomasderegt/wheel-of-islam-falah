@@ -16,7 +16,11 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
-import { ThemeContextType, UserGroup, BackgroundImage } from '@/shared/types/theme'
+import { ThemeContextType, UserGroup } from '@/shared/types/theme'
+import {
+  BACKGROUND_IMAGES,
+  getBackgroundImagePath,
+} from '@/shared/config/backgroundImages'
 
 // Context definitie
 const ThemeContext = createContext<ThemeContextType | null>(null)
@@ -24,71 +28,32 @@ const ThemeContext = createContext<ThemeContextType | null>(null)
 // Available user groups
 const AVAILABLE_GROUPS = ['adult-woman', 'adult-man', 'young-adult-male', 'young-adult-female', 'premium', 'universal'] as const
 
-// Available background images
-const AVAILABLE_BACKGROUNDS: BackgroundImage[] = [
-  'BackgroundYoungAdult.png',
-  'BackgroundYoungAdultMan.png',
-  'BackgroundYoungAdultWoman.png',
-  'BackgroundAdult.png',
-  'BackgroundAdultWoman.png',
-  'picture1.png',
-  'picture2.png',
-  'picture3.png',
-  'picture4.png',
-  'picture5.png',
-  'picture6.png',
-  'picture7.png',
-  'picture8.png',
-  'picture9.png',
-  'picture10.png',
-  'picture11.png',
-  'picture12.png',
-  'picture13.png',
-  'picture14.png',
-  'picture15.png',
-  'picture16.png'
-] as const
-
 // Type guard for UserGroup
 function isValidUserGroup(value: string | null): value is UserGroup {
   if (!value) return true // null is valid
   return (AVAILABLE_GROUPS as readonly string[]).includes(value)
 }
 
-// Type guard for BackgroundImage
-function isValidBackgroundImage(value: string | null): value is BackgroundImage {
+// Type guard for background image
+function isValidBackgroundImage(value: string | null): boolean {
   if (!value) return true // null is valid
-  return (AVAILABLE_BACKGROUNDS as readonly string[]).includes(value)
+  return (BACKGROUND_IMAGES as readonly string[]).includes(value)
 }
 
 // Function to get default background based on theme
-const getDefaultBackground = (userGroup: UserGroup): BackgroundImage => {
+const getDefaultBackground = (userGroup: UserGroup): string => {
   switch (userGroup) {
     case 'adult-woman':
-      return 'BackgroundAdultWoman.png'
     case 'adult-man':
-      return 'BackgroundAdult.png'
     case 'young-adult-male':
-      return 'BackgroundYoungAdultMan.png'
     case 'young-adult-female':
-      return 'BackgroundYoungAdultWoman.png'
+      return 'BackgroundAdult.png'
     case 'premium':
-      return 'BackgroundAdultWoman.png'
     case 'universal':
     case null:
     default:
-      return 'BackgroundYoungAdult.png'
+      return 'BackgroundAdult.png'
   }
-}
-
-// Function to get the full path for a background image
-const getBackgroundImagePath = (image: BackgroundImage): string => {
-  // All Background* images are in BackgroundPictures/
-  if (image.startsWith('Background')) {
-    return `/BackgroundPictures/${image}`
-  }
-  // picture* images might be in root or another location - adjust if needed
-  return `/${image}`
 }
 
 /**
@@ -102,7 +67,7 @@ const getBackgroundImagePath = (image: BackgroundImage): string => {
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [userGroup, setUserGroupState] = useState<UserGroup>(null)
-  const [backgroundImage, setBackgroundImageState] = useState<BackgroundImage | null>(null)
+  const [backgroundImage, setBackgroundImageState] = useState<string | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const pathname = usePathname()
   
@@ -200,17 +165,28 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   // Function to set background image (with LocalStorage persistence)
-  const setBackgroundImage = (image: BackgroundImage) => {
-    if (!isValidBackgroundImage(image)) {
+  const setBackgroundImage = (image: string | null) => {
+    if (image !== null && !isValidBackgroundImage(image)) {
       console.warn(`Invalid background image: ${image}`)
       return
     }
     
     try {
       setBackgroundImageState(image)
-      localStorage.setItem('woi-background-image', image)
-      const html = document.documentElement
-      html.style.setProperty('--background-image', `url('${getBackgroundImagePath(image)}')`)
+      if (image === null) {
+        localStorage.removeItem('woi-background-image')
+        const html = document.documentElement
+        if (!userGroup || userGroup === 'universal' || userGroup === 'premium') {
+          html.style.setProperty('--background-image', 'none')
+        } else {
+          const defaultBg = getDefaultBackground(userGroup)
+          html.style.setProperty('--background-image', `url('${getBackgroundImagePath(defaultBg)}')`)
+        }
+      } else {
+        localStorage.setItem('woi-background-image', image)
+        const html = document.documentElement
+        html.style.setProperty('--background-image', `url('${getBackgroundImagePath(image)}')`)
+      }
     } catch (error) {
       console.warn('Failed to save background image preference to localStorage:', error)
     }
@@ -224,7 +200,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         availableGroups: [...AVAILABLE_GROUPS],
         backgroundImage,
         setBackgroundImage,
-        availableBackgrounds: [...AVAILABLE_BACKGROUNDS],
+        availableBackgrounds: [...BACKGROUND_IMAGES],
       }}
     >
       {children}

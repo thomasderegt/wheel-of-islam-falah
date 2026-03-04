@@ -100,7 +100,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
   const getPageTitle = () => {
     if (pathname === '/home') return 'Home'
     if (pathname === '/success') return 'Success'
-    if (pathname === '/assessment') return 'Assessment'
+    if (pathname === '/assessment') return 'Priorities'
     if (pathname.startsWith('/goals-okr/insight')) return 'Insight'
     if (pathname.startsWith('/goals-okr/execute')) return 'Execute'
     if (pathname.startsWith('/goals-okr/kanban')) return 'Progress'
@@ -138,7 +138,7 @@ export default function Navbar({ variant = 'default' }: NavbarProps = {}) {
     const items = [
       { href: '/home', label: 'Home', icon: Home },
       { href: '/success', label: 'Succes', icon: Star },
-      { href: '/assessment', label: 'Assessment', icon: ClipboardCheck },
+      { href: '/assessment', label: 'Priorities', icon: ClipboardCheck },
     ]
 
     // Only add Goal, Execute, Insight if Goals-OKR context is not NONE

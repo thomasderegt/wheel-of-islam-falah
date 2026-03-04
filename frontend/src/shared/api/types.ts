@@ -89,6 +89,24 @@ export interface FalahCycleResponse {
   flowExited: boolean
 }
 
+// ========== Priority Assessment Types ==========
+
+export interface PriorityAssessmentResponse {
+  id: number
+  userId: number
+  falahCycleId: number | null
+  scores: Record<string, number>
+  skippedWheels: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SavePriorityAssessmentRequest {
+  scores: Record<string, number>
+  skippedWheels: string[]
+  falahCycleId?: number | null
+}
+
 // ========== Content Types ==========
 
 export interface WheelDTO {

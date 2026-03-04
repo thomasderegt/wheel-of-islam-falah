@@ -17,14 +17,21 @@ public class LifeDomainEntityMapper {
             return null;
         }
         
-        // Safely parse enum, skip if domain_key doesn't exist in enum
+        // Parse domain_key to enum; explicit handling for Wheel of Success (FIQH, TAZKIYYAH, FALAH)
+        String key = jpa.getDomainKey();
         LifeDomainType domainKey;
-        try {
-            domainKey = LifeDomainType.valueOf(jpa.getDomainKey());
-        } catch (IllegalArgumentException e) {
-            // Domain key doesn't exist in enum - skip this domain
-            // This can happen if database has domains that were removed from enum
-            return null;
+        if ("FIQH".equals(key)) {
+            domainKey = LifeDomainType.FIQH;
+        } else if ("TAZKIYYAH".equals(key)) {
+            domainKey = LifeDomainType.TAZKIYYAH;
+        } else if ("FALAH".equals(key)) {
+            domainKey = LifeDomainType.FALAH;
+        } else {
+            try {
+                domainKey = LifeDomainType.valueOf(key);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
         
         LifeDomain domain = new LifeDomain();

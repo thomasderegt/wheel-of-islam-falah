@@ -1,7 +1,7 @@
 /**
  * Falah Dashboard Component
- * 
- * Dashboard voor Falah (Chapter 0 in Falah Book)
+ *  * Dashboard voor Falah (insightpage)
+
  * Toont voortgang over alle drie pijlers:
  * - Dunya (Category #1)
  * - Inner World (Category #2) 
