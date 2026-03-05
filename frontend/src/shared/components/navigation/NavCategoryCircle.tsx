@@ -212,7 +212,7 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
           </g>
           
           {/* 8-punts compass rose: 4 punten Tazkiyyah (boven), 4 punten Fiqh (onder) */}
-          <g>
+          <g stroke="var(--nav-category-circle-sector-stroke)">
             {orderedCategories.map((sector, index) => {
               const angles = index === 0 ? TAZKIYYAH_ANGLES : FIQH_ANGLES
               // Tazkiyyah bij N-punt (y≈55), Fiqh bij S-punt (y≈345)
@@ -239,30 +239,27 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
                       <path
                         key={angle}
                         d={pathData}
-                        className="stroke-2 cursor-pointer transition-opacity opacity-100"
+                        className="cursor-pointer transition-opacity opacity-100"
                         style={{
                           fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
-                          stroke: isUniversalTheme ? 'var(--nav-category-circle-sector-stroke)' : 'oklch(0.7 0 0 / 0.4)',
-                          strokeWidth: isUniversalTheme ? 2 : 1.5,
+                          strokeWidth: 1,
                         }}
                         onMouseEnter={(e) => {
                           if (isUniversalTheme) {
                             e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
-                            e.currentTarget.style.stroke = 'var(--nav-category-circle-sector-stroke)'
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (isUniversalTheme) {
                             e.currentTarget.style.fill = 'transparent'
-                            e.currentTarget.style.stroke = 'var(--nav-category-circle-sector-stroke)'
                           }
                         }}
                         onClick={() => handleSectorClick(sector.categoryNumber)}
                       />
                     )
                   })}
-                  {/* Sector labels */}
-                  <g pointerEvents="none">
+                  {/* Sector labels - geen border */}
+                  <g pointerEvents="none" stroke="none">
                     <text
                       x="200"
                       y={textY - 8}

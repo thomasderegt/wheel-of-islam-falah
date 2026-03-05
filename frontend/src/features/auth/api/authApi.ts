@@ -154,7 +154,9 @@ export const authApi = {
     falahCycleId?: number | null
   ): Promise<PriorityAssessmentResponse | null> {
     try {
-      const params = falahCycleId != null ? `?falahCycleId=${falahCycleId}` : ''
+      const validCycleId =
+        falahCycleId != null && Number.isFinite(falahCycleId) ? falahCycleId : null
+      const params = validCycleId != null ? `?falahCycleId=${validCycleId}` : ''
       const response = await apiClient.get<PriorityAssessmentResponse>(
         `/api/v2/user/${userId}/priority-assessment${params}`
       )

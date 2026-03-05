@@ -19,6 +19,7 @@ export const routes = {
   
   // Goals
   goals: '/goals',
+  insightCycle: (cycleId: number) => `/goals-okr/insight/cycles/${cycleId}`,
   goalLifeDomain: (id: number) => `/goals/life-domains/${id}`,
   goalArea: (id: number) => `/goals/goal-areas/${id}`,
   goalGroup: (id: number) => `/goals/goal-groups/${id}`,

@@ -652,7 +652,7 @@ export function KanbanBoard({ language = 'en', filters }: KanbanBoardProps) {
         </div>
         <DragOverlay>
           {activeId && activeItem && (
-            <Card className="opacity-90 shadow-xl border-2 border-primary w-64">
+            <Card className="shadow-xl border-2 border-primary w-64">
               <CardHeader className="pb-2">
                 <div className="flex items-start gap-2">
                   <GripVertical className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />

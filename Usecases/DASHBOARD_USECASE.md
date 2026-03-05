@@ -18,7 +18,7 @@ Deze use case beschrijft het Falah dashboard - een overzichtspagina die data uit
 **Stap 2: Frontend laadt geaggregeerde data**
 ```typescript
 // useFalahDashboardData - combineert:
-// - User goal instances
+// - User goal growth cycles
 // - Kanban items (samenvatting)
 // - Teams
 // - Learning enrollments

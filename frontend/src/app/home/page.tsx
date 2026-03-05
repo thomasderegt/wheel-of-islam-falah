@@ -14,6 +14,7 @@ import { Container } from '@/shared/components/ui/container'
 import Link from 'next/link'
 import { Star, ClipboardCheck, Target, TrendingUp, Lightbulb, Play } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
+import { Card } from '@/shared/components/ui/card'
 import { routes } from '@/shared/constants/routes'
 
 const falahGrowthSteps = [
@@ -98,8 +99,33 @@ export default function HomePage() {
             </h1>
 
             <p className="text-foreground/90">
-              The Falah compass: the formation of your heart and action. Explore the core of Falah, Tazkiyyah and Fiqh. This is the starting point of your growth cycle and helps you clarify what truly matters before you set priorities and goals.
+              The Falah Growth Cycle guides you from Success through Priorities, Goals, Execution and Insight, and back to Success. You clarify what matters, set your focus, define goals, act on them, and reflect on your progress. Each growth cycle deepens your growth and keeps you aligned with what matters.
             </p>
+
+            <section>
+              <div className="flex flex-col gap-3">
+                {falahGrowthSteps.map((step, index) => {
+                  const Icon = step.icon
+                  const isLast = index === falahGrowthSteps.length - 1
+                  return (
+                    <Link key={step.href} href={step.href} className="block hover:opacity-90 transition-opacity">
+                      <Card className="flex flex-row gap-4 py-3 px-4 hover:bg-muted/20 transition-colors">
+                        <div className="flex flex-col items-center">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/15 border-2 border-primary/50 flex items-center justify-center">
+                            <Icon className="h-5 w-5 text-primary" />
+                          </div>
+                          {!isLast && <div className="w-px flex-1 min-h-[24px] bg-border mt-2" />}
+                        </div>
+                        <div className={`flex-1 ${isLast ? '' : 'pb-6'}`}>
+                          <h3 className="font-semibold text-foreground">{step.label}</h3>
+                          <p className="text-sm text-foreground/85 mt-1">{step.description}</p>
+                        </div>
+                      </Card>
+                    </Link>
+                  )
+                })}
+              </div>
+            </section>
 
             <Button
               size="lg"
@@ -110,29 +136,6 @@ export default function HomePage() {
               <Play className="h-4 w-4" />
               {startButtonLabel}
             </Button>
-
-            <section>
-              <div className="flex flex-col gap-3">
-                {falahGrowthSteps.map((step, index) => {
-                  const Icon = step.icon
-                  const isLast = index === falahGrowthSteps.length - 1
-                  return (
-                    <Link key={step.href} href={step.href} className="flex gap-4 bg-muted/20 hover:bg-muted/40 transition-colors rounded-lg py-3 px-3">
-                      <div className="flex flex-col items-center">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/15 border-2 border-primary/50 flex items-center justify-center">
-                          <Icon className="h-5 w-5 text-primary" />
-                        </div>
-                        {!isLast && <div className="w-px flex-1 min-h-[24px] bg-border mt-2" />}
-                      </div>
-                      <div className={`flex-1 ${isLast ? '' : 'pb-6'}`}>
-                        <h3 className="font-semibold text-foreground">{step.label}</h3>
-                        <p className="text-sm text-foreground/85 mt-1">{step.description}</p>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </section>
           </Container>
         </main>
       </div>

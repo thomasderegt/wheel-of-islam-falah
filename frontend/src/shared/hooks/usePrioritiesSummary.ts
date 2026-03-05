@@ -49,7 +49,10 @@ function buildPriorityItems(
 
 export type PrioritySummaryItem = { title: string; score: number }
 
-export function usePrioritiesSummary(language: 'nl' | 'en' = 'en'): {
+export function usePrioritiesSummary(
+  language: 'nl' | 'en' = 'en',
+  cycleId?: number | null
+): {
   summary: PrioritySummaryItem[]
   summaryByWheel: { wheelLabel: string; items: PrioritySummaryItem[] }[]
   isLoading: boolean
@@ -57,7 +60,7 @@ export function usePrioritiesSummary(language: 'nl' | 'en' = 'en'): {
   const { user } = useAuth()
   const { data: cycles } = useFalahCycles(user?.id ?? null)
   const activeCycle = cycles?.find((c) => c.active)
-  const falahCycleId = activeCycle?.id ?? null
+  const falahCycleId = cycleId ?? activeCycle?.id ?? null
 
   const { data: assessment, isLoading: loadingAssessment } = usePriorityAssessment(
     user?.id ?? null,

@@ -110,7 +110,7 @@ export default function MySpacePage() {
 
           {/* Player Card */}
           <div className="transition-all duration-300">
-            <Card className="bg-card backdrop-blur-sm opacity-100 py-0 gap-0">
+            <Card className="bg-card backdrop-blur-sm py-0 gap-0">
               <CardHeader className="pb-1.5 px-3 pt-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
