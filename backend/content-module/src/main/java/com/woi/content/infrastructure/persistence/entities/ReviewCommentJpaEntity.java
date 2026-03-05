@@ -27,6 +27,9 @@ public class ReviewCommentJpaEntity {
     @Column(name = "comment_text", columnDefinition = "TEXT", nullable = false)
     private String commentText;
     
+    @Column(name = "audio_url", length = 500)
+    private String audioUrl;
+    
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
     
@@ -54,6 +57,9 @@ public class ReviewCommentJpaEntity {
     
     public String getCommentText() { return commentText; }
     public void setCommentText(String commentText) { this.commentText = commentText; }
+    
+    public String getAudioUrl() { return audioUrl; }
+    public void setAudioUrl(String audioUrl) { this.audioUrl = audioUrl; }
     
     public Long getCreatedBy() { return createdBy; }
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }

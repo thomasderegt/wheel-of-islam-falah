@@ -8,8 +8,10 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/shared/components/ui/button'
+import { Badge } from '@/shared/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { FileText, BookOpen, Layers, AlignLeft, Eye, Edit, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { FileText, BookOpen, Layers, AlignLeft, Eye, ArrowUpDown, ArrowUp, ArrowDown, MessageSquare } from 'lucide-react'
+import { getReviewsByReviewableItem } from '../api/contentApi'
 
 export interface ContentItem {
   id: number
@@ -51,6 +53,23 @@ const getTypeColor = (type: ContentItem['type']) => {
   }
 }
 
+const getStatusBadgeVariant = (status?: string): 'secondary' | 'default' | 'destructive' | 'outline' => {
+  switch (status) {
+    case 'DRAFT':
+      return 'secondary'
+    case 'PUBLISHED':
+      return 'default'
+    case 'IN_REVIEW':
+      return 'outline'
+    case 'NEEDS_REVISION':
+      return 'destructive'
+    case 'APPROVED':
+      return 'default'
+    default:
+      return 'secondary'
+  }
+}
+
 const getDetailPath = (item: ContentItem) => {
   switch (item.type) {
     case 'BOOK':
@@ -64,24 +83,34 @@ const getDetailPath = (item: ContentItem) => {
   }
 }
 
-const getEditPath = (item: ContentItem) => {
-  switch (item.type) {
-    case 'BOOK':
-      return `/admin/content/books/${item.id}/edit`
-    case 'CHAPTER':
-      return `/admin/content/chapters/${item.id}/edit`
-    case 'SECTION':
-      return `/admin/content/sections/${item.id}/edit`
-    case 'PARAGRAPH':
-      return `/admin/content/paragraphs/${item.id}/edit`
-  }
-}
-
 type SortDirection = 'asc' | 'desc' | null
 
 export function ContentItemsTable({ items }: ContentItemsTableProps) {
   const router = useRouter()
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
+  const [loadingReviewId, setLoadingReviewId] = useState<string | null>(null)
+
+  const handleViewComments = async (item: ContentItem) => {
+    if (item.status !== 'IN_REVIEW' && item.status !== 'NEEDS_REVISION') return
+    const key = `${item.type}-${item.id}`
+    setLoadingReviewId(key)
+    try {
+      const reviews = await getReviewsByReviewableItem(item.type, item.id)
+      const latest = reviews.toSorted(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )[0]
+      if (latest) {
+        router.push(`/admin/content/review/${latest.id}`)
+      } else {
+        alert('Geen review gevonden voor dit item.')
+      }
+    } catch (e) {
+      console.error(e)
+      alert('Kon reviews niet ophalen.')
+    } finally {
+      setLoadingReviewId(null)
+    }
+  }
 
   const sortedItems = useMemo(() => {
     if (sortDirection === null) {
@@ -155,6 +184,7 @@ export function ContentItemsTable({ items }: ContentItemsTableProps) {
                 <th className="text-left p-3 font-semibold">ID</th>
                 <th className="text-left p-3 font-semibold">Title</th>
                 <th className="text-left p-3 font-semibold">Path</th>
+                <th className="text-left p-3 font-semibold">Status</th>
                 <th className="text-right p-3 font-semibold">Actions</th>
               </tr>
             </thead>
@@ -177,7 +207,24 @@ export function ContentItemsTable({ items }: ContentItemsTableProps) {
                     </span>
                   </td>
                   <td className="p-3">
+                    <Badge variant={getStatusBadgeVariant(item.status)}>
+                      {item.status || 'DRAFT'}
+                    </Badge>
+                  </td>
+                  <td className="p-3">
                     <div className="flex items-center justify-end gap-2">
+                      {(item.status === 'IN_REVIEW' || item.status === 'NEEDS_REVISION') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewComments(item)}
+                          disabled={loadingReviewId === `${item.type}-${item.id}`}
+                          className="gap-2"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          {loadingReviewId === `${item.type}-${item.id}` ? '...' : 'Comments'}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -186,15 +233,6 @@ export function ContentItemsTable({ items }: ContentItemsTableProps) {
                       >
                         <Eye className="h-4 w-4" />
                         View
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push(getEditPath(item))}
-                        className="gap-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        Edit
                       </Button>
                     </div>
                   </td>

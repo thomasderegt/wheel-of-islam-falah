@@ -363,7 +363,7 @@ export function CreateContentDialog({ filters }: CreateContentDialogProps = {}) 
                       <SelectContent>
                         {books?.map((book) => (
                           <SelectItem key={book.id} value={book.id.toString()}>
-                            Book {book.id}
+                            {book.titleEn || book.titleNl || `Book ${book.id}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -425,7 +425,7 @@ export function CreateContentDialog({ filters }: CreateContentDialogProps = {}) 
                       <SelectContent>
                         {books?.map((book) => (
                           <SelectItem key={book.id} value={book.id.toString()}>
-                            Book {book.id}
+                            {book.titleEn || book.titleNl || `Book ${book.id}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -509,7 +509,7 @@ export function CreateContentDialog({ filters }: CreateContentDialogProps = {}) 
                       <SelectContent>
                         {books?.map((book) => (
                           <SelectItem key={book.id} value={book.id.toString()}>
-                            Book {book.id}
+                            {book.titleEn || book.titleNl || `Book ${book.id}`}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -40,7 +40,7 @@ export default function BookPage() {
 
             {/* NavBookCircle */}
             <div className="flex items-center justify-center min-h-[600px]">
-              <NavBookCircle bookId={bookId} language={language} />
+              <NavBookCircle bookId={bookId} language={language} publishedOnly />
             </div>
           </Container>
         </main>

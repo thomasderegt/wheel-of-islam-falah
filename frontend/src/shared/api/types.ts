@@ -153,6 +153,8 @@ export interface BookDTO {
   categoryId: number
   bookNumber: number | null
   workingStatusBookVersionId: number | null
+  titleEn?: string | null
+  titleNl?: string | null
   createdAt: string
   updatedAt: string
 }

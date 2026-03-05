@@ -3,10 +3,11 @@
 /**
  * NavCategoryCircle Component
  *
- * 8-punts compass rose: Tazkiyyah (bovenste 4 punten), Fiqh (onderste 4 punten)
+ * 3-sector wheel: Aqeedah (top), Tazkiyyah (right-bottom), Fiqh (left-bottom)
  * Falah in het midden
  */
 
+import { useId } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { getCategoryByNumber } from '@/features/content/api/contentApi'
@@ -26,78 +27,81 @@ interface CircleOption {
   colorVar: string
 }
 
-// Compass rose: 8 punten, top 4 = Tazkiyyah, bottom 4 = Fiqh
+// 3-sector wheel: 120° per sector, Aqeedah top (270°), Tazkiyyah right-bottom (30°), Fiqh left-bottom (150°)
+// Center r=70, sector inner=95 (gap 25, zoals NavOKRLifeDomainCircle)
 const INITIAL_SVG_ROTATION = 0
 const INITIAL_FALAH_TEXT_ROTATION = 0
+const CENTER_RADIUS = 70
 const OUTER_RADIUS = 160
-const INNER_RADIUS = 70 // Rand van Falah center
-const POINT_SPAN = 22.5 // Kardinaal: halve hoek (45° totaal)
-const ORDINAL_POINT_SPAN = 11.25 // Ordinaal: 50% kleiner (22.5° totaal)
-const ORDINAL_OUTER_RADIUS = 115 // Ordinaal: 50% korter (70 + 45)
+const INNER_RADIUS = 95
 const RING_INNER = 118
 const RING_OUTER = 132
-const TICK_COUNT = 16
+const TICK_COUNT = 12
 const TICK_ANGLE = 360 / TICK_COUNT
-// Hoeken: 0=E, 45=SE, 90=S, 135=SW, 180=W, 225=NW, 270=N, 315=NE
-const TAZKIYYAH_ANGLES = [180, 225, 270, 315] // Bovenste helft
-const FIQH_ANGLES = [0, 45, 90, 135] // Onderste helft
+
+// Sector arcs: start angle, sweep 120° each. SVG: 0°=right, 90°=bottom, 270°=top
+// Aqeedah top (210°-330°), Tazkiyyah right-bottom (330°-90°), Fiqh left-bottom (90°-210°)
+const SECTOR_ANGLES: { start: number; sweep: number; labelAngle: number }[] = [
+  { start: 210, sweep: 120, labelAngle: 270 }, // Aqeedah (top)
+  { start: 330, sweep: 120, labelAngle: 30 },  // Tazkiyyah (right-bottom)
+  { start: 90, sweep: 120, labelAngle: 150 },  // Fiqh (left-bottom)
+]
 
 interface NavCategoryCircleProps {
   readonly fitToScreen?: boolean
 }
 
 export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProps) {
+  const uniqueId = useId().replace(/:/g, '')
   const router = useRouter()
-  const language = 'en' as 'nl' | 'en' // TODO: Add language context later
+  const language = 'en' as 'nl' | 'en'
   const { userGroup } = useTheme()
   const isUniversalTheme = !userGroup || userGroup === 'universal'
   const { contentContext } = useModeContext()
 
-  // Content Context is always SUCCESS, so always show
-  // This component is for Content (Wheel of Islam)
   if (contentContext !== 'SUCCESS') {
     return null
   }
 
-  // Get Wheel of Islam
   const { data: wheelOfIslam, isLoading: isLoadingWheel } = useContentWheelByKey('WHEEL_OF_ISLAM')
-  
-  // Get categories by wheel ID
   const { data: categories, isLoading: isLoadingCategories } = useCategoriesByWheelId(wheelOfIslam?.id ?? null)
 
-  // Find categories by number (fallback if wheel not found)
   const category0 = categories?.find(c => c.categoryNumber === 0)
+  const category1 = categories?.find(c => c.categoryNumber === 1)
   const category2 = categories?.find(c => c.categoryNumber === 2)
-  const category4 = categories?.find(c => c.categoryNumber === 4)
+  const category3 = categories?.find(c => c.categoryNumber === 3)
 
-  const { data: category2Fallback, isLoading: isLoading2 } = useQuery({
+  const { data: cat1Fallback } = useQuery({
+    queryKey: ['categoryByNumber', 1],
+    queryFn: () => getCategoryByNumber(1),
+    enabled: !category1 && !isLoadingCategories,
+  })
+  const { data: cat2Fallback } = useQuery({
     queryKey: ['categoryByNumber', 2],
     queryFn: () => getCategoryByNumber(2),
     enabled: !category2 && !isLoadingCategories,
   })
-
-  const { data: category4Fallback, isLoading: isLoading4 } = useQuery({
-    queryKey: ['categoryByNumber', 4],
-    queryFn: () => getCategoryByNumber(4),
-    enabled: !category4 && !isLoadingCategories,
+  const { data: cat3Fallback } = useQuery({
+    queryKey: ['categoryByNumber', 3],
+    queryFn: () => getCategoryByNumber(3),
+    enabled: !category3 && !isLoadingCategories,
   })
-
-  const { data: centerCategoryFallback, isLoading: isLoadingFalah } = useQuery({
+  const { data: centerFallback } = useQuery({
     queryKey: ['categoryByNumber', 0],
     queryFn: () => getCategoryByNumber(0),
     enabled: !category0 && !isLoadingCategories,
   })
 
-  const finalCategory2 = category2 || category2Fallback
-  const finalCategory4 = category4 || category4Fallback
-  const finalCenterCategory = category0 || centerCategoryFallback
+  const final1 = category1 || cat1Fallback
+  const final2 = category2 || cat2Fallback
+  const final3 = category3 || cat3Fallback
+  const finalCenter = category0 || centerFallback
 
-  // Helper function to round to avoid hydration mismatches
-  const round = (num: number, decimals: number = 10) => 
+  const round = (num: number, decimals: number = 10) =>
     Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals)
 
-  const isLoading = isLoadingWheel || isLoadingCategories || isLoading2 || isLoading4 || isLoadingFalah
-  if (isLoading || !finalCategory2 || !finalCategory4 || !finalCenterCategory) {
+  const isLoading = isLoadingWheel || isLoadingCategories || !final1 || !final2 || !final3 || !finalCenter
+  if (isLoading) {
     return (
       <div className="w-full">
         <div className="relative w-full aspect-square flex items-center justify-center">
@@ -107,28 +111,35 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
     )
   }
 
-  // Twee sectoren: Tazkiyyah boven, Fiqh onder (Dunya en Akhirah zijn onderdeel van Falah)
   const orderedCategories: CircleOption[] = [
     {
-      id: `category-${finalCategory2.id}`,
-      titleEn: finalCategory2.titleEn,
-      titleNl: finalCategory2.titleNl,
-      subtitleEn: finalCategory2.subtitleEn,
-      subtitleNl: finalCategory2.subtitleNl,
-      categoryNumber: finalCategory2.categoryNumber ?? 2,
-      colorVar: '--circular-menu-chapter-4'
+      id: `category-${final1!.id}`,
+      titleEn: final1!.titleEn,
+      titleNl: final1!.titleNl,
+      subtitleEn: final1!.subtitleEn,
+      subtitleNl: final1!.subtitleNl,
+      categoryNumber: final1!.categoryNumber ?? 1,
+      colorVar: '--circular-menu-chapter-4',
     },
     {
-      id: `category-${finalCategory4.id}`,
-      titleEn: finalCategory4.titleEn,
-      titleNl: finalCategory4.titleNl,
-      subtitleEn: finalCategory4.subtitleEn,
-      subtitleNl: finalCategory4.subtitleNl,
-      categoryNumber: finalCategory4.categoryNumber ?? 4,
-      colorVar: '--circular-menu-chapter-9'
-    }
+      id: `category-${final2!.id}`,
+      titleEn: final2!.titleEn,
+      titleNl: final2!.titleNl,
+      subtitleEn: final2!.subtitleEn,
+      subtitleNl: final2!.subtitleNl,
+      categoryNumber: final2!.categoryNumber ?? 2,
+      colorVar: '--circular-menu-chapter-4',
+    },
+    {
+      id: `category-${final3!.id}`,
+      titleEn: final3!.titleEn,
+      titleNl: final3!.titleNl,
+      subtitleEn: final3!.subtitleEn,
+      subtitleNl: final3!.subtitleNl,
+      categoryNumber: final3!.categoryNumber ?? 3,
+      colorVar: '--circular-menu-chapter-9',
+    },
   ]
-  // index 0 = Tazkiyyah (boven, 180°-360°), index 1 = Fiqh (onder, 0°-180°)
 
   const handleSectorClick = (categoryNumber: number) => {
     router.push(`/category/number/${categoryNumber}`)
@@ -138,22 +149,48 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
     router.push(`/category/number/0`)
   }
 
+  const describeArc = (startAngle: number, sweepAngle: number) => {
+    const startRad = (startAngle * Math.PI) / 180
+    const endRad = ((startAngle + sweepAngle) * Math.PI) / 180
+    const x1 = round(200 + OUTER_RADIUS * Math.cos(startRad))
+    const y1 = round(200 + OUTER_RADIUS * Math.sin(startRad))
+    const x2 = round(200 + OUTER_RADIUS * Math.cos(endRad))
+    const y2 = round(200 + OUTER_RADIUS * Math.sin(endRad))
+    const x3 = round(200 + INNER_RADIUS * Math.cos(endRad))
+    const y3 = round(200 + INNER_RADIUS * Math.sin(endRad))
+    const x4 = round(200 + INNER_RADIUS * Math.cos(startRad))
+    const y4 = round(200 + INNER_RADIUS * Math.sin(startRad))
+    const largeArc = sweepAngle > 180 ? 1 : 0
+    return `M ${x1} ${y1} A ${OUTER_RADIUS} ${OUTER_RADIUS} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${INNER_RADIUS} ${INNER_RADIUS} 0 ${largeArc} 0 ${x4} ${y4} Z`
+  }
+
+  const describeTextArc = (startAngle: number, sweepAngle: number, radius: number, reverse = false) => {
+    const startRad = (startAngle * Math.PI) / 180
+    const endRad = ((startAngle + sweepAngle) * Math.PI) / 180
+    const x1 = round(200 + radius * Math.cos(startRad))
+    const y1 = round(200 + radius * Math.sin(startRad))
+    const x2 = round(200 + radius * Math.cos(endRad))
+    const y2 = round(200 + radius * Math.sin(endRad))
+    const largeArc = sweepAngle > 180 ? 1 : 0
+    const sweepFlag = reverse ? 0 : 1
+    return reverse
+      ? `M ${x2} ${y2} A ${radius} ${radius} 0 ${largeArc} ${sweepFlag} ${x1} ${y1}`
+      : `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} ${sweepFlag} ${x2} ${y2}`
+  }
+
   return (
     <div className="w-full">
       <div
         className="relative w-full aspect-square"
         style={fitToScreen ? { maxWidth: 'min(100%, min(calc(100vh - 12rem), 72rem))', margin: '0 auto' } : undefined}
       >
-        {/* SVG Compass Rose - 8 punten + Falah in het midden */}
-        <svg 
-          className="absolute inset-0 w-full h-full" 
+        <svg
+          className="absolute inset-0 w-full h-full"
           viewBox="40 40 320 320"
           preserveAspectRatio="xMidYMid meet"
           style={{ transform: `rotate(${INITIAL_SVG_ROTATION}deg)` }}
         >
-          {/* Gradient definitions */}
           <defs>
-            {/* Falah gradient */}
             <radialGradient id="falah-gradient" cx="50%" cy="50%">
               {isUniversalTheme ? (
                 <>
@@ -168,20 +205,43 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
                 </>
               )}
             </radialGradient>
-            
-            {/* ROYGBIV gradient per sector - top-to-bottom voor compass punten */}
+            {orderedCategories.map((sector, index) => {
+              const { start, sweep } = SECTOR_ANGLES[index]
+              const textRadius = (INNER_RADIUS + OUTER_RADIUS) / 2
+              const reverse = index > 0
+              const pathId = `text-path-${uniqueId}-${index}`
+              const subPathId = `text-path-sub-${uniqueId}-${index}`
+              return (
+                <g key={`text-paths-${pathId}`}>
+                  <path
+                    id={pathId}
+                    d={describeTextArc(start, sweep, textRadius, reverse)}
+                    fill="none"
+                  />
+                  <path
+                    id={subPathId}
+                    d={describeTextArc(start, sweep, textRadius - 16, reverse)}
+                    fill="none"
+                  />
+                </g>
+              )
+            })}
             {!isUniversalTheme &&
               orderedCategories.map((sector, index) => {
-                const y1 = index === 0 ? 40 : 200
-                const y2 = index === 0 ? 200 : 360
-                const stops = getGradientStopsForSegment(index, 2)
+                const angle = SECTOR_ANGLES[index].labelAngle
+                const rad = (angle * Math.PI) / 180
+                const y1 = 200 - 80 * Math.cos(rad)
+                const y2 = 200 + 80 * Math.cos(rad)
+                const x1 = 200 + 80 * Math.sin(rad)
+                const x2 = 200 - 80 * Math.sin(rad)
+                const stops = getGradientStopsForSegment(index, 3)
                 return (
                   <linearGradient
                     key={`roygbiv-${sector.id}`}
                     id={`category-roygbiv-${index}`}
-                    x1="200"
+                    x1={x1}
                     y1={y1}
-                    x2="200"
+                    x2={x2}
                     y2={y2}
                     gradientUnits="userSpaceOnUse"
                   >
@@ -193,12 +253,7 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               })}
           </defs>
 
-          {/* Ronde ring met streepjes - onder de compass punten */}
-          <g
-            stroke="var(--nav-category-circle-sector-stroke)"
-            strokeWidth="1"
-            opacity="0.85"
-          >
+          <g stroke="var(--nav-category-circle-sector-stroke)" strokeWidth="1" opacity="0.85">
             <circle cx="200" cy="200" r={RING_INNER} fill="none" />
             <circle cx="200" cy="200" r={RING_OUTER} fill="none" />
             {Array.from({ length: TICK_COUNT }, (_, i) => {
@@ -210,95 +265,74 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
             })}
           </g>
-          
-          {/* 8-punts compass rose: 4 punten Tazkiyyah (boven), 4 punten Fiqh (onder) */}
-          <g stroke="var(--nav-category-circle-sector-stroke)">
-            {orderedCategories.map((sector, index) => {
-              const angles = index === 0 ? TAZKIYYAH_ANGLES : FIQH_ANGLES
-              // Tazkiyyah bij N-punt (y≈55), Fiqh bij S-punt (y≈345)
-              const textY = index === 0 ? 55 : 345
 
-              return (
-                <g key={sector.id}>
-                  {angles.map((angle) => {
-                    const isCardinal = angle % 90 === 0
-                    const pointSpan = isCardinal ? POINT_SPAN : ORDINAL_POINT_SPAN
-                    const outerR = isCardinal ? OUTER_RADIUS : ORDINAL_OUTER_RADIUS
-                    const rad = (angle * Math.PI) / 180
-                    const radLo = ((angle - pointSpan) * Math.PI) / 180
-                    const radHi = ((angle + pointSpan) * Math.PI) / 180
-                    const apexX = round(200 + outerR * Math.cos(rad))
-                    const apexY = round(200 + outerR * Math.sin(rad))
-                    const baseLoX = round(200 + INNER_RADIUS * Math.cos(radLo))
-                    const baseLoY = round(200 + INNER_RADIUS * Math.sin(radLo))
-                    const baseHiX = round(200 + INNER_RADIUS * Math.cos(radHi))
-                    const baseHiY = round(200 + INNER_RADIUS * Math.sin(radHi))
-                    const pathData = `M ${apexX} ${apexY} L ${baseLoX} ${baseLoY} L ${baseHiX} ${baseHiY} Z`
+          {orderedCategories.map((sector, index) => {
+            const { start, sweep } = SECTOR_ANGLES[index]
 
-                    return (
-                      <path
-                        key={angle}
-                        d={pathData}
-                        className="cursor-pointer transition-opacity opacity-100"
-                        style={{
-                          fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
-                          strokeWidth: 1,
-                        }}
-                        onMouseEnter={(e) => {
-                          if (isUniversalTheme) {
-                            e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (isUniversalTheme) {
-                            e.currentTarget.style.fill = 'transparent'
-                          }
-                        }}
-                        onClick={() => handleSectorClick(sector.categoryNumber)}
-                      />
-                    )
-                  })}
-                  {/* Sector labels - geen border */}
-                  <g pointerEvents="none" stroke="none">
-                    <text
-                      x="200"
-                      y={textY - 8}
-                      className="fill-foreground font-bold pointer-events-none"
+            return (
+              <g key={sector.id}>
+                <path
+                  d={describeArc(start, sweep)}
+                  className="cursor-pointer transition-opacity opacity-100"
+                  style={{
+                    fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
+                    stroke: 'oklch(0.55 0 0)',
+                    strokeWidth: 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isUniversalTheme) {
+                      e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isUniversalTheme) {
+                      e.currentTarget.style.fill = 'transparent'
+                    }
+                  }}
+                  onClick={() => handleSectorClick(sector.categoryNumber)}
+                />
+                <g pointerEvents="none" stroke="none">
+                  <text
+                    className="fill-foreground font-bold pointer-events-none"
+                    style={{ fontSize: '14px' }}
+                  >
+                    <textPath
+                      href={`#text-path-${uniqueId}-${index}`}
+                      startOffset="50%"
                       textAnchor="middle"
-                      dominantBaseline="middle"
-                      style={{ fontSize: '14px' }}
                     >
                       {language === 'nl' ? sector.titleNl : sector.titleEn}
-                    </text>
-                    {(language === 'nl' ? sector.subtitleNl : sector.subtitleEn) && (
-                      <text
-                        x="200"
-                        y={textY + 10}
-                        className="fill-foreground pointer-events-none"
+                    </textPath>
+                  </text>
+                  {(language === 'nl' ? sector.subtitleNl : sector.subtitleEn) && (
+                    <text
+                      className="fill-foreground pointer-events-none"
+                      style={{ fontSize: '11px', opacity: 0.8 }}
+                    >
+                      <textPath
+                        href={`#text-path-sub-${uniqueId}-${index}`}
+                        startOffset="50%"
                         textAnchor="middle"
-                        dominantBaseline="middle"
-                        style={{ fontSize: '11px', opacity: 0.8 }}
                       >
                         {language === 'nl' ? sector.subtitleNl : sector.subtitleEn}
-                      </text>
-                    )}
-                  </g>
+                      </textPath>
+                    </text>
+                  )}
                 </g>
-              )
-            })}
-          </g>
-          
-          {/* Falah center circle */}
+              </g>
+            )
+          })}
+
           <g>
             <circle
               cx="200"
               cy="200"
-              r="70"
+              r={CENTER_RADIUS}
               className="cursor-pointer transition-opacity opacity-100"
               style={{
                 fill: isUniversalTheme ? 'transparent' : 'url(#falah-gradient)',
                 stroke: isUniversalTheme ? 'var(--nav-category-circle-falah-stroke)' : 'oklch(0.7 0 0 / 0.4)',
-                strokeWidth: isUniversalTheme ? 2 : 1.5
+                strokeWidth: isUniversalTheme ? 2 : 1.5,
               }}
               onMouseEnter={(e) => {
                 if (isUniversalTheme) {
@@ -317,35 +351,31 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
             <g
               style={{
                 transform: `rotate(${INITIAL_FALAH_TEXT_ROTATION}deg)`,
-                transformOrigin: '200px 200px'
+                transformOrigin: '200px 200px',
               }}
             >
-            <text
-              x="200"
-              y="190"
-              className="fill-foreground font-bold pointer-events-none"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              style={{ fontSize: '24px', fontWeight: 'bold' }}
-            >
-              {language === 'nl' 
-                ? finalCenterCategory.titleNl
-                : finalCenterCategory.titleEn}
-            </text>
-            {(language === 'nl' ? finalCenterCategory.subtitleNl : finalCenterCategory.subtitleEn) && (
               <text
                 x="200"
-                y="210"
-                className="fill-foreground pointer-events-none"
+                y="190"
+                className="fill-foreground font-bold pointer-events-none"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: '14px', opacity: 0.8 }}
+                style={{ fontSize: '24px', fontWeight: 'bold' }}
               >
-                {language === 'nl' 
-                  ? finalCenterCategory.subtitleNl
-                  : finalCenterCategory.subtitleEn}
+                {language === 'nl' ? finalCenter!.titleNl : finalCenter!.titleEn}
               </text>
-            )}
+              {(language === 'nl' ? finalCenter!.subtitleNl : finalCenter!.subtitleEn) && (
+                <text
+                  x="200"
+                  y="210"
+                  className="fill-foreground pointer-events-none"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  style={{ fontSize: '14px', opacity: 0.8 }}
+                >
+                  {language === 'nl' ? finalCenter!.subtitleNl : finalCenter!.subtitleEn}
+                </text>
+              )}
             </g>
           </g>
         </svg>

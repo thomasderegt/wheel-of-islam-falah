@@ -10,7 +10,8 @@ public record ContentItemResult(
     String title,
     String path,
     Long bookId,
-    Long categoryId
+    Long categoryId,
+    String status
 ) {
     public static final String TYPE_BOOK = "BOOK";
     public static final String TYPE_CHAPTER = "CHAPTER";

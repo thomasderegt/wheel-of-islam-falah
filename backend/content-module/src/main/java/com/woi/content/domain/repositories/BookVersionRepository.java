@@ -11,6 +11,7 @@ import java.util.Optional;
  */
 public interface BookVersionRepository {
     Optional<BookVersion> findById(Long id);
+    List<BookVersion> findAllById(Iterable<Long> ids);
     Optional<BookVersion> findByBookIdAndVersionNumber(Long bookId, Integer versionNumber);
     List<BookVersion> findByBookIdOrderByVersionNumberDesc(Long bookId);
     Optional<BookVersion> findLatestByBookId(Long bookId);

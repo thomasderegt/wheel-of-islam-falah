@@ -2,65 +2,32 @@ package com.woi.content.domain.constants;
 
 /**
  * System Categories - Hardcoded categories that are required for the application
- * These categories are seeded on database initialization and cannot be deleted
+ * Structure: 0=Falah (center), 1=Aqeedah, 2=Tazkiyyah, 3=Fiqh
  */
 public class SystemCategories {
     
-    /**
-     * Category number for "Falah" (central category)
-     */
     public static final int FALAH_NUMBER = 0;
-    
-    /**
-     * Category number for "Build Your Dunya"
-     */
-    public static final int BUILD_YOUR_DUNYA_NUMBER = 1;
-    
-    /**
-     * Category number for "Strengthen Your Inner World"
-     */
-    public static final int STRENGTHEN_INNER_WORLD_NUMBER = 2;
-    
-    /**
-     * Category number for "Prepare for the Ākhirah"
-     */
-    public static final int PREPARE_FOR_AKHIRAH_NUMBER = 3;
-    
-    /**
-     * Category number for "Fiqh, Divine do's and donts"
-     */
-    public static final int FIQH_NUMBER = 4;
+    public static final int AQEEDAH_NUMBER = 1;
+    public static final int TAZKIYYAH_NUMBER = 2;
+    public static final int FIQH_NUMBER = 3;
     
     /**
      * Check if a category number is a system category
-     * 
-     * @param categoryNumber Category number to check
-     * @return true if it's a system category, false otherwise
      */
     public static boolean isSystemCategory(Integer categoryNumber) {
         if (categoryNumber == null) {
             return false;
         }
         return categoryNumber == FALAH_NUMBER ||
-               categoryNumber == BUILD_YOUR_DUNYA_NUMBER ||
-               categoryNumber == STRENGTHEN_INNER_WORLD_NUMBER ||
-               categoryNumber == PREPARE_FOR_AKHIRAH_NUMBER ||
+               categoryNumber == AQEEDAH_NUMBER ||
+               categoryNumber == TAZKIYYAH_NUMBER ||
                categoryNumber == FIQH_NUMBER;
     }
     
     /**
-     * Get all system category numbers
-     * 
-     * @return Array of system category numbers
+     * Get all system category numbers (Wheel of Islam: Falah, Aqeedah, Tazkiyyah, Fiqh)
      */
     public static int[] getAllSystemCategoryNumbers() {
-        return new int[]{
-            FALAH_NUMBER,
-            BUILD_YOUR_DUNYA_NUMBER,
-            STRENGTHEN_INNER_WORLD_NUMBER,
-            PREPARE_FOR_AKHIRAH_NUMBER,
-            FIQH_NUMBER
-        };
+        return new int[]{ FALAH_NUMBER, AQEEDAH_NUMBER, TAZKIYYAH_NUMBER, FIQH_NUMBER };
     }
 }
-

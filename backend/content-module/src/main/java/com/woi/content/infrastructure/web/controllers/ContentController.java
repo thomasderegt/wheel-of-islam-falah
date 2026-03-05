@@ -283,6 +283,7 @@ public class ContentController {
         dto.setPath(r.path());
         dto.setBookId(r.bookId());
         dto.setCategoryId(r.categoryId());
+        dto.setStatus(r.status());
         return dto;
     }
     
@@ -1331,6 +1332,8 @@ public class ContentController {
         dto.setWorkingStatusBookVersionId(result.workingStatusBookVersionId());
         dto.setCreatedAt(result.createdAt());
         dto.setUpdatedAt(result.updatedAt());
+        dto.setTitleEn(result.titleEn());
+        dto.setTitleNl(result.titleNl());
         return dto;
     }
     

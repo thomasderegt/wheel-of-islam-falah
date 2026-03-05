@@ -11,6 +11,7 @@ public class ReviewCommentDTO {
     private Long reviewedVersionId;
     private String fieldName;
     private String commentText;
+    private String audioUrl;
     private Long createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -31,6 +32,9 @@ public class ReviewCommentDTO {
     public String getCommentText() { return commentText; }
     public void setCommentText(String commentText) { this.commentText = commentText; }
     
+    public String getAudioUrl() { return audioUrl; }
+    public void setAudioUrl(String audioUrl) { this.audioUrl = audioUrl; }
+    
     public Long getCreatedBy() { return createdBy; }
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
     
@@ -47,6 +51,7 @@ public class ReviewCommentDTO {
         dto.setReviewedVersionId(result.reviewedVersionId());
         dto.setFieldName(result.fieldName());
         dto.setCommentText(result.commentText());
+        dto.setAudioUrl(result.audioUrl());
         dto.setCreatedBy(result.createdBy());
         dto.setCreatedAt(result.createdAt());
         dto.setUpdatedAt(result.updatedAt());

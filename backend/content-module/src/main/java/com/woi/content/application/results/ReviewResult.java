@@ -16,9 +16,18 @@ public record ReviewResult(
     Long submittedBy,
     Long reviewedBy,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    LocalDateTime updatedAt,
+    String entityType,
+    String title,
+    Long referenceId,
+    ReviewVersionContent versionContent
 ) {
     public static ReviewResult from(com.woi.content.domain.entities.Review review) {
+        return from(review, "", "", null, ReviewVersionContent.empty());
+    }
+
+    public static ReviewResult from(com.woi.content.domain.entities.Review review,
+            String entityType, String title, Long referenceId, ReviewVersionContent versionContent) {
         return new ReviewResult(
             review.getId(),
             review.getReviewableItemId(),
@@ -28,7 +37,11 @@ public record ReviewResult(
             review.getSubmittedBy(),
             review.getReviewedBy(),
             review.getCreatedAt(),
-            review.getUpdatedAt()
+            review.getUpdatedAt(),
+            entityType != null ? entityType : "",
+            title != null ? title : "",
+            referenceId,
+            versionContent != null ? versionContent : ReviewVersionContent.empty()
         );
     }
 }

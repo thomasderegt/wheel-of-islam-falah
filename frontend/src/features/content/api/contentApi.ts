@@ -59,6 +59,7 @@ export interface ContentItemDTO {
   path?: string
   bookId?: number
   categoryId?: number
+  status?: string
 }
 
 export interface ContentItemsFilters {
@@ -480,6 +481,15 @@ export interface ReviewDTO {
   reviewedBy: number | null
   createdAt: string
   updatedAt: string
+  entityType?: string
+  title?: string
+  referenceId?: number | null
+  versionContentTitleEn?: string | null
+  versionContentTitleNl?: string | null
+  versionContentIntroEn?: string | null
+  versionContentIntroNl?: string | null
+  versionContentContentEn?: string | null
+  versionContentContentNl?: string | null
 }
 
 /**
@@ -487,6 +497,19 @@ export interface ReviewDTO {
  */
 export async function getReviewsByStatus(status: 'SUBMITTED' | 'APPROVED' | 'REJECTED'): Promise<ReviewDTO[]> {
   const response = await apiClient.get(`/api/v2/content/reviews/status/${status}`)
+  return response.data
+}
+
+/**
+ * Get reviews for a content item (by type and referenceId)
+ */
+export async function getReviewsByReviewableItem(
+  type: 'BOOK' | 'CHAPTER' | 'SECTION' | 'PARAGRAPH',
+  referenceId: number
+): Promise<ReviewDTO[]> {
+  const response = await apiClient.get(
+    `/api/v2/content/reviews/item?type=${type}&referenceId=${referenceId}`
+  )
   return response.data
 }
 
@@ -542,6 +565,7 @@ export interface ReviewCommentDTO {
   reviewedVersionId: number
   fieldName: string
   commentText: string
+  audioUrl?: string | null
   createdBy: number
   createdAt: string
   updatedAt: string
@@ -565,6 +589,33 @@ export async function addReviewComment(
   request: AddReviewCommentRequest
 ): Promise<ReviewCommentDTO> {
   const response = await apiClient.post(`/api/v2/content/reviews/${reviewId}/comments`, request)
+  return response.data
+}
+
+/**
+ * Add a voice recording as a comment
+ */
+export async function addVoiceReviewComment(
+  reviewId: number,
+  reviewedVersionId: number,
+  fieldName: string,
+  audioBlob: Blob
+): Promise<ReviewCommentDTO> {
+  const formData = new FormData()
+  formData.append('reviewId', String(reviewId))
+  formData.append('reviewedVersionId', String(reviewedVersionId))
+  formData.append('fieldName', fieldName)
+  formData.append('audio', audioBlob, 'recording.webm')
+
+  const response = await apiClient.post(
+    '/api/v2/content/review-comments/voice',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  )
   return response.data
 }
 

@@ -11,6 +11,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Trash2, Edit2 } from "lucide-react"
 import { useState } from "react"
 import { Textarea } from "@/shared/components/ui/textarea"
+import { AuthAudioPlayer } from "./AuthAudioPlayer"
 
 interface FieldCommentListProps {
   comments: ReviewCommentDTO[]
@@ -18,6 +19,9 @@ interface FieldCommentListProps {
   onDelete: (commentId: number) => Promise<void>
   currentUserId?: number
   readOnly?: boolean // If true, comments cannot be edited or deleted
+  compact?: boolean // If true, use smaller padding and lighter styling
+  /** If true, show delete button for all comments (backend still enforces creator-only) */
+  allowDeleteForAll?: boolean
 }
 
 export function FieldCommentList({
@@ -26,6 +30,8 @@ export function FieldCommentList({
   onDelete,
   currentUserId,
   readOnly = false,
+  compact = false,
+  allowDeleteForAll = false,
 }: FieldCommentListProps) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editText, setEditText] = useState("")
@@ -73,75 +79,101 @@ export function FieldCommentList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className={compact ? "space-y-2" : "space-y-3"}>
       {comments.map((comment) => {
         const isEditing = editingId === comment.id
         const isDeleting = deletingId === comment.id
         const canEdit = currentUserId === comment.createdBy
 
-        return (
-          <Card key={comment.id}>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  {isEditing ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        value={editText}
-                        onChange={(e) => setEditText(e.target.value)}
-                        className="min-h-[100px]"
-                        placeholder="Enter your comment..."
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleEditSave(comment.id)}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleEditCancel}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="whitespace-pre-wrap text-sm">
-                        {comment.commentText}
-                      </p>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        By user {comment.createdBy} •{" "}
-                        {new Date(comment.createdAt).toLocaleString()}
-                        {comment.updatedAt !== comment.createdAt && " (edited)"}
-                      </p>
-                    </>
-                  )}
-                </div>
-                {!isEditing && canEdit && !readOnly && (
+        const content = (
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              {isEditing ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className={compact ? "min-h-[60px]" : "min-h-[100px]"}
+                    placeholder="Enter your comment..."
+                  />
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      variant="ghost"
-                      onClick={() => handleEditStart(comment)}
-                      disabled={isDeleting}
+                      onClick={() => handleEditSave(comment.id)}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      Save
                     </Button>
                     <Button
                       size="sm"
-                      variant="ghost"
-                      onClick={() => handleDelete(comment.id)}
-                      disabled={isDeleting}
+                      variant="outline"
+                      onClick={handleEditCancel}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      Cancel
                     </Button>
                   </div>
+                </div>
+              ) : (
+                <>
+                  {comment.audioUrl && (
+                    <div className="mb-2">
+                      <AuthAudioPlayer
+                        audioUrl={comment.audioUrl}
+                        className="max-w-full h-8"
+                      />
+                    </div>
+                  )}
+                  {comment.commentText && comment.commentText !== '[Voice recording]' && (
+                    <p className="whitespace-pre-wrap text-sm">
+                      {comment.commentText}
+                    </p>
+                  )}
+                  <p className={`text-xs text-muted-foreground ${compact ? "mt-1" : "mt-2"}`}>
+                    By user {comment.createdBy} •{" "}
+                    {new Date(comment.createdAt).toLocaleString()}
+                    {comment.updatedAt !== comment.createdAt && " (edited)"}
+                  </p>
+                </>
+              )}
+            </div>
+            {!isEditing && !readOnly && (canEdit || allowDeleteForAll) && (
+              <div className="flex gap-1 shrink-0">
+                {canEdit && !comment.audioUrl && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    onClick={() => handleEditStart(comment)}
+                    disabled={isDeleting}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={() => handleDelete(comment.id)}
+                  disabled={isDeleting}
+                  title="Delete comment"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
+            )}
+          </div>
+        )
+
+        return compact ? (
+          <div
+            key={comment.id}
+            className="rounded-md border bg-muted/30 px-3 py-2"
+          >
+            {content}
+          </div>
+        ) : (
+          <Card key={comment.id}>
+            <CardContent className="p-4">
+              {content}
             </CardContent>
           </Card>
         )

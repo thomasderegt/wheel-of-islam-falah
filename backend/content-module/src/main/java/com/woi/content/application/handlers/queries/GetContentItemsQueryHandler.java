@@ -14,6 +14,9 @@ import com.woi.content.application.results.BookResult;
 import com.woi.content.application.results.ChapterResult;
 import com.woi.content.application.results.SectionResult;
 import com.woi.content.application.results.ParagraphResult;
+import com.woi.content.domain.entities.ContentStatus;
+import com.woi.content.domain.enums.ContentStatusType;
+import com.woi.content.domain.repositories.ContentStatusRepository;
 
 import org.springframework.stereotype.Component;
 
@@ -35,6 +38,7 @@ public class GetContentItemsQueryHandler {
     private final GetChapterCurrentVersionQueryHandler getChapterCurrentVersionHandler;
     private final GetSectionsByChapterQueryHandler getSectionsByChapterHandler;
     private final GetParagraphsBySectionQueryHandler getParagraphsBySectionHandler;
+    private final ContentStatusRepository contentStatusRepository;
 
     public GetContentItemsQueryHandler(
             GetAllCategoriesQueryHandler getAllCategoriesHandler,
@@ -43,7 +47,8 @@ public class GetContentItemsQueryHandler {
             GetChaptersByBookQueryHandler getChaptersByBookHandler,
             GetChapterCurrentVersionQueryHandler getChapterCurrentVersionHandler,
             GetSectionsByChapterQueryHandler getSectionsByChapterHandler,
-            GetParagraphsBySectionQueryHandler getParagraphsBySectionHandler) {
+            GetParagraphsBySectionQueryHandler getParagraphsBySectionHandler,
+            ContentStatusRepository contentStatusRepository) {
         this.getAllCategoriesHandler = getAllCategoriesHandler;
         this.getBooksByCategoryHandler = getBooksByCategoryHandler;
         this.getBookCurrentVersionHandler = getBookCurrentVersionHandler;
@@ -51,6 +56,7 @@ public class GetContentItemsQueryHandler {
         this.getChapterCurrentVersionHandler = getChapterCurrentVersionHandler;
         this.getSectionsByChapterHandler = getSectionsByChapterHandler;
         this.getParagraphsBySectionHandler = getParagraphsBySectionHandler;
+        this.contentStatusRepository = contentStatusRepository;
     }
 
     public List<ContentItemResult> handle(GetContentItemsQuery query) {
@@ -70,7 +76,7 @@ public class GetContentItemsQueryHandler {
                 }
                 String bookTitle = resolveBookTitle(book.id());
                 if (matchesType(query.type(), ContentItemResult.TYPE_BOOK)) {
-                    items.add(new ContentItemResult(book.id(), ContentItemResult.TYPE_BOOK, bookTitle, categoryTitle, book.id(), category.id()));
+                    items.add(new ContentItemResult(book.id(), ContentItemResult.TYPE_BOOK, bookTitle, categoryTitle, book.id(), category.id(), resolveStatus("book", book.id())));
                 }
 
                 List<ChapterResult> chapters = getChaptersByBookHandler.handle(new GetChaptersByBookQuery(book.id()));
@@ -78,7 +84,7 @@ public class GetContentItemsQueryHandler {
                     String chapterTitle = resolveChapterTitle(chapter.id());
                     if (matchesType(query.type(), ContentItemResult.TYPE_CHAPTER)) {
                         items.add(new ContentItemResult(chapter.id(), ContentItemResult.TYPE_CHAPTER, chapterTitle,
-                                categoryTitle + " > " + bookTitle, book.id(), category.id()));
+                                categoryTitle + " > " + bookTitle, book.id(), category.id(), resolveStatus("chapter", chapter.id())));
                     }
 
                     List<SectionResult> sections = getSectionsByChapterHandler.handle(new GetSectionsByChapterQuery(chapter.id()));
@@ -86,7 +92,7 @@ public class GetContentItemsQueryHandler {
                         String sectionTitle = "Section " + section.orderIndex();
                         if (matchesType(query.type(), ContentItemResult.TYPE_SECTION)) {
                             items.add(new ContentItemResult(section.id(), ContentItemResult.TYPE_SECTION, sectionTitle,
-                                    categoryTitle + " > " + bookTitle + " > " + chapterTitle, book.id(), category.id()));
+                                    categoryTitle + " > " + bookTitle + " > " + chapterTitle, book.id(), category.id(), resolveStatus("section", section.id())));
                         }
 
                         List<ParagraphResult> paragraphs = getParagraphsBySectionHandler.handle(new GetParagraphsBySectionQuery(section.id()));
@@ -94,7 +100,7 @@ public class GetContentItemsQueryHandler {
                             if (matchesType(query.type(), ContentItemResult.TYPE_PARAGRAPH)) {
                                 String paragraphTitle = "Paragraph " + (paragraph.paragraphNumber() != null ? paragraph.paragraphNumber() : paragraph.id());
                                 items.add(new ContentItemResult(paragraph.id(), ContentItemResult.TYPE_PARAGRAPH, paragraphTitle,
-                                        categoryTitle + " > " + bookTitle + " > " + chapterTitle + " > " + sectionTitle, book.id(), category.id()));
+                                        categoryTitle + " > " + bookTitle + " > " + chapterTitle + " > " + sectionTitle, book.id(), category.id(), resolveStatus("paragraph", paragraph.id())));
                             }
                         }
                     }
@@ -118,5 +124,14 @@ public class GetContentItemsQueryHandler {
         return getChapterCurrentVersionHandler.handle(new GetChapterCurrentVersionQuery(chapterId))
                 .map(v -> v.titleEn() != null ? v.titleEn() : (v.titleNl() != null ? v.titleNl() : "Chapter " + chapterId))
                 .orElse("Chapter " + chapterId);
+    }
+
+    private String resolveStatus(String entityType, Long entityId) {
+        if (entityId == null) {
+            return ContentStatusType.DRAFT.name();
+        }
+        String normalizedType = entityType != null ? entityType.toLowerCase() : entityType;
+        Optional<ContentStatus> statusOpt = contentStatusRepository.findByEntityTypeAndEntityId(normalizedType, entityId);
+        return statusOpt.map(cs -> cs.getStatus().name()).orElse(ContentStatusType.DRAFT.name());
     }
 }

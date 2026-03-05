@@ -16,6 +16,7 @@ public class ReviewComment {
     private Long reviewedVersionId;  // ID of the version being reviewed
     private String fieldName;  // titleNl, titleEn, contentEn, etc.
     private String commentText;
+    private String audioUrl;   // URL/path to voice recording (optional)
     private Long createdBy;  // User ID who created the comment
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -69,6 +70,15 @@ public class ReviewComment {
     }
     
     /**
+     * Factory method: Create a voice recording comment
+     */
+    public static ReviewComment createVoice(Long reviewId, Long reviewedVersionId, String fieldName, String audioUrl, Long createdBy) {
+        ReviewComment comment = create(reviewId, reviewedVersionId, fieldName, "[Voice recording]", createdBy);
+        comment.setAudioUrl(audioUrl);
+        return comment;
+    }
+    
+    /**
      * Update the comment text
      * 
      * @param newCommentText New comment text (must not be null or empty)
@@ -88,6 +98,7 @@ public class ReviewComment {
     public Long getReviewedVersionId() { return reviewedVersionId; }
     public String getFieldName() { return fieldName; }
     public String getCommentText() { return commentText; }
+    public String getAudioUrl() { return audioUrl; }
     public Long getCreatedBy() { return createdBy; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
@@ -121,6 +132,8 @@ public class ReviewComment {
      * DO NOT use in business logic - this is for persistence mapping only
      */
     public void setCommentText(String commentText) { this.commentText = commentText; }
+    
+    public void setAudioUrl(String audioUrl) { this.audioUrl = audioUrl; }
     
     /**
      * Setter for createdBy - ONLY for entity mapping (infrastructure layer)

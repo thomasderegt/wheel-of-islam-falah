@@ -11,7 +11,9 @@ public record BookResult(
     Integer bookNumber,
     Long workingStatusBookVersionId,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt
+    LocalDateTime updatedAt,
+    String titleEn,
+    String titleNl
 ) {
     public static BookResult from(com.woi.content.domain.entities.Book book) {
         return new BookResult(
@@ -20,7 +22,23 @@ public record BookResult(
             book.getBookNumber(),
             book.getWorkingStatusBookVersionId(),
             book.getCreatedAt(),
-            book.getUpdatedAt()
+            book.getUpdatedAt(),
+            null,
+            null
+        );
+    }
+
+    public static BookResult fromWithVersion(com.woi.content.domain.entities.Book book,
+            com.woi.content.domain.entities.BookVersion version) {
+        return new BookResult(
+            book.getId(),
+            book.getCategoryId(),
+            book.getBookNumber(),
+            book.getWorkingStatusBookVersionId(),
+            book.getCreatedAt(),
+            book.getUpdatedAt(),
+            version != null ? version.getTitleEn() : null,
+            version != null ? version.getTitleNl() : null
         );
     }
 }

@@ -22,6 +22,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Error } from '@/shared/components/ui/Error'
 import { Button } from '@/shared/components/ui/button'
+import { Switch } from '@/shared/components/ui/switch'
+import { Label } from '@/shared/components/ui/label'
+import { useFitToScreen } from '@/shared/hooks/useFitToScreen'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function CategoryByNumberPage() {
@@ -30,6 +33,7 @@ export default function CategoryByNumberPage() {
   // TODO: Get from language context
   const language = 'en' as 'nl' | 'en'
   const [currentBookIndex, setCurrentBookIndex] = useState(0)
+  const [fitToScreen, setFitToScreen] = useFitToScreen()
 
   const { data: category, isLoading: isLoadingCategory, error: categoryError } = useQuery({
     queryKey: ['categoryByNumber', categoryNumber],
@@ -136,8 +140,18 @@ export default function CategoryByNumberPage() {
                   </div>
                 )}
 
-                {/* NavBookCircle */}
-                <NavBookCircle bookId={books[currentBookIndex].id} language={language} />
+                {/* NavBookCircle with fit to screen */}
+                <NavBookCircle bookId={books[currentBookIndex].id} language={language} fitToScreen={fitToScreen} publishedOnly />
+                <div className="flex items-center justify-center gap-2">
+                  <Switch
+                    id="fit-to-screen"
+                    checked={fitToScreen}
+                    onCheckedChange={setFitToScreen}
+                  />
+                  <Label htmlFor="fit-to-screen" className="text-sm text-muted-foreground cursor-pointer">
+                    Fit to screen
+                  </Label>
+                </div>
               </div>
             ) : (
               <div className="text-center py-12">

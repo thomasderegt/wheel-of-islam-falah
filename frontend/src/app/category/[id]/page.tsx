@@ -76,6 +76,7 @@ export default function CategoryPage() {
                 books={books}
                 categoryName={categoryTitle || `Category ${categoryId}`}
                 language={language}
+                publishedOnly
               />
             ) : (
               <div className="text-center py-12">

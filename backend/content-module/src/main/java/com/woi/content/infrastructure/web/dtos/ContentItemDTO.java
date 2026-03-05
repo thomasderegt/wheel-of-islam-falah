@@ -11,6 +11,7 @@ public class ContentItemDTO {
     private String path;
     private Long bookId;
     private Long categoryId;
+    private String status;
 
     public Long getId() {
         return id;
@@ -58,5 +59,13 @@ public class ContentItemDTO {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

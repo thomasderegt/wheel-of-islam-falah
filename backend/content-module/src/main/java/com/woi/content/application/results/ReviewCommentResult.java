@@ -11,6 +11,7 @@ public record ReviewCommentResult(
     Long reviewedVersionId,
     String fieldName,
     String commentText,
+    String audioUrl,
     Long createdBy,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
@@ -22,6 +23,7 @@ public record ReviewCommentResult(
             comment.getReviewedVersionId(),
             comment.getFieldName(),
             comment.getCommentText(),
+            comment.getAudioUrl(),
             comment.getCreatedBy(),
             comment.getCreatedAt(),
             comment.getUpdatedAt()

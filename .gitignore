@@ -63,3 +63,6 @@ Thumbs.db
 *.temp
 .cache/
 *.bak
+
+# Uploaded files (voice recordings, etc.)
+uploads/

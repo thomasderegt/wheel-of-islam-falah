@@ -4,18 +4,22 @@
  * NavBookCircle Component
  * 
  * Circular navigation voor chapters in een book
- * - 9 chapters in een ring (position 1-9)
- * - 1 center chapter (position 0)
+ * - Outer ring: aantal segmenten = aantal chapters (position 1-10)
+ * - Center: chapter met position 0
+ * - Geen placeholders - ring past zich aan op werkelijk aantal chapters
  * - Rotatie animaties
  * - Click handlers voor navigatie
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/shared/components/ui/button'
 import { useChaptersByBook } from '../hooks/useChaptersByBook'
+import { usePublicChaptersByBook } from '../hooks/usePublicChaptersByBook'
+import { useBookCurrentVersion } from '../hooks/useBookCurrentVersion'
 import { getChapterCurrentVersion } from '../api/contentApi'
 import { useTheme } from '@/shared/contexts/ThemeContext'
+import { getGradientStopsForSegment } from '@/shared/utils/roygbivGradient'
 
 interface Chapter {
   id: number
@@ -29,14 +33,23 @@ interface Chapter {
 interface NavBookCircleProps {
   readonly bookId: number
   readonly language?: 'nl' | 'en'
+  readonly fitToScreen?: boolean
+  /** When true, only show PUBLISHED chapters (for public pages). Default: false (admin: all chapters) */
+  readonly publishedOnly?: boolean
 }
 
 const cn = (...classes: (string | undefined | null | false)[]) => 
   classes.filter(Boolean).join(' ')
 
-export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
+const round = (num: number, decimals = 10) =>
+  Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals)
+
+export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, publishedOnly = false }: NavBookCircleProps) {
   const router = useRouter()
-  const { data: chaptersData, isLoading } = useChaptersByBook(bookId)
+  const allChapters = useChaptersByBook(bookId)
+  const publicChapters = usePublicChaptersByBook(bookId)
+  const { data: chaptersData, isLoading } = publishedOnly ? publicChapters : allChapters
+  const { data: bookVersion } = useBookCurrentVersion(bookId)
   const { userGroup } = useTheme()
   const isWireframeTheme = !userGroup || userGroup === 'universal'
   
@@ -44,6 +57,17 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
   const [centerChapter, setCenterChapter] = useState<Chapter | null>(null)
   const [ringRotation, setRingRotation] = useState(0)
   const [centerExpanded, setCenterExpanded] = useState(false)
+  const [isDraggingWheel, setIsDraggingWheel] = useState(false)
+
+  const wheelWrapperRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    startAngle: number
+    startRotation: number
+  } | null>(null)
+  const userJustDraggedRef = useRef(false)
 
   // Helper function to get chapter title based on language
   const getChapterTitle = (chapter: Chapter): string => {
@@ -107,22 +131,91 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
     return translations[title]?.[language] || title
   }
 
-  // Manual ring rotation functions
-  const rotateRingLeft = () => {
-    setRingRotation(prev => prev - 40) // Rotate by one chapter (40° for 9 chapters)
+  // Dynamic angle per chapter based on actual count
+  const anglePerChapter = chapters.length > 0 ? 360 / chapters.length : 0
+
+  // Drag-to-rotate: angle from pointer position relative to wheel center
+  const getAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
+    const el = wheelWrapperRef.current
+    if (!el) return 0
+    const rect = el.getBoundingClientRect()
+    const scale = Math.min(rect.width / 320, rect.height / 320)
+    const svgX = 200 + (clientX - rect.left - rect.width / 2) / scale
+    const svgY = 200 + (clientY - rect.top - rect.height / 2) / scale
+    return (Math.atan2(svgY - 200, svgX - 200) * 180) / Math.PI
+  }, [])
+
+  const normalizeAngleDelta = (delta: number): number => {
+    let d = delta
+    while (d > 180) d -= 360
+    while (d < -180) d += 360
+    return d
   }
 
-  const rotateRingRight = () => {
-    setRingRotation(prev => prev + 40) // Rotate by one chapter (40° for 9 chapters)
-  }
+  const DRAG_THRESHOLD_PX = 10
+
+  const handleWheelPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (chapters.length === 0) return
+      const el = wheelWrapperRef.current
+      if (!el) return
+      const angle = getAngleFromPointer(e.clientX, e.clientY)
+      dragRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        startAngle: angle,
+        startRotation: ringRotation,
+      }
+    },
+    [chapters.length, ringRotation, getAngleFromPointer]
+  )
+
+  const handleWheelPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragRef.current) return
+      const { pointerId, startX, startY, startAngle, startRotation } = dragRef.current
+      const distance = Math.hypot(e.clientX - startX, e.clientY - startY)
+      if (!isDraggingWheel && distance < DRAG_THRESHOLD_PX) return
+      if (!isDraggingWheel) {
+        setIsDraggingWheel(true)
+        wheelWrapperRef.current?.setPointerCapture(pointerId)
+      }
+      const currentAngle = getAngleFromPointer(e.clientX, e.clientY)
+      const delta = normalizeAngleDelta(currentAngle - startAngle)
+      setRingRotation(startRotation + delta)
+    },
+    [isDraggingWheel, getAngleFromPointer]
+  )
+
+  const handleWheelPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (dragRef.current && isDraggingWheel) {
+        userJustDraggedRef.current = true
+        setTimeout(() => {
+          userJustDraggedRef.current = false
+        }, 150)
+      }
+      dragRef.current = null
+      setIsDraggingWheel(false)
+      try {
+        wheelWrapperRef.current?.releasePointerCapture(e.pointerId)
+      } catch {
+        /* ignore */
+      }
+    },
+    [isDraggingWheel]
+  )
 
   const handleCenterClick = async () => {
+    if (userJustDraggedRef.current) return
     if (centerChapter) {
       router.push(`/chapter/${centerChapter.id}/overview`)
     }
   }
 
   const handleChapterClick = async (chapterId: number) => {
+    if (userJustDraggedRef.current) return
     router.push(`/chapter/${chapterId}/overview`)
   }
 
@@ -149,9 +242,9 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
       }
       setCenterChapter(centerChapter)
 
-      // Find circular chapters (position 1-9)
+      // Find circular chapters (position 1-10) - outer ring based on actual chapters
       const circularChaptersData = chaptersData
-        .filter(ch => ch.position >= 1 && ch.position <= 9)
+        .filter(ch => ch.position >= 1 && ch.position <= 10)
         .sort((a, b) => a.position - b.position)
 
       // Fetch versions for all circular chapters in parallel
@@ -169,24 +262,8 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
 
       const circularChapters = await Promise.all(chapterVersionPromises)
 
-      // Always show 9 chapters - fill with placeholders if needed
-      const filledChapters: Chapter[] = []
-      for (let i = 1; i <= 9; i++) {
-        const chapter = circularChapters.find(c => c.position === i)
-        if (chapter) {
-          filledChapters.push(chapter)
-        } else {
-          // Create placeholder chapter with negative id
-          filledChapters.push({
-            id: -i,
-            position: i,
-            titleEn: '',
-            titleNl: '',
-          } as Chapter)
-        }
-      }
-
-      setChapters(filledChapters)
+      // Show only actual chapters - no placeholders; ring size = number of chapters
+      setChapters(circularChapters)
       
       // Animate ring rotation when data changes
       setRingRotation(prev => prev + 360)
@@ -205,7 +282,15 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="relative w-full aspect-square">
+      <div
+        ref={wheelWrapperRef}
+        className="relative w-full aspect-square touch-none"
+        style={fitToScreen ? { maxWidth: 'min(100%, min(calc(100vh - 12rem), 72rem))', margin: '0 auto' } : undefined}
+        onPointerDown={handleWheelPointerDown}
+        onPointerMove={handleWheelPointerMove}
+        onPointerUp={handleWheelPointerUp}
+        onPointerCancel={handleWheelPointerUp}
+      >
         {/* SVG Circular Menu */}
         <svg 
           className="absolute inset-0 w-full h-full" 
@@ -213,17 +298,63 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
           preserveAspectRatio="xMidYMid meet"
           style={{ transform: 'rotate(-90deg)' }}
         >
+          <defs>
+            {/* Center gradient (like NavCategoryCircle falah) */}
+            <radialGradient id="book-circle-center-gradient" cx="50%" cy="50%">
+              {isWireframeTheme ? (
+                <>
+                  <stop offset="0%" stopColor="var(--nav-category-circle-falah-start)" />
+                  <stop offset="100%" stopColor="var(--nav-category-circle-falah-end)" />
+                </>
+              ) : (
+                <>
+                  <stop offset="0%" stopColor="var(--nav-category-circle-falah-start)" />
+                  <stop offset="50%" stopColor="var(--nav-category-circle-falah-mid)" />
+                  <stop offset="100%" stopColor="var(--nav-category-circle-falah-end)" />
+                </>
+              )}
+            </radialGradient>
+            {/* ROYGBIV gradient per chapter segment (like NavCategoryCircle) */}
+            {!isWireframeTheme &&
+              chapters.map((chapter, index) => {
+                const startAngle = index * anglePerChapter
+                const endAngle = (index + 1) * anglePerChapter
+                const midRadius = 127.5
+                const startRad = (startAngle * Math.PI) / 180
+                const endRad = (endAngle * Math.PI) / 180
+                const x1 = round(200 + midRadius * Math.cos(startRad))
+                const y1 = round(200 + midRadius * Math.sin(startRad))
+                const x2 = round(200 + midRadius * Math.cos(endRad))
+                const y2 = round(200 + midRadius * Math.sin(endRad))
+                const stops = getGradientStopsForSegment(index, chapters.length)
+                return (
+                  <linearGradient
+                    key={`roygbiv-${chapter.id}`}
+                    id={`book-chapter-roygbiv-${chapter.id}`}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    {stops.map((s) => (
+                      <stop key={s.offset} offset={s.offset} stopColor={s.color} />
+                    ))}
+                  </linearGradient>
+                )
+              })}
+          </defs>
           {/* Chapters - Rotating Ring */}
           <g 
             style={{ 
               transform: `rotate(${ringRotation}deg)`,
               transformOrigin: '200px 200px',
-              transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: isDraggingWheel ? 'none' : 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
           {chapters.map((chapter, index) => {
-            const startAngle = index * 40  // 360 / 9 = 40 degrees per chapter
-            const endAngle = (index + 1) * 40
+            const startAngle = index * anglePerChapter
+            const endAngle = (index + 1) * anglePerChapter
             const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1
             
             const startX = 200 + 160 * Math.cos((startAngle * Math.PI) / 180)
@@ -244,32 +375,29 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
               'Z'
             ].join(' ')
 
-            const isPlaceholder = chapter.id < 0 || (!chapter.titleEn && !chapter.titleNl)
-            
-            // Use chapter position (1-9) to determine color
-            const chapterPosition = chapter.position || (index + 1)
-            const colorIndex = (chapterPosition - 1) % 10
+            const isPlaceholder = !chapter.titleEn && !chapter.titleNl
 
             return (
               <g key={chapter.id || `placeholder-${index}`}>
                 <path
                   d={pathData}
                   className={cn(
-                    "stroke-2 transition-colors opacity-100",
+                    "transition-colors opacity-100",
                     isPlaceholder ? "cursor-default" : "cursor-pointer"
                   )}
                   style={{ 
-                    fill: isWireframeTheme ? 'transparent' : `var(--circular-menu-chapter-${colorIndex})`,
-                    stroke: isWireframeTheme ? 'oklch(0 0 0)' : `var(--circular-menu-chapter-${colorIndex})`
+                    fill: isWireframeTheme ? 'transparent' : `url(#book-chapter-roygbiv-${chapter.id})`,
+                    stroke: isWireframeTheme ? 'oklch(0 0 0)' : 'oklch(0.7 0 0 / 0.4)',
+                    strokeWidth: 1.5
                   }}
                   onMouseEnter={(e) => {
                     if (!isPlaceholder) {
                       if (isWireframeTheme) {
-                        e.currentTarget.style.fill = 'oklch(0.95 0 0)'
+                        e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
                         e.currentTarget.style.stroke = 'oklch(0 0 0)'
                       } else {
-                        e.currentTarget.style.fill = `var(--circular-menu-chapter-hover)`
-                        e.currentTarget.style.stroke = `var(--circular-menu-chapter-hover)`
+                        e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
+                        e.currentTarget.style.stroke = 'oklch(0.7 0 0 / 0.4)'
                       }
                     }
                   }}
@@ -279,8 +407,8 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
                         e.currentTarget.style.fill = 'transparent'
                         e.currentTarget.style.stroke = 'oklch(0 0 0)'
                       } else {
-                        e.currentTarget.style.fill = `var(--circular-menu-chapter-${colorIndex})`
-                        e.currentTarget.style.stroke = `var(--circular-menu-chapter-${colorIndex})`
+                        e.currentTarget.style.fill = `url(#book-chapter-roygbiv-${chapter.id})`
+                        e.currentTarget.style.stroke = 'oklch(0.7 0 0 / 0.4)'
                       }
                     }
                   }}
@@ -294,8 +422,8 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
                 {!isPlaceholder && (
                   <g
                     style={{ 
-                      transform: `rotate(${startAngle + 20 + 90}deg)`,
-                      transformOrigin: `${200 + 127.5 * Math.cos(((startAngle + 20) * Math.PI) / 180)}px ${200 + 127.5 * Math.sin(((startAngle + 20) * Math.PI) / 180)}px`
+                      transform: `rotate(${startAngle + anglePerChapter / 2 + 90}deg)`,
+                      transformOrigin: `${200 + 127.5 * Math.cos(((startAngle + anglePerChapter / 2) * Math.PI) / 180)}px ${200 + 127.5 * Math.sin(((startAngle + anglePerChapter / 2) * Math.PI) / 180)}px`
                     }}
                   >
                     {(() => {
@@ -304,12 +432,13 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
                       const truncatedTitle = fullTitle.length > maxLength 
                         ? fullTitle.substring(0, maxLength - 3) + '...'
                         : fullTitle
+                      const labelAngle = startAngle + anglePerChapter / 2
                       
                       return (
                         <text
                           key={chapter.id}
-                          x={200 + 127.5 * Math.cos(((startAngle + 20) * Math.PI) / 180)}
-                          y={200 + 127.5 * Math.sin(((startAngle + 20) * Math.PI) / 180)}
+                          x={200 + 127.5 * Math.cos((labelAngle * Math.PI) / 180)}
+                          y={200 + 127.5 * Math.sin((labelAngle * Math.PI) / 180)}
                           className="fill-circular-menu-chapter-text text-[0.5rem] sm:text-[0.6rem] md:text-xs font-medium pointer-events-none"
                           textAnchor="middle"
                           dominantBaseline="middle"
@@ -333,20 +462,39 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
             className="stroke-2 fill-none pointer-events-none opacity-0"
           />
           
-          {/* Center circle */}
+          {/* Center circle - gradient like NavCategoryCircle */}
           <circle
             cx="200"
             cy="200"
             r="70"
             className={cn(
-              "transition-all duration-300 stroke-circular-menu-center-stroke stroke-2",
+              "transition-all duration-300",
               centerChapter 
                 ? cn(
                     "cursor-pointer",
-                    centerExpanded ? "fill-circular-menu-center-fill-expanded" : "fill-circular-menu-center-fill hover:fill-circular-menu-center-fill-expanded"
+                    centerExpanded ? "fill-circular-menu-center-fill-expanded" : "hover:fill-circular-menu-center-fill-expanded"
                   )
                 : "fill-none cursor-default"
             )}
+            style={{
+              fill: centerChapter
+                ? (isWireframeTheme ? 'transparent' : 'url(#book-circle-center-gradient)')
+                : undefined,
+              stroke: isWireframeTheme ? 'var(--nav-category-circle-falah-stroke)' : 'oklch(0.7 0 0 / 0.4)',
+              strokeWidth: isWireframeTheme ? 2 : 1.5
+            }}
+            onMouseEnter={(e) => {
+              if (centerChapter && isWireframeTheme) {
+                e.currentTarget.style.fill = 'var(--nav-category-circle-falah-hover)'
+                e.currentTarget.style.stroke = 'var(--nav-category-circle-falah-stroke)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (centerChapter && isWireframeTheme) {
+                e.currentTarget.style.fill = 'transparent'
+                e.currentTarget.style.stroke = 'var(--nav-category-circle-falah-stroke)'
+              }
+            }}
             onClick={centerChapter ? handleCenterClick : undefined}
           />
           
@@ -355,12 +503,15 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
             <text
               x="200"
               y="200"
-              className="fill-circular-menu-center-text text-[0.5rem] sm:text-[0.6rem] md:text-xs font-medium pointer-events-none"
+              className="fill-foreground font-bold pointer-events-none"
               textAnchor="middle"
               dominantBaseline="middle"
-              style={{ transform: 'rotate(90deg)', transformOrigin: '200px 200px' }}
+              style={{ transform: 'rotate(90deg)', transformOrigin: '200px 200px', fontSize: '18px' }}
             >
-              {translateChapterTitle(getChapterTitle(centerChapter)).replace(/\n/g, ' ')}
+              {translateChapterTitle(getChapterTitle(centerChapter)).replace(/\n/g, ' ') ||
+                (language === 'nl' ? bookVersion?.titleNl : bookVersion?.titleEn) ||
+                (language === 'nl' ? bookVersion?.titleEn : bookVersion?.titleNl) ||
+                'Add title'}
             </text>
           )}
         </svg>
@@ -371,7 +522,10 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
             <div className="bg-card rounded-2xl p-6 shadow-lg border max-w-xs sm:max-w-sm pointer-events-auto">
               <div className="text-center space-y-3">
                 <h3 className="text-lg sm:text-xl font-bold text-foreground">
-                  {translateChapterTitle(getChapterTitle(centerChapter))}
+                  {translateChapterTitle(getChapterTitle(centerChapter)) ||
+                    (language === 'nl' ? bookVersion?.titleNl : bookVersion?.titleEn) ||
+                    (language === 'nl' ? bookVersion?.titleEn : bookVersion?.titleNl) ||
+                    'Add title'}
                 </h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   {getChapterDescription(centerChapter)}
@@ -391,23 +545,6 @@ export function NavBookCircle({ bookId, language = 'en' }: NavBookCircleProps) {
         )}
       </div>
 
-      {/* Ring Rotation Controls - Outside the circle */}
-      <div className="flex gap-2 mt-4">
-        <Button
-          onClick={rotateRingLeft}
-          className="rounded-full"
-          size="sm"
-        >
-          Spin Left
-        </Button>
-        <Button
-          onClick={rotateRingRight}
-          className="rounded-full"
-          size="sm"
-        >
-          Spin Right
-        </Button>
-      </div>
     </div>
   )
 }

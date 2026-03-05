@@ -12,6 +12,8 @@ public class BookDTO {
     private Long workingStatusBookVersionId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String titleEn;
+    private String titleNl;
     
     public Long getId() {
         return id;
@@ -59,6 +61,22 @@ public class BookDTO {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
+    }
+
+    public String getTitleNl() {
+        return titleNl;
+    }
+
+    public void setTitleNl(String titleNl) {
+        this.titleNl = titleNl;
     }
 }
 

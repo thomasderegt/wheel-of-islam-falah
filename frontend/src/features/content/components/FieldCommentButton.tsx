@@ -19,6 +19,7 @@ interface FieldCommentButtonProps {
   reviewedVersionId: number
   comments: ReviewCommentDTO[]
   rejectedComments?: ReviewCommentDTO[] // Comments from rejected reviews
+  onCommentsChange?: () => void
 }
 
 export function FieldCommentButton({
@@ -28,6 +29,7 @@ export function FieldCommentButton({
   reviewedVersionId,
   comments,
   rejectedComments = [],
+  onCommentsChange,
 }: FieldCommentButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const fieldComments = comments.filter((c) => c.fieldName === fieldName)
@@ -67,7 +69,10 @@ export function FieldCommentButton({
           reviewedVersionId={reviewedVersionId}
           comments={fieldComments}
           rejectedComments={rejectedComments.filter(c => c.fieldName === fieldName)}
-          onClose={() => setIsOpen(false)}
+          onClose={() => {
+            onCommentsChange?.()
+            setIsOpen(false)
+          }}
         />
       )}
     </>

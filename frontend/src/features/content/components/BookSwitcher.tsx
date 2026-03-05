@@ -24,6 +24,8 @@ interface BookSwitcherProps {
   categoryName: string
   targetBookId?: number | null
   language?: 'nl' | 'en'
+  /** When true, only show PUBLISHED chapters (for public pages) */
+  publishedOnly?: boolean
 }
 
 export function BookSwitcher({ 
@@ -31,7 +33,8 @@ export function BookSwitcher({
   books, 
   categoryName, 
   targetBookId,
-  language = 'en'
+  language = 'en',
+  publishedOnly = false
 }: BookSwitcherProps) {
   const router = useRouter()
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -119,8 +122,8 @@ export function BookSwitcher({
     const book = books[0]
     return (
       <div className="flex flex-col items-center space-y-1 -mt-4 border-2 border-red-500">
-        <h3 className="text-lg font-semibold">Book {book.id}</h3>
-        <NavBookCircle bookId={book.id} language={language} />
+        <h3 className="text-lg font-semibold">{language === 'nl' ? (book.titleNl || book.titleEn) : (book.titleEn || book.titleNl) || `Book ${book.id}`}</h3>
+        <NavBookCircle bookId={book.id} language={language} publishedOnly={publishedOnly} />
       </div>
     )
   }
@@ -143,7 +146,7 @@ export function BookSwitcher({
           </Button>
           
           <h3 className="text-base sm:text-lg md:text-xl font-semibold text-center flex-1 min-w-0 px-2">
-            Book {currentBook.id}
+            {language === 'nl' ? (currentBook.titleNl || currentBook.titleEn) : (currentBook.titleEn || currentBook.titleNl) || `Book ${currentBook.id}`}
           </h3>
           
           <Button
@@ -184,7 +187,7 @@ export function BookSwitcher({
           onTouchEnd={onTouchEnd}
         >
           <div className="flex flex-col items-center border-2 border-red-200">
-            <NavBookCircle bookId={currentBook.id} language={language} />
+            <NavBookCircle bookId={currentBook.id} language={language} publishedOnly={publishedOnly} />
           </div>
         </div>
       </Container>

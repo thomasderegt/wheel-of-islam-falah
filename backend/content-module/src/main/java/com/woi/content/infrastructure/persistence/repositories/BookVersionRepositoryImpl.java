@@ -29,6 +29,14 @@ public class BookVersionRepositoryImpl implements BookVersionRepository {
         return jpaRepository.findById(id)
             .map(BookVersionEntityMapper::toDomain);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookVersion> findAllById(Iterable<Long> ids) {
+        return jpaRepository.findAllById(ids).stream()
+            .map(BookVersionEntityMapper::toDomain)
+            .collect(Collectors.toList());
+    }
     
     @Override
     @Transactional(readOnly = true)

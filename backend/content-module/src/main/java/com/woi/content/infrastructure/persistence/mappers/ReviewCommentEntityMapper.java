@@ -19,6 +19,7 @@ public class ReviewCommentEntityMapper {
         comment.setReviewedVersionId(jpaEntity.getReviewedVersionId());
         comment.setFieldName(jpaEntity.getFieldName());
         comment.setCommentText(jpaEntity.getCommentText());
+        comment.setAudioUrl(jpaEntity.getAudioUrl());
         comment.setCreatedBy(jpaEntity.getCreatedBy());
         comment.setCreatedAt(jpaEntity.getCreatedAt());
         comment.setUpdatedAt(jpaEntity.getUpdatedAt());
@@ -37,6 +38,7 @@ public class ReviewCommentEntityMapper {
         jpaEntity.setReviewedVersionId(domain.getReviewedVersionId());
         jpaEntity.setFieldName(domain.getFieldName());
         jpaEntity.setCommentText(domain.getCommentText());
+        jpaEntity.setAudioUrl(domain.getAudioUrl());
         jpaEntity.setCreatedBy(domain.getCreatedBy());
         jpaEntity.setCreatedAt(domain.getCreatedAt());
         jpaEntity.setUpdatedAt(domain.getUpdatedAt());
