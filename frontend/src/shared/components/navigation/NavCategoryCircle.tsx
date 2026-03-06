@@ -184,6 +184,8 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
         className="relative w-full aspect-square"
         style={fitToScreen ? { maxWidth: 'min(100%, min(calc(100vh - 12rem), 72rem))', margin: '0 auto' } : undefined}
       >
+        {/* Ring (sectors, ticks) – draait; center blijft stil */}
+        <div className="absolute inset-0 falah-cycle-rotate">
         <svg
           className="absolute inset-0 w-full h-full"
           viewBox="40 40 320 320"
@@ -191,24 +193,10 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
           style={{ transform: `rotate(${INITIAL_SVG_ROTATION}deg)` }}
         >
           <defs>
-            <radialGradient id="falah-gradient" cx="50%" cy="50%">
-              {isUniversalTheme ? (
-                <>
-                  <stop offset="0%" stopColor="var(--nav-category-circle-falah-start)" />
-                  <stop offset="50%" stopColor="var(--nav-category-circle-falah-mid)" />
-                  <stop offset="100%" stopColor="var(--nav-category-circle-falah-end)" />
-                </>
-              ) : (
-                <>
-                  <stop offset="0%" stopColor="var(--nav-category-circle-falah-start)" />
-                  <stop offset="100%" stopColor="var(--nav-category-circle-falah-end)" />
-                </>
-              )}
-            </radialGradient>
             {orderedCategories.map((sector, index) => {
               const { start, sweep } = SECTOR_ANGLES[index]
               const textRadius = (INNER_RADIUS + OUTER_RADIUS) / 2
-              const reverse = index > 0
+              const reverse = false
               const pathId = `text-path-${uniqueId}-${index}`
               const subPathId = `text-path-sub-${uniqueId}-${index}`
               return (
@@ -253,7 +241,7 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               })}
           </defs>
 
-          <g stroke="var(--nav-category-circle-sector-stroke)" strokeWidth="1" opacity="0.85">
+          <g stroke="white" strokeWidth="1" opacity="0.85">
             <circle cx="200" cy="200" r={RING_INNER} fill="none" />
             <circle cx="200" cy="200" r={RING_OUTER} fill="none" />
             {Array.from({ length: TICK_COUNT }, (_, i) => {
@@ -276,7 +264,7 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
                   className="cursor-pointer transition-opacity opacity-100"
                   style={{
                     fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
-                    stroke: 'oklch(0.55 0 0)',
+                    stroke: 'white',
                     strokeWidth: 1,
                   }}
                   onMouseEnter={(e) => {
@@ -322,7 +310,31 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               </g>
             )
           })}
+        </svg>
+        </div>
 
+        {/* Center (Falah) – blijft stil */}
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="40 40 320 320"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <defs>
+            <radialGradient id={`falah-gradient-${uniqueId}`} cx="50%" cy="50%">
+              {isUniversalTheme ? (
+                <>
+                  <stop offset="0%" stopColor="var(--nav-category-circle-falah-start)" />
+                  <stop offset="50%" stopColor="var(--nav-category-circle-falah-mid)" />
+                  <stop offset="100%" stopColor="var(--nav-category-circle-falah-end)" />
+                </>
+              ) : (
+                <>
+                  <stop offset="0%" stopColor="var(--nav-category-circle-falah-start)" />
+                  <stop offset="100%" stopColor="var(--nav-category-circle-falah-end)" />
+                </>
+              )}
+            </radialGradient>
+          </defs>
           <g>
             <circle
               cx="200"
@@ -330,8 +342,8 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               r={CENTER_RADIUS}
               className="cursor-pointer transition-opacity opacity-100"
               style={{
-                fill: isUniversalTheme ? 'transparent' : 'url(#falah-gradient)',
-                stroke: isUniversalTheme ? 'var(--nav-category-circle-falah-stroke)' : 'oklch(0.7 0 0 / 0.4)',
+                fill: isUniversalTheme ? 'transparent' : `url(#falah-gradient-${uniqueId})`,
+                stroke: 'white',
                 strokeWidth: isUniversalTheme ? 2 : 1.5,
               }}
               onMouseEnter={(e) => {

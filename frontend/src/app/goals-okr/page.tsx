@@ -18,7 +18,7 @@ import { useModeContext } from '@/shared/hooks/useModeContext'
 import { useWheels } from '@/features/goals-okr/hooks/useWheels'
 import { getWheelIdFromGoalsOkrContext } from '@/shared/utils/contextUtils'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/components/ui/select'
+import { cn } from '@/shared/utils/cn'
 import { Switch } from '@/shared/components/ui/switch'
 import { Label } from '@/shared/components/ui/label'
 import { Loading } from '@/shared/components/ui/Loading'
@@ -47,11 +47,12 @@ function GoalsOKRContent() {
     const currentWheelIdParam = searchParams?.get('wheelId')
     if (currentWheelIdParam) return
 
-    // Default to Wheel of Life when no wheelId in URL
+    // Default to Wheel of Success when no wheelId in URL
+    const wheelOfSuccess = wheels.find((w) => w.wheelKey === 'WHEEL_OF_SUCCESS')
     const wheelOfLife = wheels.find((w) => w.wheelKey === 'WHEEL_OF_LIFE')
     const defaultWheelId = goalsOkrContext !== 'ALL' && goalsOkrContext !== 'NONE'
       ? getWheelIdFromGoalsOkrContext(goalsOkrContext, wheels)
-      : wheelOfLife?.id
+      : wheelOfSuccess?.id ?? wheelOfLife?.id
     if (defaultWheelId) {
       const params = new URLSearchParams(searchParams?.toString() || '')
       params.set('wheelId', defaultWheelId.toString())
@@ -91,15 +92,17 @@ function GoalsOKRContent() {
     }
   }, [availableWheels, searchParams, router, wheels])
 
-  const currentWheel = useMemo(() => {
-    if (!wheels || !currentWheelId) return null
-    return wheels.find((w) => w.id === currentWheelId)
-  }, [wheels, currentWheelId])
-
-  const handleWheelChange = (wheelId: string) => {
+  const handleWheelChange = (wheelId: number) => {
     const params = new URLSearchParams(searchParams?.toString() || '')
-    params.set('wheelId', wheelId)
+    params.set('wheelId', wheelId.toString())
     router.replace(`/goals-okr?${params.toString()}`)
+  }
+
+  const WHEEL_PILL_LABELS: Record<string, string> = {
+    WHEEL_OF_SUCCESS: 'Success',
+    WHEEL_OF_LIFE: 'Life',
+    WHEEL_OF_BUSINESS: 'Business',
+    WHEEL_OF_WORK: 'Work',
   }
 
   return (
@@ -115,36 +118,29 @@ function GoalsOKRContent() {
               )}
               <NavOKRLifeDomainCircle fitToScreen={fitToScreen} />
               {availableWheels.length > 0 && (
-                <div className="flex items-center justify-center gap-2">
-                  <label htmlFor="wheel-select" className="text-sm font-medium text-muted-foreground">
-                    Wheel:
-                  </label>
-                  <Select
-                    value={
-                      currentWheelId?.toString() ||
-                      availableWheels[0]?.id.toString() ||
-                      ''
-                    }
-                    onValueChange={handleWheelChange}
-                  >
-                    <SelectTrigger id="wheel-select" className="w-[200px]">
-                      <SelectValue>
-                        {currentWheel
-                          ? currentWheel.nameEn || currentWheel.nameNl
-                          : 'Select Wheel'}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableWheels.map((wheel) => (
-                        <SelectItem
+                <div className="overflow-x-auto -mx-1 pb-1">
+                  <div className="flex gap-2 min-w-min px-1 justify-center">
+                    {availableWheels.map((wheel) => {
+                      const label = WHEEL_PILL_LABELS[wheel.wheelKey] ?? wheel.nameEn ?? wheel.nameNl
+                      const isActive = currentWheelId === wheel.id
+                      return (
+                        <button
                           key={wheel.id}
-                          value={wheel.id.toString()}
+                          type="button"
+                          onClick={() => handleWheelChange(wheel.id)}
+                          className={cn(
+                            'px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
+                            'min-h-[44px] flex items-center justify-center',
+                            isActive
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          )}
                         >
-                          {wheel.nameEn || wheel.nameNl}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
               <div className="flex items-center justify-center gap-2">

@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback, type ReactNode } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useLifeDomains } from '../hooks/useLifeDomains'
 import { useWheels } from '../hooks/useWheels'
 import { useTheme } from '@/shared/contexts/ThemeContext'
@@ -27,7 +27,6 @@ interface NavOKRLifeDomainCircleProps {
 
 export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen = false }: NavOKRLifeDomainCircleProps) {
   const router = useRouter()
-  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { data: lifeDomains, isLoading: isLoadingDomains } = useLifeDomains()
   const { data: wheels, isLoading: isLoadingWheels } = useWheels()
@@ -131,12 +130,16 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
     setRingDomains(ring)
   }, [filteredDomains])
 
-  // Animate ring rotation when navigating to goals-okr page (like NavBookCircle)
+  // Zachtjes auto-draaien wanneer niet aan het slepen (180s per rotatie, zoals home)
   useEffect(() => {
-    if (pathname === '/goals-okr' && ringDomains.length > 0) {
-      setRingRotation(prev => prev + 360)
-    }
-  }, [pathname, ringDomains.length])
+    if (ringDomains.length === 0) return
+    const interval = setInterval(() => {
+      if (!isDraggingWheel) {
+        setRingRotation(prev => prev + 0.1)
+      }
+    }, 50)
+    return () => clearInterval(interval)
+  }, [ringDomains.length, isDraggingWheel])
 
   // Drag-to-rotate: hoek uit pointerpositie t.o.v. wrapper (viewBox 40 40 320 320, center 200,200)
   const getAngleFromPointer = useCallback((clientX: number, clientY: number): number => {
@@ -383,7 +386,7 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
                       className="cursor-pointer transition-opacity opacity-100"
                       style={{ 
                         fill: isWireframeTheme ? 'transparent' : `url(#okr-roygbiv-${domain.id})`,
-                        stroke: 'oklch(0.7 0 0 / 0.4)',
+                        stroke: 'white',
                         strokeWidth: 1.5
                       }}
                       onMouseEnter={(e) => {
@@ -444,7 +447,7 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
                 className="cursor-pointer transition-opacity opacity-100"
                 style={{
                   fill: isWireframeTheme ? 'transparent' : 'url(#okr-life-domain-center-gradient)',
-                  stroke: 'oklch(0.7 0 0 / 0.4)',
+                  stroke: 'white',
                   strokeWidth: 1.5
                 }}
                 onMouseEnter={(e) => {

@@ -11,49 +11,10 @@ import { ProtectedRoute, useAuth } from '@/features/auth'
 import { useFalahCycles, useStartFalahCycle, useReEnterFalahCycleFlow } from '@/features/auth/hooks/useFalahCycles'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
-import Link from 'next/link'
-import { Star, ClipboardCheck, Target, TrendingUp, Lightbulb, Play } from 'lucide-react'
+import { Play, Info } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
-import { Card } from '@/shared/components/ui/card'
-import { routes } from '@/shared/constants/routes'
-
-const falahGrowthSteps = [
-  {
-    href: routes.success,
-    label: 'Success',
-    description:
-      'The Falah compass: the formation of your heart and action. Explore the core of Falah, Tazkiyyah and Fiqh. This is the starting point of your growth cycle and helps you clarify what truly matters before you set priorities and goals.',
-    icon: Star,
-  },
-  {
-    href: routes.assessment,
-    label: 'Priorities',
-    description:
-      'Determine where you want to focus this growth cycle. Choose from the domains of your life (family, work, health, etc.) and identify what needs the most attention now. This creates a clear foundation for your goals.',
-    icon: ClipboardCheck,
-  },
-  {
-    href: '/goals-okr',
-    label: 'Goals',
-    description:
-      'Set your objectives, key results and activities. Turn your priorities into concrete goals and measurable results. Here you move from "what do I want?" to "what will I do?" and how you will measure it.',
-    icon: Target,
-  },
-  {
-    href: '/goals-okr/execute',
-    label: 'Execution',
-    description:
-      'Plan and carry out your daily actions. Use the Kanban board to organise tasks, track progress and stay focused. This is where your plan becomes action and your growth shows in practice.',
-    icon: TrendingUp,
-  },
-  {
-    href: '/goals-okr/insight',
-    label: 'Insight',
-    description:
-      'Overview and insight into your progress. See how far you\'ve come, what works and what you can improve. Reflect on your cycle and use these insights to move on to the next Success step.',
-    icon: Lightbulb,
-  },
-]
+import { FalahCycleFlow } from '@/features/home/components/FalahCycleFlow'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/components/ui/collapsible'
 
 export default function HomePage() {
   const router = useRouter()
@@ -93,39 +54,43 @@ export default function HomePage() {
         <Navbar variant="landing" />
 
         <main className="flex-1 flex flex-col p-4 pb-24">
-          <Container className="max-w-2xl mx-auto space-y-6">
+          <Container className="max-w-6xl mx-auto space-y-6">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Home
+              Welcome Home
             </h1>
 
             <p className="text-foreground/90">
-              The Falah Growth Cycle guides you from Success through Priorities, Goals, Execution and Insight, and back to Success. You clarify what matters, set your focus, define goals, act on them, and reflect on your progress. Each growth cycle deepens your growth and keeps you aligned with what matters.
+              Life is busy and demanding. Work, school, family, having goals and achieving them – and the question of what actually matters. Nobody really teaches you how to do all of this. That&apos;s why we at <strong>Qalbsalim</strong> created the <strong>Falah Growth Cycle</strong> to help you in the process.
             </p>
 
-            <section>
-              <div className="flex flex-col gap-3">
-                {falahGrowthSteps.map((step, index) => {
-                  const Icon = step.icon
-                  const isLast = index === falahGrowthSteps.length - 1
-                  return (
-                    <Link key={step.href} href={step.href} className="block hover:opacity-90 transition-opacity">
-                      <Card className="flex flex-row gap-4 py-3 px-4 hover:bg-muted/20 transition-colors">
-                        <div className="flex flex-col items-center">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/15 border-2 border-primary/50 flex items-center justify-center">
-                            <Icon className="h-5 w-5 text-primary" />
-                          </div>
-                          {!isLast && <div className="w-px flex-1 min-h-[24px] bg-border mt-2" />}
-                        </div>
-                        <div className={`flex-1 ${isLast ? '' : 'pb-6'}`}>
-                          <h3 className="font-semibold text-foreground">{step.label}</h3>
-                          <p className="text-sm text-foreground/85 mt-1">{step.description}</p>
-                        </div>
-                      </Card>
-                    </Link>
-                  )
-                })}
-              </div>
+            <p className="text-foreground/90">
+              On this page you can start or continue your <strong>Falah Growth Cycle</strong>, or click any step in the flow below to jump to Success, Priorities, Goals, Execution, or Insight.
+            </p>
+
+            <section className="py-6">
+              <FalahCycleFlow />
             </section>
+
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  aria-label="Show flow steps"
+                >
+                  <Info className="h-5 w-5" />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="text-foreground/90 space-y-4 mt-4 pl-1">
+                  <p><strong>Falah</strong><br />Starting with Falah enables you to set meaningful formative goals.</p>
+                  <p><strong>Priorities</strong><br />Where do you want to focus this cycle? Set priorities for your direction and goals.</p>
+                  <p><strong>Goals</strong><br />Formative goals (Succes) and context goals (Life & Work).</p>
+                  <p><strong>Execution</strong><br />Execute via the Kanban board – daily action.</p>
+                  <p><strong>Insight</strong><br />Insight review and reflection – then back to Success.</p>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <Button
               size="lg"
