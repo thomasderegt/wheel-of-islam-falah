@@ -15,6 +15,7 @@ import { Play, Info } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { FalahCycleFlow } from '@/features/home/components/FalahCycleFlow'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/components/ui/collapsible'
+import { routes } from '@/shared/constants/routes'
 
 export default function HomePage() {
   const router = useRouter()

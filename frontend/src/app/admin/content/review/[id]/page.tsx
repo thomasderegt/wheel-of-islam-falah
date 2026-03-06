@@ -348,7 +348,7 @@ export default function ReviewDetailPage() {
                 reviewId={review.id}
                 fieldName={review.versionContentTitleEn ? 'titleEn' : 'titleNl'}
                 fieldLabel="Title"
-                content={review.versionContentTitleEn || review.versionContentTitleNl}
+                content={(review.versionContentTitleEn || review.versionContentTitleNl) ?? ''}
                 reviewedVersionId={review.reviewedVersionId}
                 comments={getCommentsForField(review.versionContentTitleEn ? 'titleEn' : 'titleNl')}
                 newCommentByField={newCommentByField}
@@ -367,7 +367,7 @@ export default function ReviewDetailPage() {
                 reviewId={review.id}
                 fieldName={review.versionContentIntroEn ? 'introEn' : 'introNl'}
                 fieldLabel="Intro"
-                content={review.versionContentIntroEn || review.versionContentIntroNl}
+                content={(review.versionContentIntroEn || review.versionContentIntroNl) ?? ''}
                 reviewedVersionId={review.reviewedVersionId}
                 comments={getCommentsForField(review.versionContentIntroEn ? 'introEn' : 'introNl')}
                 newCommentByField={newCommentByField}
@@ -386,7 +386,7 @@ export default function ReviewDetailPage() {
                 reviewId={review.id}
                 fieldName={review.versionContentContentEn ? 'contentEn' : 'contentNl'}
                 fieldLabel="Content"
-                content={review.versionContentContentEn || review.versionContentContentNl}
+                content={(review.versionContentContentEn || review.versionContentContentNl) ?? ''}
                 reviewedVersionId={review.reviewedVersionId}
                 comments={getCommentsForField(review.versionContentContentEn ? 'contentEn' : 'contentNl')}
                 newCommentByField={newCommentByField}
