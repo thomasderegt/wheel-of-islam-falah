@@ -10,7 +10,7 @@ import React, { useState } from 'react'
 import type { ReviewCommentDTO } from '@/features/content/api/contentApi'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle, XCircle, FileText } from 'lucide-react'
+import { ChevronLeft, CheckCircle, XCircle, FileText } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
@@ -257,9 +257,8 @@ export default function ReviewDetailPage() {
     <div className="container mx-auto p-6 space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
         <Link href="/admin/content/review">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Reviews
+          <Button variant="ghost" size="icon" aria-label="Back to Reviews">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>

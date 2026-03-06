@@ -9,10 +9,18 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Calendar, Hash, Send, Folder } from 'lucide-react'
+import { ChevronLeft, Edit, Calendar, Hash, Send, Folder } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { VersionHistoryPanel, CreateVersionDialog, useVersionHistory, useBook, useCategory } from '@/features/content'
+import {
+  VersionHistoryPanel,
+  CreateVersionDialog,
+  useVersionHistory,
+  useBook,
+  useCategory,
+  useReviewsByReviewableItem,
+  hasReviewInProgress,
+} from '@/features/content'
 import { submitForReview } from '@/features/content/api/contentApi'
 import { useQueryClient } from '@tanstack/react-query'
 import { Loading } from '@/shared/components/ui/Loading'
@@ -31,7 +39,9 @@ export default function BookDetailPage() {
   
   // Fetch parent information
   const { data: category, isLoading: isLoadingCategory } = useCategory(book?.categoryId || null)
-  
+  const { data: itemReviews } = useReviewsByReviewableItem('BOOK', bookId)
+  const reviewAlreadyInProgress = hasReviewInProgress(itemReviews)
+
   const handleSubmitForReview = async () => {
     // Get version ID - use workingStatusBookVersionId or latest version
     const versionId = book?.workingStatusBookVersionId || (versions && versions.length > 0 ? versions[0].id : null)
@@ -56,6 +66,7 @@ export default function BookDetailPage() {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['book', bookId] })
       queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['reviewsByItem', 'BOOK', bookId] })
       
       alert('Successfully submitted for review!')
     } catch (err: any) {
@@ -66,10 +77,10 @@ export default function BookDetailPage() {
     }
   }
   
-  // Determine if submit button should be shown and enabled
+  // Determine if submit button should be shown and enabled (not if review already in progress)
   const hasVersions = versions && versions.length > 0
   const hasWorkingVersion = !!book?.workingStatusBookVersionId
-  const canSubmit = hasWorkingVersion || hasVersions
+  const canSubmit = (hasWorkingVersion || hasVersions) && !reviewAlreadyInProgress
 
   if (isLoadingBook) {
     return (
@@ -99,9 +110,8 @@ export default function BookDetailPage() {
     <div className="container mx-auto p-6 space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
         <Link href="/admin/content/creation">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Content Creation
+          <Button variant="ghost" size="icon" aria-label="Back to Content Creation">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>
@@ -113,18 +123,22 @@ export default function BookDetailPage() {
             Book ID: {bookId}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <CreateVersionDialog entityType="BOOK" entityId={bookId} />
-          {canSubmit && (
-            <Button 
+          {(hasWorkingVersion || hasVersions) && (
+            <Button
               onClick={handleSubmitForReview}
-              disabled={isSubmitting || !hasWorkingVersion}
+              disabled={isSubmitting || !hasWorkingVersion || reviewAlreadyInProgress}
+              title={reviewAlreadyInProgress ? 'Er loopt al een review voor dit contentitem.' : undefined}
               className="gap-2"
               variant="default"
             >
               <Send className="h-4 w-4" />
               {isSubmitting ? 'Submitting...' : 'Submit for Review'}
             </Button>
+          )}
+          {reviewAlreadyInProgress && (
+            <span className="text-sm text-muted-foreground">Er loopt al een review voor dit contentitem.</span>
           )}
           <Link href={`/admin/content/books/${bookId}/edit`}>
             <Button variant="outline" className="gap-2">

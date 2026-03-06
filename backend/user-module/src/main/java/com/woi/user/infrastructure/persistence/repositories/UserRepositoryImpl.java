@@ -6,6 +6,7 @@ import com.woi.user.infrastructure.persistence.entities.UserJpaEntity;
 import com.woi.user.infrastructure.persistence.mappers.UserEntityMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,6 +38,13 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByEmail(String email) {
         return jpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return jpaRepository.findAll().stream()
+            .map(mapper::toDomain)
+            .toList();
     }
     
     @Override

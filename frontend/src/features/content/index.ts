@@ -40,6 +40,7 @@ export { ChapterHeader } from './components/ChapterHeader'
 export { CreateVersionDialog } from './components/CreateVersionDialog'
 export { ReviewsTable } from './components/ReviewsTable'
 export { useReviews } from './hooks/useReviews'
+export { useReviewsByReviewableItem, hasReviewInProgress } from './hooks/useReviewsByReviewableItem'
 export { useAllBooks } from './hooks/useAllBooks'
 export * from './types'
 

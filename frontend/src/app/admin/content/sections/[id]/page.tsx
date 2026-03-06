@@ -9,15 +9,37 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Calendar, Hash, BookOpen, Send, Book, Folder } from 'lucide-react'
+import { ChevronLeft, Edit, Calendar, Hash, BookOpen, Send, Book, Folder, X } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { VersionHistoryPanel, CreateVersionDialog } from '@/features/content'
-import { useVersionHistory, useSection, useChapter, useBook, useCategory } from '@/features/content'
+import {
+  VersionHistoryPanel,
+  CreateVersionDialog,
+  useVersionHistory,
+  useSection,
+  useChapter,
+  useBook,
+  useCategory,
+  useReviewsByReviewableItem,
+  hasReviewInProgress,
+} from '@/features/content'
 import { submitForReview, getBookCurrentVersion } from '@/features/content/api/contentApi'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Error } from '@/shared/components/ui/Error'
+import type { SectionVersionDTO } from '@/shared/api/types'
+
+const language: 'nl' | 'en' = 'en'
+
+/** Toont intro-tekst met behoud van witregels en alinea's. */
+function VersionIntro({ text }: { text: string | null | undefined }) {
+  if (!text) return null
+  return (
+    <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+      {text}
+    </div>
+  )
+}
 
 export default function SectionDetailPage() {
   const params = useParams()
@@ -26,9 +48,10 @@ export default function SectionDetailPage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null)
   
   const { data: section, isLoading: isLoadingSection, error: sectionError } = useSection(sectionId)
-  const { data: versions, isLoading: isLoadingVersions } = useVersionHistory(sectionId, 'SECTION')
+  const { data: versions, isLoading: isLoadingVersions } = useVersionHistory(sectionId, 'SECTION') as { data: SectionVersionDTO[] | undefined; isLoading: boolean }
   
   // Fetch parent information
   const { data: chapter, isLoading: isLoadingChapter } = useChapter(section?.chapterId || null)
@@ -39,7 +62,9 @@ export default function SectionDetailPage() {
     queryFn: () => getBookCurrentVersion(book!.id),
     enabled: !!book?.id,
   })
-  
+  const { data: itemReviews } = useReviewsByReviewableItem('SECTION', sectionId)
+  const reviewAlreadyInProgress = hasReviewInProgress(itemReviews)
+
   const handleSubmitForReview = async () => {
     // Get version ID - use workingStatusSectionVersionId or latest version
     const versionId = section?.workingStatusSectionVersionId || (versions && versions.length > 0 ? versions[0].id : null)
@@ -64,6 +89,7 @@ export default function SectionDetailPage() {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['section', sectionId] })
       queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['reviewsByItem', 'SECTION', sectionId] })
       
       alert('Successfully submitted for review!')
     } catch (err: any) {
@@ -74,10 +100,15 @@ export default function SectionDetailPage() {
     }
   }
   
-  // Determine if submit button should be shown and enabled
+  // Determine if submit button should be shown and enabled (not if review already in progress)
   const hasVersions = versions && versions.length > 0
   const hasWorkingVersion = !!section?.workingStatusSectionVersionId
-  const canSubmit = hasWorkingVersion || hasVersions
+  const canSubmit = (hasWorkingVersion || hasVersions) && !reviewAlreadyInProgress
+
+  const selectedVersion =
+    selectedVersionId != null && versions
+      ? versions.find((v) => v.id === selectedVersionId)
+      : null
 
   if (isLoadingSection) {
     return (
@@ -107,9 +138,8 @@ export default function SectionDetailPage() {
     <div className="container mx-auto p-6 space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
         <Link href="/admin/content/creation">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Content Creation
+          <Button variant="ghost" size="icon" aria-label="Back to Content Creation">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>
@@ -121,18 +151,22 @@ export default function SectionDetailPage() {
             Section ID: {sectionId}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <CreateVersionDialog entityType="SECTION" entityId={sectionId} />
-          {canSubmit && (
-            <Button 
+          {(hasWorkingVersion || hasVersions) && (
+            <Button
               onClick={handleSubmitForReview}
-              disabled={isSubmitting || !hasWorkingVersion}
+              disabled={isSubmitting || !hasWorkingVersion || reviewAlreadyInProgress}
               className="gap-2"
               variant="default"
+              title={reviewAlreadyInProgress ? 'Er loopt al een review voor dit contentitem.' : undefined}
             >
               <Send className="h-4 w-4" />
               {isSubmitting ? 'Submitting...' : 'Submit for Review'}
             </Button>
+          )}
+          {reviewAlreadyInProgress && (
+            <span className="text-sm text-muted-foreground">Er loopt al een review voor dit contentitem.</span>
           )}
           <Link href={`/admin/content/sections/${sectionId}/edit`}>
             <Button variant="outline" className="gap-2">
@@ -243,6 +277,7 @@ export default function SectionDetailPage() {
               versions={versions}
               currentVersionId={section.workingStatusSectionVersionId}
               entityType="SECTION"
+              onVersionClick={(versionId) => setSelectedVersionId(versionId)}
             />
           ) : (
             <div className="text-center py-8">
@@ -252,6 +287,26 @@ export default function SectionDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Geselecteerde versie: titel + intro */}
+      {selectedVersion && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle>v{selectedVersion.versionNumber} – {(language === 'nl' ? selectedVersion.titleNl : selectedVersion.titleEn) || 'Untitled'}</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Sluiten"
+              onClick={() => setSelectedVersionId(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <VersionIntro text={(language === 'nl' ? selectedVersion.introNl : selectedVersion.introEn) ?? undefined} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ChevronLeft, Save } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Input } from '@/shared/components/ui/input'
@@ -107,9 +107,8 @@ export default function ChapterEditPage() {
     <div className="container mx-auto p-6 space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
         <Link href={`/admin/content/chapters/${chapterId}`}>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Chapter Details
+          <Button variant="ghost" size="icon" aria-label="Back to Chapter Details">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>

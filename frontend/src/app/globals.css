@@ -514,3 +514,9 @@
   will-change: transform;
 }
 
+/* NavBookCircle - wiel langzaam draaien */
+.book-wheel-slow-rotate {
+  transform-origin: 200px 200px;
+  animation: falah-cycle-spin 120s linear infinite;
+}
+

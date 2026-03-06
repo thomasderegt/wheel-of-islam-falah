@@ -10,16 +10,15 @@
 import Link from 'next/link'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { ArrowLeft, CircleDot, Layers } from 'lucide-react'
+import { ChevronLeft, CircleDot, Layers } from 'lucide-react'
 
 export default function GoalsManagementLandingPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/admin">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Admin
+          <Button variant="ghost" size="icon" aria-label="Back to Admin">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>

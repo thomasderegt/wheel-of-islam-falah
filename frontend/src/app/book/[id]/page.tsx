@@ -5,22 +5,29 @@
  * Route: /book/[id]
  * 
  * Structuur:
- * - Book header
+ * - Back-knop
  * - NavBookCircle met chapters (position 0-10)
  */
 
 'use client'
 
-import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { ProtectedRoute } from '@/features/auth'
-import { NavBookCircle } from '@/features/content'
+import { NavBookCircle, useBook } from '@/features/content'
+import { Button } from '@/shared/components/ui/button'
+import { ChevronLeft } from 'lucide-react'
 
 export default function BookPage() {
   const params = useParams()
+  const router = useRouter()
   const bookId = Number(params.id)
   const language: 'nl' | 'en' = 'en' // TODO: Get from language context
+  const { data: book } = useBook(bookId)
+
+  const backHref = '/success'
 
   return (
     <ProtectedRoute>
@@ -31,11 +38,12 @@ export default function BookPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
-            {/* Book Header */}
-            <div className="mb-8 space-y-4 text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                Book {bookId}
-              </h1>
+            <div className="mb-8">
+              <Link href={backHref}>
+                <Button variant="ghost" size="icon" aria-label="Back">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
 
             {/* NavBookCircle */}

@@ -2,11 +2,11 @@
 
 /**
  * SectionViewer Component
- * 
+ *
  * Toont de content van een section
  * - Published version (als beschikbaar)
  * - Paragraphs in volgorde
- * - Markdown/HTML rendering
+ * - Witregels en alinea's worden bewaard (plain text) of als HTML gerenderd
  */
 
 import { useSectionPublishedVersion } from '../hooks/useSectionPublishedVersion'
@@ -18,6 +18,55 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 interface SectionViewerProps {
   readonly sectionId: number
   readonly language?: 'nl' | 'en'
+}
+
+/** Bepaalt of de string op HTML lijkt (bevat tags). */
+function looksLikeHtml(text: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(text)
+}
+
+/** Escaped HTML voor veilige weergave. */
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  }
+  return text.replaceAll(/[&<>"']/g, (ch) => map[ch] ?? ch)
+}
+
+/**
+ * Rendert content met behoud van witregels en alinea's.
+ * - Als de content op HTML lijkt: render als HTML (dangerouslySetInnerHTML).
+ * - Anders: plain text, \n\n = nieuwe alinea, \n = nieuwe regel.
+ */
+function renderContent(content: string) {
+  if (!content) return null
+  if (looksLikeHtml(content)) {
+    return (
+      <div
+        className="prose prose-sm max-w-none"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    )
+  }
+  const paragraphs = content.split(/\n\n+/)
+  return (
+    <div className="prose prose-sm max-w-none space-y-3">
+      {paragraphs.map((para, i) => (
+        <p key={i} className="leading-relaxed">
+          {para.split('\n').map((line, j) => (
+            <span key={j}>
+              {escapeHtml(line)}
+              {j < para.split('\n').length - 1 && <br />}
+            </span>
+          ))}
+        </p>
+      ))}
+    </div>
+  )
 }
 
 export function SectionViewer({ sectionId, language = 'en' }: SectionViewerProps) {
@@ -51,7 +100,9 @@ export function SectionViewer({ sectionId, language = 'en' }: SectionViewerProps
         </CardHeader>
         {intro && (
           <CardContent>
-            <p className="text-muted-foreground leading-relaxed">{intro}</p>
+            <div className="text-muted-foreground leading-relaxed">
+              {renderContent(intro)}
+            </div>
           </CardContent>
         )}
       </Card>
@@ -71,10 +122,7 @@ export function SectionViewer({ sectionId, language = 'en' }: SectionViewerProps
                 )}
                 {paragraphContent && (
                   <CardContent>
-                    <div 
-                      className="prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: paragraphContent }}
-                    />
+                    {renderContent(paragraphContent)}
                   </CardContent>
                 )}
               </Card>

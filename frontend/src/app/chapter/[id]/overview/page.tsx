@@ -12,7 +12,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
 import { ProtectedRoute } from '@/features/auth'
@@ -22,21 +22,27 @@ import {
   useChapterCurrentVersion,
   ChapterHeader,
   useBook,
+  useBookCurrentVersion,
   useCategory,
 } from '@/features/content'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Error } from '@/shared/components/ui/Error'
-import { ChevronRight } from 'lucide-react'
+import { Button } from '@/shared/components/ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function ChapterOverviewPage() {
   const params = useParams()
+  const router = useRouter()
   const chapterId = Number(params.id)
   const language: 'nl' | 'en' = 'en' as 'nl' | 'en' // TODO: Get from language context
 
   const { data: chapter, isLoading, error } = useChapter(chapterId)
   const { data: chapterVersion, isLoading: isLoadingVersion } = useChapterCurrentVersion(chapterId)
   const { data: book } = useBook(chapter?.bookId ?? null)
+  const { data: bookVersion } = useBookCurrentVersion(book?.id ?? null)
   const { data: category } = useCategory(book?.categoryId ?? null)
+
+  const backHref = book ? `/book/${book.id}` : null
 
   if (isLoading || isLoadingVersion) {
     return (
@@ -82,11 +88,23 @@ export default function ChapterOverviewPage() {
 
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
-            {/* Breadcrumbs: Category > Book > Chapter */}
-            <nav
-              aria-label="Breadcrumb"
-              className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6"
-            >
+            <div className="flex items-center gap-4 mb-6">
+              {backHref ? (
+                <Link href={backHref}>
+                  <Button variant="ghost" size="icon" aria-label="Back">
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </Link>
+              ) : (
+                <Button variant="ghost" size="icon" aria-label="Back" onClick={() => router.back()}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              )}
+              {/* Breadcrumbs: Category > Book > Chapter */}
+              <nav
+                aria-label="Breadcrumb"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground"
+              >
               {category ? (
                 <Link
                   href={`/category/${category.id}`}
@@ -103,7 +121,9 @@ export default function ChapterOverviewPage() {
                   href={`/book/${book.id}`}
                   className="hover:text-foreground transition-colors"
                 >
-                  {language === 'nl' ? 'Book' : 'Book'} {book.id}
+                  {(language === 'nl' ? bookVersion?.titleNl : bookVersion?.titleEn) ||
+                    (language === 'nl' ? bookVersion?.titleEn : bookVersion?.titleNl) ||
+                    `Book ${book.id}`}
                 </Link>
               ) : (
                 category && <span>…</span>
@@ -113,6 +133,7 @@ export default function ChapterOverviewPage() {
                 {chapterTitle}
               </span>
             </nav>
+            </div>
 
             <ChapterHeader
               chapter={chapter ?? null}

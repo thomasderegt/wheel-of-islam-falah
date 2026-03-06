@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ChevronLeft, Plus } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog'
@@ -50,9 +50,8 @@ export default function LearningTemplateCreationPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/admin/learning">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Learning Management
+          <Button variant="ghost" size="icon" aria-label="Back to Learning Management">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>

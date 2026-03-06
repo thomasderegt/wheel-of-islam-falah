@@ -7,7 +7,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react'
+import { ChevronLeft, Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
 import { Input } from '@/shared/components/ui/input'
@@ -163,9 +163,8 @@ export default function AdminLifeDomainsPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/admin/goals">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Goals
+          <Button variant="ghost" size="icon" aria-label="Back to Goals">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>

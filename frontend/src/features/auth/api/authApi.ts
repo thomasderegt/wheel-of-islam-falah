@@ -14,6 +14,7 @@ import {
   FalahCycleResponse,
   PriorityAssessmentResponse,
   SavePriorityAssessmentRequest,
+  AdminUserListItem,
 } from '@/shared/api/types'
 
 /**
@@ -180,6 +181,14 @@ export const authApi = {
       `/api/v2/user/${userId}/priority-assessment`,
       data
     )
+    return response.data
+  },
+
+  /**
+   * List all users (admin only). Returns 403 if caller is not ADMIN.
+   */
+  async getAdminUsers(): Promise<AdminUserListItem[]> {
+    const response = await apiClient.get<AdminUserListItem[]>('/api/v2/admin/users')
     return response.data
   },
 }

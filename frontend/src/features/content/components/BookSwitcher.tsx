@@ -121,7 +121,7 @@ export function BookSwitcher({
   if (books.length === 1) {
     const book = books[0]
     return (
-      <div className="flex flex-col items-center space-y-1 -mt-4 border-2 border-red-500">
+      <div className="flex flex-col items-center space-y-1 -mt-4">
         <h3 className="text-lg font-semibold">{language === 'nl' ? (book.titleNl || book.titleEn) : (book.titleEn || book.titleNl) || `Book ${book.id}`}</h3>
         <NavBookCircle bookId={book.id} language={language} publishedOnly={publishedOnly} />
       </div>
@@ -131,10 +131,10 @@ export function BookSwitcher({
   const currentBook = books[currentIndex]
 
   return (
-    <div className="w-full -mt-4 border-2 border-red-500">
-      <Container className="w-full border-2 border-red-600">
+    <div className="w-full -mt-4">
+      <Container className="w-full">
         {/* Book title and navigation */}
-        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 px-4 border-2 border-red-400">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 px-4">
           <Button
             variant="ghost"
             size="icon"
@@ -181,12 +181,12 @@ export function BookSwitcher({
         {/* NavBookCircle - swipeable container */}
         <div
           ref={containerRef}
-          className="w-full touch-none select-none border-2 border-red-300"
+          className="w-full touch-none select-none"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div className="flex flex-col items-center border-2 border-red-200">
+          <div className="flex flex-col items-center">
             <NavBookCircle bookId={currentBook.id} language={language} publishedOnly={publishedOnly} />
           </div>
         </div>

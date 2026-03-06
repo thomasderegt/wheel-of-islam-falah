@@ -12,6 +12,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
@@ -104,8 +105,13 @@ export default function CategoryByNumberPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
-            {/* Category Header */}
-            <div className="mb-8 space-y-4 p-4 rounded-md">
+            {/* Back + Category Header */}
+            <div className="flex items-center gap-4 mb-8">
+              <Link href="/success">
+                <Button variant="ghost" size="icon" aria-label="Back">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </Link>
               <h1 className="text-4xl md:text-5xl font-bold text-foreground">
                 {categoryTitle || `Category ${categoryNumber}`}
               </h1>

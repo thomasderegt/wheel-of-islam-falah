@@ -7,7 +7,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { ReviewsTable, useReviews } from '@/features/content'
@@ -24,9 +24,8 @@ export default function ContentReviewPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/admin/content">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Content Management
+          <Button variant="ghost" size="icon" aria-label="Back to Content Management">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>

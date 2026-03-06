@@ -9,10 +9,19 @@
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Calendar, Hash, Book, Send, Folder } from 'lucide-react'
+import { ChevronLeft, Edit, Calendar, Hash, Book, Send, Folder } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { VersionHistoryPanel, CreateVersionDialog, useVersionHistory, useChapter, useBook, useCategory } from '@/features/content'
+import {
+  VersionHistoryPanel,
+  CreateVersionDialog,
+  useVersionHistory,
+  useChapter,
+  useBook,
+  useCategory,
+  useReviewsByReviewableItem,
+  hasReviewInProgress,
+} from '@/features/content'
 import { submitForReview, getBookCurrentVersion } from '@/features/content/api/contentApi'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { Loading } from '@/shared/components/ui/Loading'
@@ -37,7 +46,9 @@ export default function ChapterDetailPage() {
     queryFn: () => getBookCurrentVersion(book!.id),
     enabled: !!book?.id,
   })
-  
+  const { data: itemReviews } = useReviewsByReviewableItem('CHAPTER', chapterId)
+  const reviewAlreadyInProgress = hasReviewInProgress(itemReviews)
+
   const handleSubmitForReview = async () => {
     if (!chapter || !chapter.workingStatusChapterVersionId) {
       setSubmitError('No version available to submit. Please create a version first.')
@@ -59,6 +70,7 @@ export default function ChapterDetailPage() {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['chapter', chapterId] })
       queryClient.invalidateQueries({ queryKey: ['reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['reviewsByItem', 'CHAPTER', chapterId] })
       
       alert('Successfully submitted for review!')
     } catch (err: any) {
@@ -97,9 +109,8 @@ export default function ChapterDetailPage() {
     <div className="container mx-auto p-6 space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
         <Link href="/admin/content/creation">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Content Creation
+          <Button variant="ghost" size="icon" aria-label="Back to Content Creation">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
         </Link>
       </div>
@@ -111,18 +122,22 @@ export default function ChapterDetailPage() {
             Chapter ID: {chapterId}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <CreateVersionDialog entityType="CHAPTER" entityId={chapterId} />
           {chapter.workingStatusChapterVersionId && (
-            <Button 
+            <Button
               onClick={handleSubmitForReview}
-              disabled={isSubmitting}
+              disabled={isSubmitting || reviewAlreadyInProgress}
               className="gap-2"
               variant="default"
+              title={reviewAlreadyInProgress ? 'Er loopt al een review voor dit contentitem.' : undefined}
             >
               <Send className="h-4 w-4" />
               {isSubmitting ? 'Submitting...' : 'Submit for Review'}
             </Button>
+          )}
+          {reviewAlreadyInProgress && (
+            <span className="text-sm text-muted-foreground">Er loopt al een review voor dit contentitem.</span>
           )}
           <Link href={`/admin/content/chapters/${chapterId}/edit`}>
             <Button variant="outline" className="gap-2">

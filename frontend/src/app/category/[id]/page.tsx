@@ -11,6 +11,7 @@
 
 'use client'
 
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import Navbar from '@/shared/components/navigation/Navbar'
 import { Container } from '@/shared/components/ui/container'
@@ -18,6 +19,8 @@ import { ProtectedRoute } from '@/features/auth'
 import { BookSwitcher, useCategory, useBooksByCategory } from '@/features/content'
 import { Loading } from '@/shared/components/ui/Loading'
 import { Error } from '@/shared/components/ui/Error'
+import { Button } from '@/shared/components/ui/button'
+import { ChevronLeft } from 'lucide-react'
 
 export default function CategoryPage() {
   const params = useParams()
@@ -69,6 +72,16 @@ export default function CategoryPage() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col p-8">
           <Container className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-4 mb-8">
+              <Link href="/success">
+                <Button variant="ghost" size="icon" aria-label="Back">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+                {categoryTitle || `Category ${categoryId}`}
+              </h1>
+            </div>
             {/* BookSwitcher */}
             {books && books.length > 0 ? (
               <BookSwitcher

@@ -6,11 +6,14 @@ import com.woi.content.domain.entities.ContentStatus;
 import com.woi.content.domain.entities.Review;
 import com.woi.content.domain.entities.ReviewableItem;
 import com.woi.content.domain.enums.ContentStatusType;
+import com.woi.content.domain.enums.ReviewStatus;
 import com.woi.content.domain.repositories.ContentStatusRepository;
 import com.woi.content.domain.repositories.ReviewRepository;
 import com.woi.content.domain.repositories.ReviewableItemRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Command handler for submitting content for review
@@ -37,6 +40,14 @@ public class SubmitForReviewCommandHandler {
     
     @Transactional
     public ReviewResult handle(SubmitForReviewCommand command) {
+        // 0. Do not allow a new submit if there is already a review in progress (SUBMITTED)
+        List<Review> existingReviews = reviewRepository.findByTypeAndReferenceId(command.type(), command.referenceId());
+        boolean hasReviewInProgress = existingReviews.stream()
+            .anyMatch(r -> r.getStatus() == ReviewStatus.SUBMITTED);
+        if (hasReviewInProgress) {
+            throw new IllegalStateException("Er loopt al een review voor dit contentitem. Je kunt niet opnieuw indienen.");
+        }
+
         // 1. Find or create ReviewableItem
         ReviewableItem reviewableItem = reviewableItemRepository
             .findByTypeAndReferenceId(command.type(), command.referenceId())

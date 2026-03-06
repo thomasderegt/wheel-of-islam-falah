@@ -184,13 +184,11 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
         className="relative w-full aspect-square"
         style={fitToScreen ? { maxWidth: 'min(100%, min(calc(100vh - 12rem), 72rem))', margin: '0 auto' } : undefined}
       >
-        {/* Ring (sectors, ticks) – draait; center blijft stil */}
-        <div className="absolute inset-0 falah-cycle-rotate">
+        {/* Single SVG: ring + sectors first, then center on top (like NavOKRLifeDomainCircle) */}
         <svg
           className="absolute inset-0 w-full h-full"
           viewBox="40 40 320 320"
           preserveAspectRatio="xMidYMid meet"
-          style={{ transform: `rotate(${INITIAL_SVG_ROTATION}deg)` }}
         >
           <defs>
             {orderedCategories.map((sector, index) => {
@@ -239,87 +237,6 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
                   </linearGradient>
                 )
               })}
-          </defs>
-
-          <g stroke="white" strokeWidth="1" opacity="0.85">
-            <circle cx="200" cy="200" r={RING_INNER} fill="none" />
-            <circle cx="200" cy="200" r={RING_OUTER} fill="none" />
-            {Array.from({ length: TICK_COUNT }, (_, i) => {
-              const angle = (i * TICK_ANGLE * Math.PI) / 180
-              const x1 = round(200 + RING_INNER * Math.cos(angle))
-              const y1 = round(200 + RING_INNER * Math.sin(angle))
-              const x2 = round(200 + RING_OUTER * Math.cos(angle))
-              const y2 = round(200 + RING_OUTER * Math.sin(angle))
-              return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
-            })}
-          </g>
-
-          {orderedCategories.map((sector, index) => {
-            const { start, sweep } = SECTOR_ANGLES[index]
-
-            return (
-              <g key={sector.id}>
-                <path
-                  d={describeArc(start, sweep)}
-                  className="cursor-pointer transition-opacity opacity-100"
-                  style={{
-                    fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
-                    stroke: 'white',
-                    strokeWidth: 1,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isUniversalTheme) {
-                      e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (isUniversalTheme) {
-                      e.currentTarget.style.fill = 'transparent'
-                    }
-                  }}
-                  onClick={() => handleSectorClick(sector.categoryNumber)}
-                />
-                <g pointerEvents="none" stroke="none">
-                  <text
-                    className="fill-foreground font-bold pointer-events-none"
-                    style={{ fontSize: '14px' }}
-                  >
-                    <textPath
-                      href={`#text-path-${uniqueId}-${index}`}
-                      startOffset="50%"
-                      textAnchor="middle"
-                    >
-                      {language === 'nl' ? sector.titleNl : sector.titleEn}
-                    </textPath>
-                  </text>
-                  {(language === 'nl' ? sector.subtitleNl : sector.subtitleEn) && (
-                    <text
-                      className="fill-foreground pointer-events-none"
-                      style={{ fontSize: '11px', opacity: 0.8 }}
-                    >
-                      <textPath
-                        href={`#text-path-sub-${uniqueId}-${index}`}
-                        startOffset="50%"
-                        textAnchor="middle"
-                      >
-                        {language === 'nl' ? sector.subtitleNl : sector.subtitleEn}
-                      </textPath>
-                    </text>
-                  )}
-                </g>
-              </g>
-            )
-          })}
-        </svg>
-        </div>
-
-        {/* Center (Falah) – blijft stil */}
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="40 40 320 320"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          <defs>
             <radialGradient id={`falah-gradient-${uniqueId}`} cx="50%" cy="50%">
               {isUniversalTheme ? (
                 <>
@@ -335,6 +252,87 @@ export function NavCategoryCircle({ fitToScreen = false }: NavCategoryCircleProp
               )}
             </radialGradient>
           </defs>
+
+          {/* Rotating: ring + sectors (drawn first so center can sit on top) */}
+          <g
+            className="falah-cycle-rotate"
+            style={{
+              transform: `rotate(${INITIAL_SVG_ROTATION}deg)`,
+              transformOrigin: '200px 200px',
+            }}
+          >
+            <g stroke="white" strokeWidth="1" opacity="0.85" pointerEvents="none">
+              <circle cx="200" cy="200" r={RING_INNER} fill="none" />
+              <circle cx="200" cy="200" r={RING_OUTER} fill="none" />
+              {Array.from({ length: TICK_COUNT }, (_, i) => {
+                const angle = (i * TICK_ANGLE * Math.PI) / 180
+                const x1 = round(200 + RING_INNER * Math.cos(angle))
+                const y1 = round(200 + RING_INNER * Math.sin(angle))
+                const x2 = round(200 + RING_OUTER * Math.cos(angle))
+                const y2 = round(200 + RING_OUTER * Math.sin(angle))
+                return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+              })}
+            </g>
+
+            {orderedCategories.map((sector, index) => {
+              const { start, sweep } = SECTOR_ANGLES[index]
+
+              return (
+                <g key={sector.id}>
+                  <path
+                    d={describeArc(start, sweep)}
+                    className="cursor-pointer transition-opacity opacity-100"
+                    style={{
+                      fill: isUniversalTheme ? 'transparent' : `url(#category-roygbiv-${index})`,
+                      stroke: 'white',
+                      strokeWidth: 1,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (isUniversalTheme) {
+                        e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (isUniversalTheme) {
+                        e.currentTarget.style.fill = 'transparent'
+                      }
+                    }}
+                    onClick={() => handleSectorClick(sector.categoryNumber)}
+                  />
+                  <g pointerEvents="none" stroke="none">
+                    <text
+                      className="fill-foreground font-bold pointer-events-none"
+                      style={{ fontSize: '14px' }}
+                    >
+                      <textPath
+                        href={`#text-path-${uniqueId}-${index}`}
+                        startOffset="50%"
+                        textAnchor="middle"
+                      >
+                        {language === 'nl' ? sector.titleNl : sector.titleEn}
+                      </textPath>
+                    </text>
+                    {(language === 'nl' ? sector.subtitleNl : sector.subtitleEn) && (
+                      <text
+                        className="fill-foreground pointer-events-none"
+                        style={{ fontSize: '11px', opacity: 0.8 }}
+                      >
+                        <textPath
+                          href={`#text-path-sub-${uniqueId}-${index}`}
+                          startOffset="50%"
+                          textAnchor="middle"
+                        >
+                          {language === 'nl' ? sector.subtitleNl : sector.subtitleEn}
+                        </textPath>
+                      </text>
+                    )}
+                  </g>
+                </g>
+              )
+            })}
+          </g>
+
+          {/* Center (Falah) – on top, niet meedraaiend */}
           <g>
             <circle
               cx="200"

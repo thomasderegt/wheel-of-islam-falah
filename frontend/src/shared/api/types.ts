@@ -55,6 +55,19 @@ export interface UserResponse {
   updatedAt: string
 }
 
+/** Admin-only: one user in the list users response */
+export type UserRole = 'USER' | 'CONTENT_CREATOR' | 'SUPERVISOR' | 'ADMIN'
+
+export interface AdminUserListItem {
+  id: number
+  email: string
+  profileName: string | null
+  status: 'ACTIVE' | 'INACTIVE' | 'LOCKED'
+  createdAt: string
+  updatedAt: string
+  roles: UserRole[]
+}
+
 // ========== User Preferences Types ==========
 
 // Mode type removed - no longer used (always SUCCESS)

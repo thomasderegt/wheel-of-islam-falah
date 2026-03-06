@@ -44,6 +44,41 @@ const cn = (...classes: (string | undefined | null | false)[]) =>
 const round = (num: number, decimals = 10) =>
   Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals)
 
+/** Breekt tekst in regels zodat die binnen de middelste cirkel (r=70) passen. */
+function wrapCenterText(text: string, maxCharsPerLine = 12): string[] {
+  const trimmed = text.trim()
+  if (!trimmed) return []
+  const words = trimmed.split(/\s+/)
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word
+    if (next.length <= maxCharsPerLine) {
+      current = next
+    } else {
+      if (current) lines.push(current)
+      current = word.length <= maxCharsPerLine ? word : word.substring(0, maxCharsPerLine)
+    }
+  }
+  if (current) lines.push(current)
+  return lines
+}
+
+/** Arc path voor textPath: tekst volgt de boog van het segment (zoals NavCategoryCircle). */
+function describeTextArc(startAngle: number, sweepAngle: number, radius: number, reverse = false): string {
+  const startRad = (startAngle * Math.PI) / 180
+  const endRad = ((startAngle + sweepAngle) * Math.PI) / 180
+  const x1 = round(200 + radius * Math.cos(startRad))
+  const y1 = round(200 + radius * Math.sin(startRad))
+  const x2 = round(200 + radius * Math.cos(endRad))
+  const y2 = round(200 + radius * Math.sin(endRad))
+  const largeArc = sweepAngle > 180 ? 1 : 0
+  const sweepFlag = reverse ? 0 : 1
+  return reverse
+    ? `M ${x2} ${y2} A ${radius} ${radius} 0 ${largeArc} ${sweepFlag} ${x1} ${y1}`
+    : `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} ${sweepFlag} ${x2} ${y2}`
+}
+
 export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, publishedOnly = false }: NavBookCircleProps) {
   const router = useRouter()
   const allChapters = useChaptersByBook(bookId)
@@ -318,7 +353,9 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
             {!isWireframeTheme &&
               chapters.map((chapter, index) => {
                 const startAngle = index * anglePerChapter
-                const endAngle = (index + 1) * anglePerChapter
+                let endAngle = (index + 1) * anglePerChapter
+                // For single chapter (360°), gradient would have zero length; use 180° so it's visible
+                if (chapters.length === 1) endAngle = 180
                 const midRadius = 127.5
                 const startRad = (startAngle * Math.PI) / 180
                 const endRad = (endAngle * Math.PI) / 180
@@ -326,7 +363,7 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
                 const y1 = round(200 + midRadius * Math.sin(startRad))
                 const x2 = round(200 + midRadius * Math.cos(endRad))
                 const y2 = round(200 + midRadius * Math.sin(endRad))
-                const stops = getGradientStopsForSegment(index, chapters.length)
+                const stops = getGradientStopsForSegment(index, Math.max(chapters.length, 2))
                 return (
                   <linearGradient
                     key={`roygbiv-${chapter.id}`}
@@ -344,36 +381,49 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
                 )
               })}
           </defs>
-          {/* Chapters - Rotating Ring */}
+          {/* Chapters - Rotating Ring: langzame draai + drag */}
+          <g className="book-wheel-slow-rotate">
           <g 
             style={{ 
               transform: `rotate(${ringRotation}deg)`,
-              transformOrigin: '200px 200px',
-              transition: isDraggingWheel ? 'none' : 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+              transformOrigin: '200px 200px'
             }}
           >
           {chapters.map((chapter, index) => {
             const startAngle = index * anglePerChapter
             const endAngle = (index + 1) * anglePerChapter
-            const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1
-            
-            const startX = 200 + 160 * Math.cos((startAngle * Math.PI) / 180)
-            const startY = 200 + 160 * Math.sin((startAngle * Math.PI) / 180)
-            const endX = 200 + 160 * Math.cos((endAngle * Math.PI) / 180)
-            const endY = 200 + 160 * Math.sin((endAngle * Math.PI) / 180)
-            
-            const innerStartX = 200 + 95 * Math.cos((startAngle * Math.PI) / 180)
-            const innerStartY = 200 + 95 * Math.sin((startAngle * Math.PI) / 180)
-            const innerEndX = 200 + 95 * Math.cos((endAngle * Math.PI) / 180)
-            const innerEndY = 200 + 95 * Math.sin((endAngle * Math.PI) / 180)
+            const sweep = endAngle - startAngle
 
-            const pathData = [
-              `M ${startX} ${startY}`,
-              `A 160 160 0 ${largeArcFlag} 1 ${endX} ${endY}`,
-              `L ${innerEndX} ${innerEndY}`,
-              `A 95 95 0 ${largeArcFlag} 0 ${innerStartX} ${innerStartY}`,
-              'Z'
-            ].join(' ')
+            // One chapter = full 360° ring: SVG arc with start===end is undefined, so draw full donut explicitly
+            const pathData =
+              sweep >= 360
+                ? [
+                    `M ${round(200 + 160)} ${round(200)}`,
+                    `A 160 160 0 0 1 ${round(200 - 160)} ${round(200)}`,
+                    `A 160 160 0 0 1 ${round(200 + 160)} ${round(200)}`,
+                    `L ${round(200 + 95)} ${round(200)}`,
+                    `A 95 95 0 0 0 ${round(200 - 95)} ${round(200)}`,
+                    `A 95 95 0 0 0 ${round(200 + 95)} ${round(200)}`,
+                    'Z',
+                  ].join(' ')
+                : (() => {
+                    const largeArcFlag = sweep <= 180 ? 0 : 1
+                    const startX = round(200 + 160 * Math.cos((startAngle * Math.PI) / 180))
+                    const startY = round(200 + 160 * Math.sin((startAngle * Math.PI) / 180))
+                    const endX = round(200 + 160 * Math.cos((endAngle * Math.PI) / 180))
+                    const endY = round(200 + 160 * Math.sin((endAngle * Math.PI) / 180))
+                    const innerStartX = round(200 + 95 * Math.cos((startAngle * Math.PI) / 180))
+                    const innerStartY = round(200 + 95 * Math.sin((startAngle * Math.PI) / 180))
+                    const innerEndX = round(200 + 95 * Math.cos((endAngle * Math.PI) / 180))
+                    const innerEndY = round(200 + 95 * Math.sin((endAngle * Math.PI) / 180))
+                    return [
+                      `M ${startX} ${startY}`,
+                      `A 160 160 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+                      `L ${innerEndX} ${innerEndY}`,
+                      `A 95 95 0 ${largeArcFlag} 0 ${innerStartX} ${innerStartY}`,
+                      'Z',
+                    ].join(' ')
+                  })()
 
             const isPlaceholder = !chapter.titleEn && !chapter.titleNl
 
@@ -382,34 +432,24 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
                 <path
                   d={pathData}
                   className={cn(
-                    "transition-colors opacity-100",
+                    "opacity-100",
                     isPlaceholder ? "cursor-default" : "cursor-pointer"
                   )}
                   style={{ 
                     fill: isWireframeTheme ? 'transparent' : `url(#book-chapter-roygbiv-${chapter.id})`,
-                    stroke: isWireframeTheme ? 'oklch(0 0 0)' : 'oklch(0.7 0 0 / 0.4)',
-                    strokeWidth: 1.5
+                    stroke: 'white',
+                    strokeWidth: 1
                   }}
                   onMouseEnter={(e) => {
                     if (!isPlaceholder) {
-                      if (isWireframeTheme) {
-                        e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
-                        e.currentTarget.style.stroke = 'oklch(0 0 0)'
-                      } else {
-                        e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
-                        e.currentTarget.style.stroke = 'oklch(0.7 0 0 / 0.4)'
-                      }
+                      e.currentTarget.style.fill = 'var(--nav-category-circle-sector-hover)'
+                      e.currentTarget.style.stroke = 'white'
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isPlaceholder) {
-                      if (isWireframeTheme) {
-                        e.currentTarget.style.fill = 'transparent'
-                        e.currentTarget.style.stroke = 'oklch(0 0 0)'
-                      } else {
-                        e.currentTarget.style.fill = `url(#book-chapter-roygbiv-${chapter.id})`
-                        e.currentTarget.style.stroke = 'oklch(0.7 0 0 / 0.4)'
-                      }
+                      e.currentTarget.style.fill = isWireframeTheme ? 'transparent' : `url(#book-chapter-roygbiv-${chapter.id})`
+                      e.currentTarget.style.stroke = 'white'
                     }
                   }}
                   onClick={() => {
@@ -418,48 +458,47 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
                     }
                   }}
                 />
-                {/* Text label in chapter - only show if not placeholder */}
-                {!isPlaceholder && (
-                  <g
-                    style={{ 
-                      transform: `rotate(${startAngle + anglePerChapter / 2 + 90}deg)`,
-                      transformOrigin: `${200 + 127.5 * Math.cos(((startAngle + anglePerChapter / 2) * Math.PI) / 180)}px ${200 + 127.5 * Math.sin(((startAngle + anglePerChapter / 2) * Math.PI) / 180)}px`
-                    }}
-                  >
-                    {(() => {
-                      const fullTitle = translateChapterTitle(getChapterTitle(chapter)).replace(/\n/g, ' ')
-                      const maxLength = 15
-                      const truncatedTitle = fullTitle.length > maxLength 
-                        ? fullTitle.substring(0, maxLength - 3) + '...'
-                        : fullTitle
-                      const labelAngle = startAngle + anglePerChapter / 2
-                      
-                      return (
-                        <text
-                          key={chapter.id}
-                          x={200 + 127.5 * Math.cos((labelAngle * Math.PI) / 180)}
-                          y={200 + 127.5 * Math.sin((labelAngle * Math.PI) / 180)}
-                          className="fill-circular-menu-chapter-text text-[0.5rem] sm:text-[0.6rem] md:text-xs font-medium pointer-events-none"
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
+                {/* Curved text along segment arc (like NavCategoryCircle) */}
+                {!isPlaceholder && (() => {
+                  const textRadius = 127.5
+                  const sweepForPath = sweep >= 360 ? 360 : sweep
+                  const pathId = `book-text-path-${bookId}-${chapter.id}`
+                  const rawTitle = getChapterTitle(chapter)
+                  const fullTitle = (translateChapterTitle(rawTitle) || rawTitle || `Chapter ${chapter.position}`).replace(/\n/g, ' ').trim()
+                  const maxLength = 18
+                  const truncatedTitle = fullTitle.length > maxLength 
+                    ? fullTitle.substring(0, maxLength - 3) + '...'
+                    : fullTitle
+                  return (
+                    <g pointerEvents="none">
+                      <path id={pathId} d={describeTextArc(startAngle, sweepForPath, textRadius)} fill="none" />
+                      <text
+                        className="font-medium pointer-events-none"
+                        style={{
+                          fill: 'var(--circular-menu-chapter-text, oklch(0.25 0 0))',
+                          fontSize: 'clamp(0.6rem, 2.2vw, 0.75rem)'
+                        }}
+                      >
+                        <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle">
                           {truncatedTitle}
-                        </text>
-                      )
-                    })()}
-                  </g>
-                )}
+                        </textPath>
+                      </text>
+                    </g>
+                  )
+                })()}
               </g>
             )
           })}
           </g>
+          </g>
           
-          {/* Outer circle border - blue */}
+          {/* Outer ring border - white (match NavCategoryCircle) */}
           <circle
             cx="200"
             cy="200"
             r="160"
-            className="stroke-2 fill-none pointer-events-none opacity-0"
+            className="fill-none pointer-events-none"
+            style={{ stroke: 'white', strokeWidth: 1 }}
           />
           
           {/* Center circle - gradient like NavCategoryCircle */}
@@ -468,7 +507,6 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
             cy="200"
             r="70"
             className={cn(
-              "transition-all duration-300",
               centerChapter 
                 ? cn(
                     "cursor-pointer",
@@ -480,7 +518,7 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
               fill: centerChapter
                 ? (isWireframeTheme ? 'transparent' : 'url(#book-circle-center-gradient)')
                 : undefined,
-              stroke: isWireframeTheme ? 'var(--nav-category-circle-falah-stroke)' : 'oklch(0.7 0 0 / 0.4)',
+              stroke: 'white',
               strokeWidth: isWireframeTheme ? 2 : 1.5
             }}
             onMouseEnter={(e) => {
@@ -498,22 +536,31 @@ export function NavBookCircle({ bookId, language = 'en', fitToScreen = false, pu
             onClick={centerChapter ? handleCenterClick : undefined}
           />
           
-          {/* Center text - only show when collapsed and centerChapter exists */}
-          {!centerExpanded && centerChapter && (
-            <text
-              x="200"
-              y="200"
-              className="fill-foreground font-bold pointer-events-none"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              style={{ transform: 'rotate(90deg)', transformOrigin: '200px 200px', fontSize: '18px' }}
-            >
-              {translateChapterTitle(getChapterTitle(centerChapter)).replace(/\n/g, ' ') ||
-                (language === 'nl' ? bookVersion?.titleNl : bookVersion?.titleEn) ||
-                (language === 'nl' ? bookVersion?.titleEn : bookVersion?.titleNl) ||
-                'Add title'}
-            </text>
-          )}
+          {/* Center text - meerdere regels zodat binnen de cirkel past */}
+          {!centerExpanded && centerChapter && (() => {
+            const rawTitle =
+              translateChapterTitle(getChapterTitle(centerChapter)).replace(/\n/g, ' ') ||
+              (language === 'nl' ? bookVersion?.titleNl : bookVersion?.titleEn) ||
+              (language === 'nl' ? bookVersion?.titleEn : bookVersion?.titleNl) ||
+              'Add title'
+            const lines = wrapCenterText(rawTitle)
+            const lineHeight = 22
+            const startY = 200 - ((lines.length - 1) * lineHeight) / 2
+            return (
+              <text
+                x="200"
+                className="fill-foreground font-bold pointer-events-none"
+                textAnchor="middle"
+                style={{ transform: 'rotate(90deg)', transformOrigin: '200px 200px', fontSize: '18px' }}
+              >
+                {lines.map((line, i) => (
+                  <tspan key={`${i}-${line}`} x="200" y={startY + i * lineHeight}>
+                    {line}
+                  </tspan>
+                ))}
+              </text>
+            )
+          })()}
         </svg>
 
         {/* Collapsible Center Content */}
