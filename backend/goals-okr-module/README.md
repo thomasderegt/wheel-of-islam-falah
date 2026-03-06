@@ -30,7 +30,7 @@ goals-okr-module/
 ├── api/                    # Public interface voor andere modules
 ├── domain/                 # Domain entities, enums, repositories
 │   ├── entities/          # Objective, KeyResult, Initiative, UserObjectiveInstance, KeyResultProgress, LifeDomain, LifeDomainScore
-│   ├── enums/             # GoalStatus, LifeDomainType
+│   ├── enums/             # GoalStatus
 │   └── repositories/       # Repository interfaces
 ├── application/            # Application layer (CQRS)
 │   ├── commands/          # CreateObjective, CreateInitiative, StartUserObjectiveInstance, etc.

@@ -9,7 +9,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Button } from '@/shared/components/ui/button'
-import { FileText, BookOpen, Users } from 'lucide-react'
+import { FileText, BookOpen, Users, Target } from 'lucide-react'
 
 export default function AdminDashboardPage() {
   return (
@@ -59,6 +59,27 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Goals Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Goals Management
+            </CardTitle>
+            <CardDescription>
+              Manage wheels and life domains for OKR goals
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/admin/goals">
+              <Button className="w-full">Go to Goals Management</Button>
+            </Link>
+            <p className="text-sm text-muted-foreground mt-2">
+              Create and edit wheels, life domains, and their display order
+            </p>
+          </CardContent>
+        </Card>
+
         {/* User Management */}
         <Card>
           <CardHeader>
@@ -90,6 +111,9 @@ export default function AdminDashboardPage() {
           </Link>
           <Link href="/admin/learning">
             <Button variant="outline">Learning Management</Button>
+          </Link>
+          <Link href="/admin/goals">
+            <Button variant="outline">Goals Management</Button>
           </Link>
           <Link href="/admin/user">
             <Button variant="outline">User Management</Button>

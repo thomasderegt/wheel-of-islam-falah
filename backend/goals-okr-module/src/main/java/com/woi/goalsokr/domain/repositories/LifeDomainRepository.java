@@ -19,4 +19,19 @@ public interface LifeDomainRepository {
      * Find a life domain by ID
      */
     Optional<LifeDomain> findById(Long id);
+
+    /**
+     * Find all life domains for a wheel
+     */
+    List<LifeDomain> findByWheelId(Long wheelId);
+
+    /**
+     * Save a life domain (create or update)
+     */
+    LifeDomain save(LifeDomain lifeDomain);
+
+    /**
+     * Delete a life domain by ID
+     */
+    void deleteById(Long id);
 }

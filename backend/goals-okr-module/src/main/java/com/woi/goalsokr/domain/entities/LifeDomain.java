@@ -1,6 +1,5 @@
 package com.woi.goalsokr.domain.entities;
 
-import com.woi.goalsokr.domain.enums.LifeDomainType;
 import java.time.LocalDateTime;
 
 /**
@@ -12,11 +11,10 @@ import java.time.LocalDateTime;
  * Business logic:
  * - Title fallback logic (als titleNl null is, gebruik titleEn en vice versa)
  * - Ten minste één title moet aanwezig zijn
- * - domainKey must match LifeDomainType enum
+ * - Identified by id only
  */
 public class LifeDomain {
     private Long id;
-    private LifeDomainType domainKey;
     private String titleNl;
     private String titleEn;
     private String descriptionNl;
@@ -36,14 +34,6 @@ public class LifeDomain {
     
     public void setId(Long id) {
         this.id = id;
-    }
-    
-    public LifeDomainType getDomainKey() {
-        return domainKey;
-    }
-    
-    public void setDomainKey(LifeDomainType domainKey) {
-        this.domainKey = domainKey;
     }
     
     public String getTitleNl() {

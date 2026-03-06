@@ -5,7 +5,6 @@ package com.woi.goalsokr.application.results;
  */
 public record LifeDomainResult(
     Long id,
-    String domainKey,
     String titleNl,
     String titleEn,
     String descriptionNl,
@@ -17,7 +16,6 @@ public record LifeDomainResult(
     public static LifeDomainResult from(com.woi.goalsokr.domain.entities.LifeDomain lifeDomain) {
         return new LifeDomainResult(
             lifeDomain.getId(),
-            lifeDomain.getDomainKey().name(),
             lifeDomain.getTitleNl(),
             lifeDomain.getTitleEn(),
             lifeDomain.getDescriptionNl(),

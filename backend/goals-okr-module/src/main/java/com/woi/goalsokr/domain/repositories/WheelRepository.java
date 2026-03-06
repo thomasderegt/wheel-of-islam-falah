@@ -24,4 +24,19 @@ public interface WheelRepository {
      * Find a wheel by wheel key
      */
     Optional<Wheel> findByWheelKey(String wheelKey);
+
+    /**
+     * Save a wheel (create or update)
+     */
+    Wheel save(Wheel wheel);
+
+    /**
+     * Delete a wheel by ID
+     */
+    void deleteById(Long id);
+
+    /**
+     * Check if another wheel exists with the same wheel key (excluding given id)
+     */
+    boolean existsByWheelKeyExcludingId(String wheelKey, Long excludeId);
 }

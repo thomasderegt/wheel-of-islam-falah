@@ -43,7 +43,6 @@ SELECT
   k.item_type,
   k.item_id,
   ac.life_domain_id,
-  ld.domain_key,
   ld.title_en AS life_domain_title,
   w.id AS wheel_id,
   w.wheel_key,

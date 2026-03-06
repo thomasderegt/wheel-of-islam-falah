@@ -103,7 +103,6 @@ export interface KeyResultProgressDTO {
 
 export interface LifeDomainDTO {
   id: number
-  domainKey: string
   titleNl: string
   titleEn: string
   descriptionNl?: string | null
@@ -152,6 +151,55 @@ export async function getAllWheels(): Promise<WheelDTO[]> {
   return response.data
 }
 
+/**
+ * Create a wheel
+ * POST /api/v2/goals-okr/wheels
+ */
+export async function createWheel(request: {
+  wheelKey: string
+  nameNl?: string
+  nameEn?: string
+  descriptionNl?: string
+  descriptionEn?: string
+  displayOrder?: number
+}): Promise<WheelDTO> {
+  const response = await apiClient.post<WheelDTO>('/api/v2/goals-okr/wheels', {
+    ...request,
+    displayOrder: request.displayOrder ?? 0,
+  })
+  return response.data
+}
+
+/**
+ * Update a wheel
+ * PUT /api/v2/goals-okr/wheels/{id}
+ */
+export async function updateWheel(
+  id: number,
+  request: {
+    wheelKey: string
+    nameNl?: string
+    nameEn?: string
+    descriptionNl?: string
+    descriptionEn?: string
+    displayOrder?: number
+  }
+): Promise<WheelDTO> {
+  const response = await apiClient.put<WheelDTO>(`/api/v2/goals-okr/wheels/${id}`, {
+    ...request,
+    displayOrder: request.displayOrder ?? 0,
+  })
+  return response.data
+}
+
+/**
+ * Delete a wheel
+ * DELETE /api/v2/goals-okr/wheels/{id}
+ */
+export async function deleteWheel(id: number): Promise<void> {
+  await apiClient.delete(`/api/v2/goals-okr/wheels/${id}`)
+}
+
 // ========== Life Domains ==========
 
 /**
@@ -161,6 +209,57 @@ export async function getAllWheels(): Promise<WheelDTO[]> {
 export async function getAllLifeDomains(): Promise<LifeDomainDTO[]> {
   const response = await apiClient.get<LifeDomainDTO[]>('/api/v2/goals-okr/life-domains')
   return response.data
+}
+
+/**
+ * Create a life domain
+ * POST /api/v2/goals-okr/life-domains
+ */
+export async function createLifeDomain(request: {
+  wheelId: number
+  titleNl?: string
+  titleEn?: string
+  descriptionNl?: string
+  descriptionEn?: string
+  iconName?: string
+  displayOrder?: number
+}): Promise<LifeDomainDTO> {
+  const response = await apiClient.post<LifeDomainDTO>('/api/v2/goals-okr/life-domains', {
+    ...request,
+    displayOrder: request.displayOrder ?? 0,
+  })
+  return response.data
+}
+
+/**
+ * Update a life domain
+ * PUT /api/v2/goals-okr/life-domains/{id}
+ */
+export async function updateLifeDomain(
+  id: number,
+  request: {
+    wheelId: number
+    titleNl?: string
+    titleEn?: string
+    descriptionNl?: string
+    descriptionEn?: string
+    iconName?: string
+    displayOrder?: number
+  }
+): Promise<LifeDomainDTO> {
+  const response = await apiClient.put<LifeDomainDTO>(`/api/v2/goals-okr/life-domains/${id}`, {
+    ...request,
+    displayOrder: request.displayOrder ?? 0,
+  })
+  return response.data
+}
+
+/**
+ * Delete a life domain
+ * DELETE /api/v2/goals-okr/life-domains/{id}
+ */
+export async function deleteLifeDomain(id: number): Promise<void> {
+  await apiClient.delete(`/api/v2/goals-okr/life-domains/${id}`)
 }
 
 /**

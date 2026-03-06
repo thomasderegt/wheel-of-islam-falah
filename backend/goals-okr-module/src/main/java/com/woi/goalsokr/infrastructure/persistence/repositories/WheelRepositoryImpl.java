@@ -2,6 +2,7 @@ package com.woi.goalsokr.infrastructure.persistence.repositories;
 
 import com.woi.goalsokr.domain.entities.Wheel;
 import com.woi.goalsokr.domain.repositories.WheelRepository;
+import com.woi.goalsokr.infrastructure.persistence.entities.WheelJpaEntity;
 import com.woi.goalsokr.infrastructure.persistence.mappers.WheelEntityMapper;
 import org.springframework.stereotype.Component;
 
@@ -38,5 +39,22 @@ public class WheelRepositoryImpl implements WheelRepository {
     public Optional<Wheel> findByWheelKey(String wheelKey) {
         return jpaRepository.findByWheelKey(wheelKey)
             .map(WheelEntityMapper::toDomain);
+    }
+
+    @Override
+    public Wheel save(Wheel wheel) {
+        WheelJpaEntity jpa = WheelEntityMapper.toJpa(wheel);
+        WheelJpaEntity saved = jpaRepository.save(jpa);
+        return WheelEntityMapper.toDomain(saved);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsByWheelKeyExcludingId(String wheelKey, Long excludeId) {
+        return jpaRepository.existsByWheelKeyAndIdNot(wheelKey, excludeId);
     }
 }

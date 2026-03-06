@@ -17,4 +17,9 @@ public interface LifeDomainJpaRepository extends JpaRepository<LifeDomainJpaEnti
      */
     List<LifeDomainJpaEntity> findAllByOrderByDisplayOrderAsc();
 
+    /**
+     * Find all life domains for a wheel
+     */
+    List<LifeDomainJpaEntity> findByWheelIdOrderByDisplayOrderAsc(Long wheelId);
+
 }

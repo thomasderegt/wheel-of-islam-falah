@@ -90,7 +90,7 @@ export function NavOKRLifeDomainCircle({ language = 'en', children, fitToScreen 
     if (language === 'nl' && domain.titleNl) {
       return domain.titleNl
     }
-    return domain.titleEn || domain.titleNl || domain.domainKey
+    return domain.titleEn || domain.titleNl || `Domain ${domain.id}`
   }
 
   // Helper function to split title into two lines

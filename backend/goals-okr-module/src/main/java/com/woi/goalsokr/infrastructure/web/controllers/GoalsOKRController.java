@@ -63,6 +63,12 @@ public class GoalsOKRController {
     private final GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler;
     private final GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler;
     private final DeleteUserInitiativeInstanceCommandHandler deleteUserInitiativeInstanceHandler;
+    private final CreateWheelCommandHandler createWheelHandler;
+    private final UpdateWheelCommandHandler updateWheelHandler;
+    private final DeleteWheelCommandHandler deleteWheelHandler;
+    private final CreateLifeDomainCommandHandler createLifeDomainHandler;
+    private final UpdateLifeDomainCommandHandler updateLifeDomainHandler;
+    private final DeleteLifeDomainCommandHandler deleteLifeDomainHandler;
     private final DeleteUserObjectiveInstanceCommandHandler deleteUserObjectiveInstanceHandler;
     private final DeleteUserKeyResultInstanceCommandHandler deleteUserKeyResultInstanceHandler;
     private final GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler;
@@ -114,6 +120,12 @@ public class GoalsOKRController {
             GetUserInitiativeInstanceQueryHandler getUserInitiativeInstanceHandler,
             GetUserInitiativeInstancesQueryHandler getUserInitiativeInstancesHandler,
             DeleteUserInitiativeInstanceCommandHandler deleteUserInitiativeInstanceHandler,
+            CreateWheelCommandHandler createWheelHandler,
+            UpdateWheelCommandHandler updateWheelHandler,
+            DeleteWheelCommandHandler deleteWheelHandler,
+            CreateLifeDomainCommandHandler createLifeDomainHandler,
+            UpdateLifeDomainCommandHandler updateLifeDomainHandler,
+            DeleteLifeDomainCommandHandler deleteLifeDomainHandler,
             DeleteUserObjectiveInstanceCommandHandler deleteUserObjectiveInstanceHandler,
             DeleteUserKeyResultInstanceCommandHandler deleteUserKeyResultInstanceHandler,
             GetInitiativesByUserKeyResultInstanceQueryHandler getInitiativesByUserKeyResultInstanceHandler,
@@ -162,6 +174,12 @@ public class GoalsOKRController {
         this.getUserInitiativeInstanceHandler = getUserInitiativeInstanceHandler;
         this.getUserInitiativeInstancesHandler = getUserInitiativeInstancesHandler;
         this.deleteUserInitiativeInstanceHandler = deleteUserInitiativeInstanceHandler;
+        this.createWheelHandler = createWheelHandler;
+        this.updateWheelHandler = updateWheelHandler;
+        this.deleteWheelHandler = deleteWheelHandler;
+        this.createLifeDomainHandler = createLifeDomainHandler;
+        this.updateLifeDomainHandler = updateLifeDomainHandler;
+        this.deleteLifeDomainHandler = deleteLifeDomainHandler;
         this.deleteUserObjectiveInstanceHandler = deleteUserObjectiveInstanceHandler;
         this.deleteUserKeyResultInstanceHandler = deleteUserKeyResultInstanceHandler;
         this.getInitiativesByUserKeyResultInstanceHandler = getInitiativesByUserKeyResultInstanceHandler;
@@ -195,6 +213,79 @@ public class GoalsOKRController {
         return ResponseEntity.ok(results);
     }
 
+    /**
+     * Create a wheel
+     * POST /api/v2/goals-okr/wheels
+     */
+    @PostMapping("/wheels")
+    @Transactional
+    public ResponseEntity<?> createWheel(@Valid @RequestBody CreateWheelRequest request) {
+        try {
+            CreateWheelCommand command = new CreateWheelCommand(
+                request.wheelKey(),
+                request.nameNl(),
+                request.nameEn(),
+                request.descriptionNl(),
+                request.descriptionEn(),
+                request.displayOrder() != null ? request.displayOrder() : 0
+            );
+            WheelResult result = createWheelHandler.handle(command);
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Update a wheel
+     * PUT /api/v2/goals-okr/wheels/{id}
+     */
+    @PutMapping("/wheels/{id}")
+    @Transactional
+    public ResponseEntity<?> updateWheel(@PathVariable Long id, @Valid @RequestBody UpdateWheelRequest request) {
+        try {
+            UpdateWheelCommand command = new UpdateWheelCommand(
+                id,
+                request.wheelKey(),
+                request.nameNl(),
+                request.nameEn(),
+                request.descriptionNl(),
+                request.descriptionEn(),
+                request.displayOrder() != null ? request.displayOrder() : 0
+            );
+            WheelResult result = updateWheelHandler.handle(command);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Delete a wheel
+     * DELETE /api/v2/goals-okr/wheels/{id}
+     */
+    @DeleteMapping("/wheels/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteWheel(@PathVariable Long id) {
+        try {
+            deleteWheelHandler.handle(new DeleteWheelCommand(id));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
     // ========== Life Domains ==========
 
     /**
@@ -205,6 +296,81 @@ public class GoalsOKRController {
     public ResponseEntity<List<LifeDomainResult>> getAllLifeDomains() {
         List<LifeDomainResult> results = getLifeDomainsHandler.handle(new GetLifeDomainsQuery());
         return ResponseEntity.ok(results);
+    }
+
+    /**
+     * Create a life domain
+     * POST /api/v2/goals-okr/life-domains
+     */
+    @PostMapping("/life-domains")
+    @Transactional
+    public ResponseEntity<?> createLifeDomain(@Valid @RequestBody CreateLifeDomainRequest request) {
+        try {
+            CreateLifeDomainCommand command = new CreateLifeDomainCommand(
+                request.wheelId(),
+                request.titleNl(),
+                request.titleEn(),
+                request.descriptionNl(),
+                request.descriptionEn(),
+                request.iconName(),
+                request.displayOrder() != null ? request.displayOrder() : 0
+            );
+            LifeDomainResult result = createLifeDomainHandler.handle(command);
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Update a life domain
+     * PUT /api/v2/goals-okr/life-domains/{id}
+     */
+    @PutMapping("/life-domains/{id}")
+    @Transactional
+    public ResponseEntity<?> updateLifeDomain(@PathVariable Long id, @Valid @RequestBody UpdateLifeDomainRequest request) {
+        try {
+            UpdateLifeDomainCommand command = new UpdateLifeDomainCommand(
+                id,
+                request.wheelId(),
+                request.titleNl(),
+                request.titleEn(),
+                request.descriptionNl(),
+                request.descriptionEn(),
+                request.iconName(),
+                request.displayOrder() != null ? request.displayOrder() : 0
+            );
+            LifeDomainResult result = updateLifeDomainHandler.handle(command);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+
+    /**
+     * Delete a life domain
+     * DELETE /api/v2/goals-okr/life-domains/{id}
+     */
+    @DeleteMapping("/life-domains/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteLifeDomain(@PathVariable Long id) {
+        try {
+            deleteLifeDomainHandler.handle(new DeleteLifeDomainCommand(id));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "An unexpected error occurred."));
+        }
     }
 
     // ========== Objectives ==========

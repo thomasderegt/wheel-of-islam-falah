@@ -16,9 +16,6 @@ public class LifeDomainJpaEntity {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "domain_key", nullable = false, unique = true, length = 50)
-    private String domainKey;
-    
     @Column(name = "title_nl", nullable = false)
     private String titleNl;
     
@@ -49,9 +46,6 @@ public class LifeDomainJpaEntity {
     // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    
-    public String getDomainKey() { return domainKey; }
-    public void setDomainKey(String domainKey) { this.domainKey = domainKey; }
     
     public String getTitleNl() { return titleNl; }
     public void setTitleNl(String titleNl) { this.titleNl = titleNl; }

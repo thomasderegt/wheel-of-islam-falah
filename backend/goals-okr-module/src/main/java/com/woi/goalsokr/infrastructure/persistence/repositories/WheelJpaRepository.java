@@ -22,4 +22,9 @@ public interface WheelJpaRepository extends JpaRepository<WheelJpaEntity, Long> 
      * Find a wheel by wheel key
      */
     Optional<WheelJpaEntity> findByWheelKey(String wheelKey);
+
+    /**
+     * Check if another wheel exists with the same wheel key (excluding given id)
+     */
+    boolean existsByWheelKeyAndIdNot(String wheelKey, Long id);
 }
