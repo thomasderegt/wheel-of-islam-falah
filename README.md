@@ -14,7 +14,7 @@ wheel-of-islam-falah/
 ## Vereisten
 
 - **Node.js** (v18 of hoger)
-- **Java** 17
+- **Java** 17 of 21
 - **Maven** 3.9+
 - **PostgreSQL** (lokaal draaiend op poort 5432)
 
