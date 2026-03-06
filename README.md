@@ -79,3 +79,4 @@ Zorg ervoor dat PostgreSQL draait en de database `woi_backend_v2` bestaat. De da
   - `learning-module` - Leerfunctionaliteit
   - `assessment-module` - Assessments
   - `application` - Main Spring Boot applicatie
+  - `goals-okr-module` - Doelen en OKR
